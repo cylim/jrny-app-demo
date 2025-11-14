@@ -5,7 +5,7 @@ import { authComponent, createAuth } from './auth'
 const http = httpRouter()
 
 // CORS preflight handler for authentication endpoints
-const corsHandler = httpAction(async (ctx, request) => {
+const corsHandler = httpAction(async (_ctx, request) => {
   const origin = request.headers.get('origin') || ''
   const allowedOrigins = [
     process.env.SITE_URL || 'http://localhost:3000',

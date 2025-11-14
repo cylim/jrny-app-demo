@@ -173,7 +173,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-background text-foreground">
         <div className="relative flex min-h-screen flex-col">
-          <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="container flex h-14 max-w-screen-2xl items-center">
               <div className="mr-4 flex">
                 <Link to="/" className="mr-6 flex items-center space-x-2">

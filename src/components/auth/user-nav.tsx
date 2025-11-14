@@ -1,7 +1,10 @@
 'use client'
 
+import { convexQuery } from '@convex-dev/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, User as UserIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -17,10 +20,16 @@ import {
 import { authClient } from '@/lib/auth-client'
 import { api } from '~@/convex/_generated/api'
 import { GoogleSignInButton } from './google-sign-in-button'
+import type { User } from '@/types/user'
 
 export function UserNav() {
   const { data: session, isPending } = authClient.useSession()
   const syncUser = useMutation(api.users.syncUser)
+
+  // Get current user data to access username/id for profile link
+  const { data: currentUser } = useQuery(
+    convexQuery(api.users.getCurrentUser as any, {}),
+  )
 
   // Sync user data to our users table when session becomes available
   useEffect(() => {
@@ -63,6 +72,17 @@ export function UserNav() {
         .slice(0, 2)
     : user.email?.[0]?.toUpperCase() || '?'
 
+  // Use username if available, otherwise use user ID for profile link
+  const typedUser = currentUser as User | null
+  const profileIdentifier = typedUser?.username || typedUser?._id || ''
+
+  const handleProfileClick = () => {
+    if (profileIdentifier) {
+      // Use window.location for simpler navigation without type issues
+      window.location.href = `/u/${profileIdentifier}`
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -84,14 +104,18 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </DropdownMenuItem>
+          {profileIdentifier && (
+            <DropdownMenuItem onClick={handleProfileClick}>
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+          )}
+          <Link to="/settings">
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>

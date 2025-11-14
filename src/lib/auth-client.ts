@@ -2,8 +2,7 @@ import { convexClient } from '@convex-dev/better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
 export const authClient = createAuthClient({
-  // Use TanStack Start proxy at /api/auth for all requests
-  // This eliminates CORS issues while OAuth callbacks still go to Convex
-  // baseURL defaults to same-origin (localhost:3000/api/auth)
+  // Explicitly set baseURL to avoid URL construction issues
+  baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
   plugins: [convexClient()],
 })

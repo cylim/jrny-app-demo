@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AnotherPageRouteImport } from './routes/anotherPage'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
 import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnotherPageRoute = AnotherPageRouteImport.update({
   id: '/anotherPage',
   path: '/anotherPage',
@@ -44,6 +50,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/anotherPage'
+    | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
     | '/api/auth/$'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/anotherPage'
+    | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
     | '/api/auth/$'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/anotherPage'
+    | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
     | '/api/auth/$'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnotherPageRoute: typeof AnotherPageRoute
+  SettingsRoute: typeof SettingsRoute
   CShortSlugRoute: typeof CShortSlugRoute
   UUsernameOrIdRoute: typeof UUsernameOrIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -97,6 +110,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/anotherPage': {
       id: '/anotherPage'
       path: '/anotherPage'
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnotherPageRoute: AnotherPageRoute,
+  SettingsRoute: SettingsRoute,
   CShortSlugRoute: CShortSlugRoute,
   UUsernameOrIdRoute: UUsernameOrIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

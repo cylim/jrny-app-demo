@@ -2,7 +2,7 @@
 
 A real-time journey tracking application that allows users to record their travels, track time spent at locations, and discover who else is exploring the same cities.
 
-**Live Demo**: [jrny-app-demo.cy.workers.dev](https://jrny-app-demo.cy.workers.dev)
+**Live Demo**: [demo.jrny.app](demo.jrny.app)
 
 ## Overview
 

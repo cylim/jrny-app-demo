@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { authComponent } from './auth'
+import type { Doc } from './_generated/dataModel'
 
 /**
  * Create a new visit
@@ -56,7 +57,6 @@ export const createVisit = mutation({
       endDate,
       notes,
       isPrivate: isPrivate ?? false,
-      createdAt: now,
       updatedAt: now,
     })
 
@@ -181,7 +181,6 @@ export const getVisitsByUser = query({
       endDate: v.number(),
       notes: v.optional(v.string()),
       isPrivate: v.boolean(),
-      createdAt: v.number(),
       updatedAt: v.number(),
       // Joined city data
       city: v.object({
@@ -338,14 +337,23 @@ export const getOverlappingVisitors = query({
     // Sort by overlap days (descending)
     overlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
 
-    // Join with user data
-    const result = await Promise.all(
+    // Join with user data and filter out users with globalPrivacy enabled
+    const results = await Promise.all(
       overlappingVisits.map(
         async ({ visit: overlappingVisit, overlapDays }) => {
           const user = await ctx.db.get(overlappingVisit.userId)
           if (!user) {
             throw new Error(`User not found for visit ${overlappingVisit._id}`)
           }
+
+          // Filter out users who have globalPrivacy enabled
+          const typedUser = user as Doc<'users'> & {
+            settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+          }
+          if (typedUser.settings?.globalPrivacy === true) {
+            return null
+          }
+
           return {
             user: {
               _id: user._id,
@@ -364,7 +372,8 @@ export const getOverlappingVisitors = query({
       ),
     )
 
-    return result
+    // Filter out null values (users with globalPrivacy enabled)
+    return results.filter((r): r is NonNullable<typeof r> => r !== null)
   },
 })
 
@@ -383,7 +392,6 @@ export const getVisit = query({
       endDate: v.number(),
       notes: v.optional(v.string()),
       isPrivate: v.boolean(),
-      createdAt: v.number(),
       updatedAt: v.number(),
     }),
     v.null(),

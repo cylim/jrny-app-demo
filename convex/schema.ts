@@ -18,8 +18,25 @@ export default defineSchema({
     image: v.optional(v.string()),
     // Username for profile URLs (e.g., u/:username)
     username: v.optional(v.string()),
+    // Profile customization
+    bio: v.optional(v.string()),
+    // Settings object (defaults to false for both)
+    settings: v.optional(
+      v.object({
+        globalPrivacy: v.boolean(), // Hide from overlap visits and city page (default: false)
+        hideVisitHistory: v.boolean(), // Hide visit history on profile (default: false)
+      }),
+    ),
+    // Social links
+    socialLinks: v.optional(
+      v.object({
+        github: v.optional(v.string()),
+        x: v.optional(v.string()), // formerly twitter
+        linkedin: v.optional(v.string()),
+        telegram: v.optional(v.string()),
+      }),
+    ),
     // Timestamps
-    createdAt: v.number(),
     updatedAt: v.number(),
     lastSeen: v.number(),
   })
@@ -55,7 +72,6 @@ export default defineSchema({
     notes: v.optional(v.string()),
     isPrivate: v.boolean(),
     // Timestamps
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_user_id', ['userId'])
