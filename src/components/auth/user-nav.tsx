@@ -76,13 +76,6 @@ export function UserNav() {
   const typedUser = currentUser as User | null
   const profileIdentifier = typedUser?.username || typedUser?._id || ''
 
-  const handleProfileClick = () => {
-    if (profileIdentifier) {
-      // Use window.location for simpler navigation without type issues
-      window.location.href = `/u/${profileIdentifier}`
-    }
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -105,10 +98,12 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {profileIdentifier && (
-            <DropdownMenuItem onClick={handleProfileClick}>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
+            <Link to="/u/$usernameOrId" params={{ usernameOrId: profileIdentifier }}>
+              <DropdownMenuItem>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+            </Link>
           )}
           <Link to="/settings">
             <DropdownMenuItem>

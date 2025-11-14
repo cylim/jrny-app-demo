@@ -1,23 +1,20 @@
-import { createFileRoute, type FileRoutesByPath } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from '~@/convex/_generated/api'
 import { authClient } from '@/lib/auth-client'
 
-export const Route = createFileRoute('/c/$shortSlug' as keyof FileRoutesByPath)(
-  {
-    component: CityPage,
-  },
-)
+export const Route = createFileRoute('/c/$shortSlug')({
+  component: CityPage,
+})
 
 function CityPage() {
-  const params = Route.useParams()
-  const shortSlug = 'shortSlug' in params ? params.shortSlug : ''
+  const { shortSlug } = Route.useParams()
   const { data: session } = authClient.useSession()
 
   // Fetch city data
   const { data: city } = useSuspenseQuery(
-    convexQuery(api.cities.getCityByShortSlug as any, { shortSlug }),
+    convexQuery(api.cities.getCityByShortSlug, { shortSlug }),
   )
 
   if (!city) {

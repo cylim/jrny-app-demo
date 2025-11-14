@@ -1,4 +1,4 @@
-import { createFileRoute, type FileRoutesByPath } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { Github, Linkedin, Twitter } from 'lucide-react'
@@ -7,15 +7,12 @@ import { UserVisitsList } from '@/components/visits/user-visits-list'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
 import type { User } from '@/types/user'
 
-export const Route = createFileRoute(
-  '/u/$usernameOrId' as keyof FileRoutesByPath,
-)({
+export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
 })
 
 function UserProfilePage() {
-  const params = Route.useParams()
-  const usernameOrId = 'usernameOrId' in params ? params.usernameOrId : ''
+  const { usernameOrId } = Route.useParams()
 
   // Fetch user data
   const { data: user } = useSuspenseQuery(
