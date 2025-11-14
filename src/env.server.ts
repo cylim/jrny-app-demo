@@ -10,6 +10,7 @@ export const serverEnv = createEnv({
     CONVEX_SITE_URL: z.url().min(10),
     CONVEX_DEPLOYMENT: z.string(),
     SITE_URL: z.url().min(10),
+    SENTRY_DSN: z.url().min(10),
   },
 
   /**

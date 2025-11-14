@@ -137,6 +137,130 @@ This runs `wrangler dev` which starts a local Cloudflare Workers environment. Us
 
 4. **Static Assets**: Client-side assets are served from Cloudflare's edge network
 
+## Error Monitoring with Sentry
+
+This project uses **Sentry** for error tracking, performance monitoring, and session replay across both client and server.
+
+### Configuration
+
+**Sentry SDK**: `@sentry/tanstackstart-react@^10.25.0`
+
+**Key Files**:
+- `instrument.server.mjs` - Server-side Sentry initialization (loaded via NODE_OPTIONS)
+- `src/router.tsx` - Client-side Sentry initialization
+- `src/routes/__root.tsx` - Error boundary that captures and reports errors
+- `src/env.client.ts` - Client-side DSN validation (VITE_SENTRY_DSN)
+- `src/env.server.ts` - Server-side DSN validation (SENTRY_DSN)
+
+### Environment Variables
+
+**Client-side** (public, in wrangler.jsonc):
+- `VITE_SENTRY_DSN` - Your Sentry DSN for client-side error tracking
+  - Accessible in browser
+  - Used for client-side errors, performance tracking, and session replay
+
+**Server-side** (secret, via wrangler CLI):
+- `SENTRY_DSN` - Your Sentry DSN for server-side error tracking
+  - Server-only
+  - Used for SSR errors and server-side performance monitoring
+  - Set via: `wrangler secret put SENTRY_DSN`
+
+### Features Enabled
+
+**Client-side**:
+- **Performance Monitoring**: Tracks route changes and page loads (tanstackRouterBrowserTracingIntegration)
+- **Session Replay**: Records user sessions for debugging (replayIntegration)
+  - Development: 100% of sessions
+  - Production: 10% of sessions, 100% of error sessions
+- **User Feedback Widget**: Allows users to report bugs (feedbackIntegration)
+- **Error Tracking**: Captures unhandled errors and exceptions
+- **Traces Sample Rate**:
+  - Development: 100% of transactions
+  - Production: 10% of transactions
+
+**Server-side**:
+- **Error Tracking**: Captures server-side exceptions
+- **Performance Monitoring**: Tracks server-side request performance
+- **Console Integration**: Captures console.error() and console.warn() calls
+- **Traces Sample Rate**:
+  - Development: 100% of transactions
+  - Production: 10% of transactions
+
+### Error Boundaries
+
+The root route (`src/routes/__root.tsx`) includes a custom error component that:
+- Captures errors to Sentry with React component stack
+- Shows user-friendly error message in production
+- Shows detailed error information in development
+- Provides "Reload page" and "Go home" buttons
+
+### Viewing Errors in Sentry
+
+1. **Login to Sentry**: Visit [sentry.io](https://sentry.io) and login to your account
+2. **Select Project**: Choose the "jrny-app-demo" project
+3. **View Issues**: Browse errors in the Issues tab
+4. **Session Replay**: Watch user sessions in the Replays tab
+5. **Performance**: View performance metrics in the Performance tab
+
+### Local Development
+
+Server-side Sentry is automatically initialized when running:
+```bash
+npm run dev        # Full stack development
+npm run dev:web    # Web-only development
+```
+
+The `dev:web` script uses `NODE_OPTIONS='--import ./instrument.server.mjs'` to load Sentry before the application starts.
+
+### Production Deployment
+
+When deploying to Cloudflare Workers:
+
+1. **Set Sentry DSN as secret**:
+   ```bash
+   wrangler secret put SENTRY_DSN
+   ```
+
+2. **Deploy**:
+   ```bash
+   npm run deploy
+   ```
+
+3. The `VITE_SENTRY_DSN` is automatically included from `wrangler.jsonc` vars
+
+### Cloudflare Workers Compatibility
+
+Sentry works with Cloudflare Workers through the `nodejs_compat` compatibility flag (already configured in `wrangler.jsonc`). The `@sentry/tanstackstart-react` package is compatible with both Node.js (development) and Cloudflare Workers (production).
+
+### Testing Sentry Integration
+
+To test if Sentry is working correctly:
+
+1. **Client-side test**: Add a button that throws an error:
+   ```tsx
+   <button onClick={() => { throw new Error('Test client error') }}>
+     Test Error
+   </button>
+   ```
+
+2. **Server-side test**: Add an error to a server function:
+   ```tsx
+   const testServerError = createServerFn({ method: 'GET' }).handler(async () => {
+     throw new Error('Test server error')
+   })
+   ```
+
+3. Check Sentry dashboard for the error events
+
+### Sample Rates
+
+Adjust sample rates in production to manage Sentry quota:
+- `tracesSampleRate`: Controls performance monitoring (currently 0.1 = 10%)
+- `replaysSessionSampleRate`: Controls normal session replay (currently 0.1 = 10%)
+- `replaysOnErrorSampleRate`: Controls replay on errors (currently 1.0 = 100%)
+
+You can modify these in `src/router.tsx` (client) and `instrument.server.mjs` (server).
+
 ## Architecture
 
 ### Frontend Architecture
@@ -297,6 +421,10 @@ This project uses **t3env** (`@t3-oss/env-core`) for type-safe, validated enviro
 - `VITE_CONVEX_SITE_URL` (required): Your Convex site URL for authentication
   - Example: `https://wary-bison-35.convex.site`
   - Used for: Better-Auth client-side configuration
+- `VITE_SENTRY_DSN` (required): Your Sentry DSN for client-side error tracking
+  - Example: `https://abc123@o123.ingest.sentry.io/456`
+  - Used in: `src/router.tsx` for Sentry initialization
+  - Includes: Error tracking, performance monitoring, session replay
 
 **Server-side** (Node.js/server only):
 - `CONVEX_SITE_URL` (required): Convex site URL for Better-Auth server configuration
@@ -307,6 +435,10 @@ This project uses **t3env** (`@t3-oss/env-core`) for type-safe, validated enviro
 - `SITE_URL` (required): Your application's URL
   - Example: `http://localhost:3000` (development) or `https://yourdomain.com` (production)
   - Used for: Better-Auth redirect URLs and CORS configuration
+- `SENTRY_DSN` (required): Your Sentry DSN for server-side error tracking
+  - Example: `https://abc123@o123.ingest.sentry.io/456`
+  - Used in: `instrument.server.mjs` for server-side Sentry initialization
+  - Includes: SSR error tracking, performance monitoring, console integration
 
 **Convex Functions**: The `convex/` directory runs in Convex's managed runtime (not your Node.js server). Convex functions access environment variables directly via `process.env` - they do NOT use the t3env schemas in `src/`. Example: `convex/auth.config.ts` uses `process.env.CONVEX_SITE_URL`.
 

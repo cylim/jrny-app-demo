@@ -9,7 +9,9 @@
   // These are baked into the client bundle during build
   "vars": {
     "VITE_CONVEX_URL": "https://wary-bison-35.convex.cloud",
-    "VITE_CONVEX_SITE_URL": "https://wary-bison-35.convex.site"
+    "VITE_CONVEX_SITE_URL": "https://wary-bison-35.convex.site",
+    "VITE_SENTRY_DSN": "https://1c543be27eb60f6c52c05e57e5a1d734@o4508034754150400.ingest.us.sentry.io/4510361277693952",
+    "SENTRY_DSN": "https://1c543be27eb60f6c52c05e57e5a1d734@o4508034754150400.ingest.us.sentry.io/4510361277693952"
   }
 
   // Sensitive environment variables should be set as secrets using wrangler CLI:
