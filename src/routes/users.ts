@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { api } from "convex/_generated/api";
 import { fetchMutation } from "@/lib/auth-server";
-import { api } from "../../convex/_generated/api";
 
 type UpdatePasswordData = {
   currentPassword: string;

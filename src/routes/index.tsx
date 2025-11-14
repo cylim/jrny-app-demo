@@ -2,7 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from '../../convex/_generated/api'
+import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/')({
   component: Home,

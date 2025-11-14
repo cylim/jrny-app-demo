@@ -56,14 +56,19 @@ Starts only the Convex backend dev server.
 
 **Router Setup**: The router is configured in `src/router.tsx` with:
 - File-based routing via `routeTree.gen.ts` (auto-generated)
-- `ConvexQueryClient` integrated with `QueryClient` for data fetching
+- `ConvexReactClient` instantiated with `unsavedChangesWarning: false`
+- `ConvexQueryClient` wrapping the Convex client and integrating with React Query
 - `ConvexProvider` wrapping the entire app for Convex client access
 - Routes defined in `src/routes/` directory
 
 **Important Router Details**:
 - Route files use `createFileRoute()` pattern
 - Root route in `src/routes/__root.tsx` handles HTML structure and metadata
-- All routes have access to `queryClient` via context
+- All routes have access to `queryClient`, `convexClient`, and `convexQueryClient` via context
+- The router context provides three key objects:
+  - `queryClient`: TanStack Query client for general data fetching
+  - `convexClient`: Direct Convex client for real-time subscriptions
+  - `convexQueryClient`: Bridge between Convex and React Query
 
 ### Backend Architecture
 
@@ -97,6 +102,31 @@ const addNumber = useMutation(api.myFunctions.addNumber)
 ```
 
 **Why This Matters**: The app uses `@convex-dev/react-query` to bridge Convex and React Query. The `ConvexQueryClient` is configured in `src/router.tsx` and uses custom `queryFn()` and `hashFn()` from Convex.
+
+**Accessing Router Context in Routes**:
+
+Routes can access the Convex clients via the router context:
+
+```typescript
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/myRoute')({
+  component: MyComponent,
+})
+
+function MyComponent() {
+  // Access via useRouterContext hook
+  const { convexClient } = Route.useRouteContext()
+
+  // Or use React Query with Convex
+  import { convexQuery } from '@convex-dev/react-query'
+  const { data } = useSuspenseQuery(convexQuery(api.myFunctions.getData, {}))
+
+  // Or use Convex hooks directly
+  import { useMutation } from 'convex/react'
+  const mutate = useMutation(api.myFunctions.doSomething)
+}
+```
 
 ## Key Convex Guidelines (from .cursor/rules/convex_rules.mdc)
 
@@ -170,11 +200,20 @@ This project uses **t3env** (`@t3-oss/env-core`) for type-safe, validated enviro
 **Client-side** (accessible in browser):
 - `VITE_CONVEX_URL` (required): Your Convex deployment URL
   - Example: `https://wary-bison-35.convex.cloud`
-  - Used in: `src/router.tsx`
+  - Used in: `src/router.tsx` to initialize the Convex client
+- `VITE_CONVEX_SITE_URL` (required): Your Convex site URL for authentication
+  - Example: `https://wary-bison-35.convex.site`
+  - Used for: Better-Auth client-side configuration
 
 **Server-side** (Node.js/server only):
-- `CONVEX_SITE_URL` (optional): Site URL for Better-Auth configuration
-- `CONVEX_DEPLOYMENT` (optional): Convex deployment identifier (used by CLI)
+- `CONVEX_SITE_URL` (required): Convex site URL for Better-Auth server configuration
+  - Example: `https://wary-bison-35.convex.cloud`
+- `CONVEX_DEPLOYMENT` (required): Convex deployment identifier
+  - Example: `dev:wary-bison-35`
+  - Used by: Convex CLI for deployment management
+- `SITE_URL` (required): Your application's URL
+  - Example: `http://localhost:3000` (development) or `https://yourdomain.com` (production)
+  - Used for: Better-Auth redirect URLs and CORS configuration
 
 **Convex Functions**: The `convex/` directory runs in Convex's managed runtime (not your Node.js server). Convex functions access environment variables directly via `process.env` - they do NOT use the t3env schemas in `src/`. Example: `convex/auth.config.ts` uses `process.env.CONVEX_SITE_URL`.
 
@@ -209,7 +248,9 @@ const siteUrl = process.env.CONVEX_SITE_URL // Direct access
 
    // src/env.server.ts (for server-only vars)
    server: {
-     MY_SERVER_VAR: z.string().optional(),
+     MY_SERVER_VAR: z.string(),  // Required
+     // OR
+     MY_OPTIONAL_VAR: z.string().optional(),  // Optional
    }
    ```
 
@@ -237,6 +278,8 @@ const siteUrl = process.env.CONVEX_SITE_URL // Direct access
 3. **Wrong Import for Convex Types**: Import `Id` and `Doc` from `convex/_generated/dataModel`, not elsewhere
 4. **Mixing React Query and Convex Hooks**: This app uses both - `convexQuery()` for queries and `useMutation()` from `convex/react` for mutations
 5. **Forgetting Node Directive**: Add `"use node";` to action files using Node.js APIs
+6. **Environment Variable Validation**: All required env vars are validated at startup by t3env. If you add a new env var, make sure to add it to both `.env.local` AND the appropriate schema file (`env.client.ts` or `env.server.ts`)
+7. **Router Context Type Safety**: The router context includes `queryClient`, `convexClient`, and `convexQueryClient`. TypeScript will infer these types automatically when using `Route.useRouteContext()`
 
 ## File Structure
 
