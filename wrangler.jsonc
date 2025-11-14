@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jrny-app-demo",
+  "compatibility_date": "2025-11-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+
+  // Public environment variables (non-sensitive, accessible in browser)
+  // These are baked into the client bundle during build
+  "vars": {
+    "VITE_CONVEX_URL": "https://wary-bison-35.convex.cloud",
+    "VITE_CONVEX_SITE_URL": "https://wary-bison-35.convex.site"
+  }
+
+  // Sensitive environment variables should be set as secrets using wrangler CLI:
+  // wrangler secret put CONVEX_DEPLOYMENT
+  // wrangler secret put CONVEX_SITE_URL
+  // wrangler secret put SITE_URL
+  //
+  // For local development, create a .dev.vars file with these secrets
+}

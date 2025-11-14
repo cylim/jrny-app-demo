@@ -44,6 +44,99 @@ npm run dev:convex
 ```
 Starts only the Convex backend dev server.
 
+## Deployment
+
+### Cloudflare Workers Deployment
+
+This project is configured for deployment to **Cloudflare Workers** using Wrangler.
+
+#### Prerequisites
+
+1. **Cloudflare Account**: Sign up at [cloudflare.com](https://cloudflare.com)
+2. **Wrangler CLI**: Already installed as dev dependency
+3. **Environment Variables**: Set up both locally and in production
+
+#### Local Testing with Cloudflare Workers
+
+Test your app locally with Cloudflare Workers runtime:
+
+```bash
+npm run preview
+```
+
+This runs `wrangler dev` which starts a local Cloudflare Workers environment. Use `.dev.vars` file for local secrets.
+
+#### Deployment Steps
+
+1. **Login to Cloudflare**:
+   ```bash
+   wrangler login
+   ```
+
+2. **Set Production Secrets**:
+   ```bash
+   wrangler secret put CONVEX_DEPLOYMENT
+   wrangler secret put CONVEX_SITE_URL
+   wrangler secret put SITE_URL
+   ```
+
+   When prompted, enter the production values:
+   - `CONVEX_DEPLOYMENT`: Your production Convex deployment (e.g., `prod:your-deployment`)
+   - `CONVEX_SITE_URL`: Your production Convex site URL
+   - `SITE_URL`: Your production domain (e.g., `https://yourdomain.com`)
+
+3. **Deploy to Cloudflare**:
+   ```bash
+   npm run deploy
+   ```
+
+   This builds the project and deploys to Cloudflare Workers.
+
+4. **Generate TypeScript Types** (optional):
+   ```bash
+   npm run cf-typegen
+   ```
+
+   Generates TypeScript types for Cloudflare Workers bindings.
+
+#### Configuration Files
+
+- **`wrangler.jsonc`**: Main Cloudflare Workers configuration
+  - Defines project name, compatibility settings
+  - Specifies public environment variables (VITE_* prefixed)
+  - Entry point: `@tanstack/react-start/server-entry`
+
+- **`.dev.vars`**: Local development secrets (gitignored)
+  - Server-side environment variables for `wrangler dev`
+  - Never commit this file
+
+#### Environment Variables in Cloudflare
+
+**Public Variables** (set in `wrangler.jsonc`):
+- `VITE_CONVEX_URL` - Bundled into client code
+- `VITE_CONVEX_SITE_URL` - Bundled into client code
+
+**Secret Variables** (set via `wrangler secret put`):
+- `CONVEX_DEPLOYMENT` - Server-only
+- `CONVEX_SITE_URL` - Server-only
+- `SITE_URL` - Server-only
+
+**Important Notes**:
+- Public vars (`vars` in wrangler.jsonc) are accessible in client bundles
+- Secrets (set via CLI) are only accessible server-side
+- Update `wrangler.jsonc` with your production URLs before deploying
+- The `.dev.vars` file is for local development only
+
+#### Cloudflare-Specific Considerations
+
+1. **Vite Configuration**: The `@cloudflare/vite-plugin` is added as the first plugin in `vite.config.ts` (vite.config.ts:13)
+
+2. **Compatibility Flags**: The project uses `nodejs_compat` for Node.js API compatibility
+
+3. **Convex Integration**: Convex works seamlessly with Cloudflare Workers as it communicates via HTTP/WebSocket
+
+4. **Static Assets**: Client-side assets are served from Cloudflare's edge network
+
 ## Architecture
 
 ### Frontend Architecture
