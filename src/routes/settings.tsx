@@ -19,6 +19,13 @@ export const Route = createFileRoute('/settings')({
   component: SettingsPage,
 })
 
+/**
+ * Render the Settings page that lets a signed-in user view and edit profile, privacy, and social link settings.
+ *
+ * Initializes form state from the current user, redirects to "/" when no user is available, and provides per-section save handlers that call API mutations and show inline success or error messages.
+ *
+ * @returns The JSX element for the Settings page.
+ */
 function SettingsPage() {
   const navigate = useNavigate()
   const { data: currentUser } = useSuspenseQuery(

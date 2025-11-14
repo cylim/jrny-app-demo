@@ -11,6 +11,11 @@ export const Route = createFileRoute('/')({
   component: Home,
 })
 
+/**
+ * Renders the Home route: a session-aware landing page that shows a welcome/sign-in prompt or a personalized greeting, and a demo card to add and view persisted random numbers with a link to another page.
+ *
+ * @returns The JSX element for the Home route page
+ */
 function Home() {
   const {
     data: { numbers },

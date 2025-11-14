@@ -13,6 +13,13 @@ interface CitySearchProps {
   onChange: (cityId: Id<'cities'> | null) => void
 }
 
+/**
+ * Renders a searchable list of cities with a search input and selectable city entries.
+ *
+ * @param value - The currently selected city's id, or `null` if none is selected.
+ * @param onChange - Callback invoked with a city's id when a city is selected, or `null` to clear selection.
+ * @returns A React element containing the search input, an optional selected-city banner, and a scrollable list of matching city buttons.
+ */
 export function CitySearch({ value, onChange }: CitySearchProps) {
   const [search, setSearch] = useState('')
   const { data: allCities } = useSuspenseQuery(

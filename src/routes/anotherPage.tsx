@@ -9,6 +9,13 @@ export const Route = createFileRoute('/anotherPage')({
   component: AnotherPage,
 })
 
+/**
+ * Renders the "Convex + Tanstack Start" page that displays a list of numbers and provides a control to add a random number.
+ *
+ * Shows the fetched numbers, a button that invokes the Convex action to add a random number and displays a success alert, and a link back to the root.
+ *
+ * @returns The page's JSX element.
+ */
 function AnotherPage() {
   const callMyAction = useAction(api.myFunctions.myAction)
 

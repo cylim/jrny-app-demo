@@ -20,6 +20,12 @@ interface OverlappingVisitorsListProps {
   visitors: OverlappingVisitor[]
 }
 
+/**
+ * Renders a vertical list of visitors who had overlapping visits, showing an avatar (or initial), a link to the user's profile, the visit date range, and an overlap-days badge.
+ *
+ * @param visitors - Array of visitor entries containing user info, visit start/end timestamps, and overlapDays
+ * @returns A React element containing the rendered list of overlapping visitors
+ */
 export function OverlappingVisitorsList({
   visitors,
 }: OverlappingVisitorsListProps) {

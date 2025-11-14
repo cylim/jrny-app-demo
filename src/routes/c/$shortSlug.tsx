@@ -8,6 +8,13 @@ export const Route = createFileRoute('/c/$shortSlug')({
   component: CityPage,
 })
 
+/**
+ * Render the city page for the current `shortSlug` route parameter.
+ *
+ * Renders a "City Not Found" view when no city is found; otherwise displays the city's image, name, country and region, location details (latitude, longitude, country code, region), and a conditional "Who's Here Now" panel shown only to authenticated users (or a sign-in prompt when unauthenticated).
+ *
+ * @returns The React element representing the city page content
+ */
 function CityPage() {
   const { shortSlug } = Route.useParams()
   const { data: session } = authClient.useSession()

@@ -10,6 +10,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+/**
+ * Render a dropdown control for selecting the application's theme.
+ *
+ * Renders a ghost icon button that visually toggles between sun and moon icons
+ * and a dropdown menu with "Light", "Dark", and "System" options that set the theme.
+ * Includes an accessible label for screen readers.
+ *
+ * @returns A JSX element that renders the dropdown theme selector with Light, Dark, and System options
+ */
 export function ModeToggle() {
   const { setTheme } = useTheme()
 

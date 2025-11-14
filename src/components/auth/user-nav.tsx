@@ -22,6 +22,13 @@ import { api } from '~@/convex/_generated/api'
 import { GoogleSignInButton } from './google-sign-in-button'
 import type { User } from '@/types/user'
 
+/**
+ * Render the user navigation control: an avatar button with a dropdown for account actions and authentication handling.
+ *
+ * Shows a pulsing skeleton while the session is pending, a GoogleSignInButton when no user is signed in, and an avatar-triggered menu when authenticated. When a session becomes available the component attempts to synchronize the session user to the server. The menu displays the user's name and email and provides links for profile (when available), settings, and sign-out.
+ *
+ * @returns The user navigation UI element (avatar trigger, menu content, and related controls)
+ */
 export function UserNav() {
   const { data: session, isPending } = authClient.useSession()
   const syncUser = useMutation(api.users.syncUser)

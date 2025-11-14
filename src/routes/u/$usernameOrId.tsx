@@ -11,6 +11,17 @@ export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
 })
 
+/**
+ * Render the user profile page for the current route's username or ID.
+ *
+ * Fetches the target user and the currently authenticated user, shows a "User Not Found"
+ * message if the target user doesn't exist, and renders the profile header (avatar, name,
+ * username, bio, and social links). If the viewer owns the profile, an AddVisitButton is shown.
+ * Conditionally displays the user's visit history or a privacy notice based on ownership and
+ * the user's hideVisitHistory setting.
+ *
+ * @returns The rendered user profile page element.
+ */
 function UserProfilePage() {
   const { usernameOrId } = Route.useParams()
 

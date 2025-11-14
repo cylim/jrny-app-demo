@@ -7,6 +7,13 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { clientEnv } from '~/env.client'
 import { routeTree } from './routeTree.gen'
 
+/**
+ * Create and configure the application's router with Convex clients, React Query integration, and client-side Sentry initialization.
+ *
+ * The router is wrapped to provide a React Query client and Convex client instances via context and uses a ConvexQueryClient for query hashing and fetching. Sentry is initialized for client-side error, performance, replay, and feedback integrations when running in the browser.
+ *
+ * @returns The configured router instance
+ */
 export function getRouter() {
   const CONVEX_URL = clientEnv.VITE_CONVEX_URL
   const convex = new ConvexReactClient(CONVEX_URL, {

@@ -31,6 +31,18 @@ interface AddVisitDialogProps {
   }
 }
 
+/**
+ * Render a dialog for creating a new visit or editing an existing one.
+ *
+ * Validates required fields (city, start date, end date) and that start date is before end date,
+ * then calls the appropriate create or update mutation. On successful mutation the dialog closes;
+ * on failure an error message is shown inside the form.
+ *
+ * @param open - Controls whether the dialog is visible
+ * @param onOpenChange - Callback invoked with the new open state to close or open the dialog
+ * @param editVisit - Optional visit object; when provided the form initializes for editing that visit
+ * @returns The dialog element containing the visit form used to add or update a visit
+ */
 export function AddVisitDialog({
   open,
   onOpenChange,
