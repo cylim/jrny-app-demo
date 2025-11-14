@@ -25,4 +25,23 @@ export default defineSchema({
   })
     .index('by_auth_user_id', ['authUserId'])
     .index('by_username', ['username']),
+  cities: defineTable({
+    // Basic city information
+    name: v.string(),
+    slug: v.string(),
+    shortSlug: v.string(),
+    // Geographic data
+    country: v.string(),
+    countryCode: v.string(),
+    countrySlug: v.string(),
+    region: v.string(),
+    latitude: v.string(),
+    longitude: v.string(),
+    // Visual
+    image: v.optional(v.string()),
+  })
+    .index('by_short_slug', ['shortSlug'])
+    .index('by_slug', ['slug'])
+    .index('by_country', ['country'])
+    .index('by_region', ['region']),
 })
