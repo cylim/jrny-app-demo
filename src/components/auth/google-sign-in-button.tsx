@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 
@@ -16,6 +17,9 @@ export function GoogleSignInButton() {
       })
     } catch (error) {
       console.error('Sign in failed:', error)
+      toast.error('Failed to sign in', {
+        description: 'Please try again or contact support if the issue persists.',
+      })
       setIsLoading(false)
     }
   }

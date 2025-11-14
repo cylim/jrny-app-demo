@@ -545,13 +545,14 @@ export const updateSocialLinks = mutation({
       }
     }
 
-    // Build social links object
-    const socialLinks: {
+    const existing = (currentUser.socialLinks ?? {}) as {
       github?: string
       x?: string
       linkedin?: string
       telegram?: string
-    } = {}
+    }
+
+    const socialLinks = { ...existing }
 
     if (github !== undefined) socialLinks.github = github || undefined
     if (x !== undefined) socialLinks.x = x || undefined

@@ -1,13 +1,7 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
 
-/**
- * Get a city by its short slug (e.g., 'bangkok', 'chiang-mai')
- */
-export const getCityByShortSlug = query({
-  args: { shortSlug: v.string() },
-  returns: v.union(
-    v.object({
+const cityShape = v.object({
       _id: v.id('cities'),
       _creationTime: v.number(),
       name: v.string(),
@@ -20,7 +14,15 @@ export const getCityByShortSlug = query({
       latitude: v.string(),
       longitude: v.string(),
       image: v.optional(v.string()),
-    }),
+    })
+
+/**
+ * Get a city by its short slug (e.g., 'bangkok', 'chiang-mai')
+ */
+export const getCityByShortSlug = query({
+  args: { shortSlug: v.string() },
+  returns: v.union(
+    cityShape,
     v.null(),
   ),
   handler: async (ctx, { shortSlug }) => {
@@ -39,20 +41,7 @@ export const getCityByShortSlug = query({
 export const getAllCities = query({
   args: {},
   returns: v.array(
-    v.object({
-      _id: v.id('cities'),
-      _creationTime: v.number(),
-      name: v.string(),
-      slug: v.string(),
-      shortSlug: v.string(),
-      country: v.string(),
-      countryCode: v.string(),
-      countrySlug: v.string(),
-      region: v.string(),
-      latitude: v.string(),
-      longitude: v.string(),
-      image: v.optional(v.string()),
-    }),
+    cityShape,
   ),
   handler: async (ctx) => {
     return await ctx.db.query('cities').collect()
@@ -65,20 +54,7 @@ export const getAllCities = query({
 export const searchCities = query({
   args: { searchTerm: v.string() },
   returns: v.array(
-    v.object({
-      _id: v.id('cities'),
-      _creationTime: v.number(),
-      name: v.string(),
-      slug: v.string(),
-      shortSlug: v.string(),
-      country: v.string(),
-      countryCode: v.string(),
-      countrySlug: v.string(),
-      region: v.string(),
-      latitude: v.string(),
-      longitude: v.string(),
-      image: v.optional(v.string()),
-    }),
+    cityShape,
   ),
   handler: async (ctx, { searchTerm }) => {
     // Get all cities and filter client-side
@@ -100,20 +76,7 @@ export const searchCities = query({
 export const getCitiesByRegion = query({
   args: { region: v.string() },
   returns: v.array(
-    v.object({
-      _id: v.id('cities'),
-      _creationTime: v.number(),
-      name: v.string(),
-      slug: v.string(),
-      shortSlug: v.string(),
-      country: v.string(),
-      countryCode: v.string(),
-      countrySlug: v.string(),
-      region: v.string(),
-      latitude: v.string(),
-      longitude: v.string(),
-      image: v.optional(v.string()),
-    }),
+    cityShape,
   ),
   handler: async (ctx, { region }) => {
     return await ctx.db
@@ -129,20 +92,7 @@ export const getCitiesByRegion = query({
 export const getCitiesByCountry = query({
   args: { country: v.string() },
   returns: v.array(
-    v.object({
-      _id: v.id('cities'),
-      _creationTime: v.number(),
-      name: v.string(),
-      slug: v.string(),
-      shortSlug: v.string(),
-      country: v.string(),
-      countryCode: v.string(),
-      countrySlug: v.string(),
-      region: v.string(),
-      latitude: v.string(),
-      longitude: v.string(),
-      image: v.optional(v.string()),
-    }),
+    cityShape,
   ),
   handler: async (ctx, { country }) => {
     return await ctx.db

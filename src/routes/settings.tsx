@@ -22,7 +22,7 @@ export const Route = createFileRoute('/settings')({
 function SettingsPage() {
   const navigate = useNavigate()
   const { data: currentUser } = useSuspenseQuery(
-    convexQuery(api.users.getCurrentUser as any, {}),
+    convexQuery(api.users.getCurrentUser, {}),
   )
 
   const updateProfile = useMutation(api.users.updateProfile)
@@ -75,9 +75,10 @@ function SettingsPage() {
 
       if (result && !result.success) {
         setError(result.error || 'Failed to update profile')
-      } else {
-        setSuccess('Profile updated successfully')
+        setIsSaving(false)
+        return
       }
+      setSuccess('Profile updated successfully')
     } catch {
       setError('An error occurred while updating profile')
     } finally {

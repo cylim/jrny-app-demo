@@ -28,7 +28,7 @@ export function UserNav() {
 
   // Get current user data to access username/id for profile link
   const { data: currentUser } = useQuery(
-    convexQuery(api.users.getCurrentUser as any, {}),
+    convexQuery(api.users.getCurrentUser, {}),
   )
 
   // Sync user data to our users table when session becomes available

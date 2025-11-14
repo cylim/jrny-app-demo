@@ -42,18 +42,22 @@ export function formatDate(timestamp: number): string {
 
 /**
  * Convert a date string (YYYY-MM-DD) to Unix timestamp
+ * Uses UTC to avoid timezone-dependent shifts
  */
 export function dateStringToTimestamp(dateString: string): number {
-  return new Date(dateString).getTime()
+  const [year, month, day] = dateString.split('-').map(Number)
+  // Date.UTC uses 0-indexed months
+  return Date.UTC(year, month - 1, day)
 }
 
 /**
  * Convert Unix timestamp to date string (YYYY-MM-DD)
+ * Uses UTC to avoid timezone-dependent shifts
  */
 export function timestampToDateString(timestamp: number): string {
   const date = new Date(timestamp)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }

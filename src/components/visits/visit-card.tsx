@@ -26,7 +26,7 @@ interface VisitCardProps {
 export function VisitCard({ visit }: VisitCardProps) {
   // Fetch overlapping visitors
   const { data: overlappingVisitors } = useSuspenseQuery(
-    convexQuery(api.visits.getOverlappingVisitors as any, {
+    convexQuery(api.visits.getOverlappingVisitors, {
       visitId: visit._id,
     }),
   )

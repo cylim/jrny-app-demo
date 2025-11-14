@@ -10,7 +10,7 @@ interface UserVisitsListProps {
 
 export function UserVisitsList({ userId }: UserVisitsListProps) {
   const { data: visits } = useSuspenseQuery(
-    convexQuery(api.visits.getVisitsByUser as any, { userId }),
+    convexQuery(api.visits.getVisitsByUser, { userId }),
   )
 
   if (visits.length === 0) {
@@ -23,7 +23,7 @@ export function UserVisitsList({ userId }: UserVisitsListProps) {
 
   return (
     <div className="space-y-4">
-      {visits.map((visit: any) => (
+      {visits.map((visit) => (
         <VisitCard key={visit._id} visit={visit} />
       ))}
     </div>

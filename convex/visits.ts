@@ -289,21 +289,31 @@ export const getOverlappingVisitors = query({
     const publicCityVisits = cityVisits.filter((v) => !v.isPrivate)
 
     // Helper function to calculate overlap in days
+    // Dates are stored as midnight timestamps (start of day), but should be
+    // treated as inclusive of the entire day. Add 1 day to end dates to ensure
+    // visits that share a boundary day (e.g., one ends Jan 15, another starts Jan 15)
+    // are correctly counted as overlapping.
     const calculateOverlap = (
       start1: number,
       end1: number,
       start2: number,
       end2: number,
     ): number => {
+      const DAY_MS = 24 * 60 * 60 * 1000
+
+      // Treat end dates as inclusive by adding one full day
+      const inclusiveEnd1 = end1 + DAY_MS
+      const inclusiveEnd2 = end2 + DAY_MS
+
       const overlapStart = Math.max(start1, start2)
-      const overlapEnd = Math.min(end1, end2)
+      const overlapEnd = Math.min(inclusiveEnd1, inclusiveEnd2)
 
       if (overlapStart >= overlapEnd) {
         return 0 // No overlap
       }
 
       // Convert milliseconds to days (round up)
-      return Math.ceil((overlapEnd - overlapStart) / (24 * 60 * 60 * 1000))
+      return Math.ceil((overlapEnd - overlapStart) / DAY_MS)
     }
 
     // Find overlapping visits
@@ -374,30 +384,5 @@ export const getOverlappingVisitors = query({
 
     // Filter out null values (users with globalPrivacy enabled)
     return results.filter((r): r is NonNullable<typeof r> => r !== null)
-  },
-})
-
-/**
- * Get a single visit by ID
- */
-export const getVisit = query({
-  args: { visitId: v.id('visits') },
-  returns: v.union(
-    v.object({
-      _id: v.id('visits'),
-      _creationTime: v.number(),
-      userId: v.id('users'),
-      cityId: v.id('cities'),
-      startDate: v.number(),
-      endDate: v.number(),
-      notes: v.optional(v.string()),
-      isPrivate: v.boolean(),
-      updatedAt: v.number(),
-    }),
-    v.null(),
-  ),
-  handler: async (ctx, { visitId }) => {
-    const visit = await ctx.db.get(visitId)
-    return visit
   },
 })

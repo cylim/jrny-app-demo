@@ -2,7 +2,7 @@
 
 A real-time journey tracking application that allows users to record their travels, track time spent at locations, and discover who else is exploring the same cities.
 
-**Live Demo**: [demo.jrny.app](demo.jrny.app)
+**Live Demo**: [demo.jrny.app](https://demo.jrny.app)
 
 ## Overview
 
@@ -127,7 +127,7 @@ JRNY is a location-based social application designed for travelers, digital noma
    **Google OAuth Setup**:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/dashboard)
    2. Create a new project or select existing one
-   3. Enable Google+ API
+   3. Enable the appropriate Google APIs for OAuth 
    4. Navigate to Credentials → Create Credentials → OAuth 2.0 Client ID
    5. Configure OAuth consent screen
    6. Add authorized redirect URI: `https://your-deployment.convex.site/api/auth/callback/google`
