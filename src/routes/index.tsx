@@ -2,6 +2,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
+import { Button } from '~/components/ui/button'
 import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/')({
@@ -27,14 +28,13 @@ function Home() {
           data is persisted in the Convex cloud database!
         </p>
         <p>
-          <button
-            className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
+          <Button
             onClick={() => {
               void addNumber({ value: Math.floor(Math.random() * 10) })
             }}
           >
             Add a random number
-          </button>
+          </Button>
         </p>
         <p>
           Numbers:{' '}
