@@ -8,6 +8,12 @@ interface UserVisitsListProps {
   userId: Id<'users'>
 }
 
+/**
+ * Displays a user's visit history.
+ *
+ * @param userId - The ID of the user whose visits should be fetched and displayed.
+ * @returns A React element that shows a centered "No visits recorded yet." message when the user has no visits, or a vertical list of VisitCard components for each visit.
+ */
 export function UserVisitsList({ userId }: UserVisitsListProps) {
   const { data: visits } = useSuspenseQuery(
     convexQuery(api.visits.getVisitsByUser, { userId }),

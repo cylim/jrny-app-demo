@@ -5,6 +5,13 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 
+/**
+ * Render a full-width outline button that initiates Google social sign-in and shows a loading state.
+ *
+ * When clicked, the button starts the Google sign-in flow and disables itself while the request is in progress.
+ *
+ * @returns A button element that triggers Google sign-in; displays a spinner and "Signing in..." while signing in, otherwise shows the Google logo and "Sign in with Google".
+ */
 export function GoogleSignInButton() {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -46,6 +53,13 @@ export function GoogleSignInButton() {
   )
 }
 
+/**
+ * Renders the Google logo as an inline SVG for use in buttons and controls.
+ *
+ * The icon is decorative; the SVG has `aria-hidden="true"` and includes a `<title>` of "Google".
+ *
+ * @returns An inline SVG element containing the Google logo
+ */
 function GoogleIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">

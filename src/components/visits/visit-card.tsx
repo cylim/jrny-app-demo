@@ -23,6 +23,12 @@ interface VisitCardProps {
   }
 }
 
+/**
+ * Renders a card displaying a visit's city, country, date range, optional notes, and a list of overlapping visitors when present.
+ *
+ * @param visit - The visit to display; expected to include `_id`, `startDate`, `endDate`, optional `notes`, and a `city` object with `name`, `shortSlug`, `country`, and optional `image`.
+ * @returns A JSX element containing the visit card.
+ */
 export function VisitCard({ visit }: VisitCardProps) {
   // Fetch overlapping visitors
   const { data: overlappingVisitors } = useSuspenseQuery(

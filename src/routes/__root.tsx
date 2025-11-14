@@ -37,7 +37,16 @@ const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   }
 })
 
-// Custom error component that reports errors to Sentry
+/**
+ * Reports the rendering error to Sentry and renders a user-facing error page.
+ *
+ * The UI informs the user that an error occurred, offers "Reload page" and "Go home"
+ * actions, and (in non-production builds) shows error message and stack trace.
+ *
+ * @param props.error - The caught Error object to report and display (dev-only).
+ * @param props.info - Optional React error info; its component stack is sent to Sentry.
+ * @returns A React element that renders the error page wrapped in RootDocument.
+ */
 function RootErrorComponent(props: ErrorComponentProps) {
   React.useEffect(() => {
     // Capture the error to Sentry
@@ -154,6 +163,11 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
+/**
+ * Provides the application's root component tree with authentication context and the document layout.
+ *
+ * @returns A React element that wraps the app in a ConvexBetterAuthProvider (supplying `convexClient` and `authClient`), renders the document layout via `RootDocument`, and mounts the matched child route with `Outlet`.
+ */
 function RootComponent() {
   const context = useRouteContext({ from: Route.id })
   return (
@@ -168,6 +182,12 @@ function RootComponent() {
   )
 }
 
+/**
+ * Renders the root HTML document and application layout used across all pages.
+ *
+ * @param children - Page content to render inside the document's main area
+ * @returns The root HTML element containing head, themed body, site header, main content area, toasts, and client scripts
+ */
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
