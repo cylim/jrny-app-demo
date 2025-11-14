@@ -10,6 +10,7 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import {
   createRootRouteWithContext,
   HeadContent,
+  Link,
   Outlet,
   Scripts,
   useRouteContext,
@@ -18,6 +19,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getCookie, getRequest } from '@tanstack/react-start/server'
 import type { ConvexReactClient } from 'convex/react'
 import * as React from 'react'
+import { UserNav } from '~/components/auth/user-nav'
 import { authClient } from '~/lib/auth-client'
 import appCss from '~/styles/app.css?url'
 
@@ -70,13 +72,17 @@ function RootErrorComponent(props: ErrorComponentProps) {
           )}
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => window.location.reload()}
               className="rounded bg-neutral-700 px-4 py-2 text-sm hover:bg-neutral-600"
             >
               Reload page
             </button>
             <button
-              onClick={() => (window.location.href = '/')}
+              type="button"
+              onClick={() => {
+                window.location.href = '/'
+              }}
               className="rounded bg-neutral-700 px-4 py-2 text-sm hover:bg-neutral-600"
             >
               Go home
@@ -165,8 +171,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-neutral-950 text-neutral-50">
-        {children}
+      <body className="bg-background text-foreground">
+        <div className="relative flex min-h-screen flex-col">
+          <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-14 max-w-screen-2xl items-center">
+              <div className="mr-4 flex">
+                <Link to="/" className="mr-6 flex items-center space-x-2">
+                  <span className="font-bold">JRNY</span>
+                </Link>
+              </div>
+              <div className="flex flex-1 items-center justify-end space-x-2">
+                <nav className="flex items-center">
+                  <UserNav />
+                </nav>
+              </div>
+            </div>
+          </header>
+          <main className="flex-1">{children}</main>
+        </div>
         <Scripts />
       </body>
     </html>

@@ -72,11 +72,13 @@
   "overrides": [
     {
       "includes": [
+        "_generated/**",
         "convex/_generated/**",
         "**/*.gen.ts",
         "**/*.gen.tsx",
         "**/*.lock",
-        "wrangler.jsonc"
+        "wrangler.jsonc",
+        "data/**"
       ],
       "linter": {
         "enabled": false

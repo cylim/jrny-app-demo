@@ -26,7 +26,8 @@ JRNY is a location-based social application designed for travelers, digital noma
 - Real-time updates as people arrive and leave locations
 
 ### 🔒 Privacy & Authentication
-- Secure authentication via Better-Auth
+- Secure authentication via Better-Auth with Google Sign-In
+- One-click OAuth authentication
 - Control your location sharing preferences
 - Private journey mode available
 
@@ -48,11 +49,13 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Framework**: [TanStack Start](https://tanstack.com/start) - Full-stack React framework with SSR
 - **Router**: [TanStack Router](https://tanstack.com/router) - Type-safe file-based routing
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com) - Utility-first CSS framework
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com) - Beautifully designed, accessible components
 - **State Management**: [TanStack Query](https://tanstack.com/query) - Powerful data synchronization
+- **Icons**: [Lucide React](https://lucide.dev) - Beautiful & consistent icon toolkit
 
 ### Backend
 - **Backend**: [Convex](https://convex.dev) - Real-time backend-as-a-service
-- **Authentication**: [Better-Auth](https://better-auth.com) - Modern authentication solution
+- **Authentication**: [Better-Auth](https://better-auth.com) with Google OAuth - Modern authentication solution
 - **Database**: Convex built-in transactional database with real-time sync
 
 ### Infrastructure
@@ -66,8 +69,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Language**: TypeScript with strict mode
 - **Validation**: [Zod](https://zod.dev) - TypeScript-first schema validation
 - **Environment**: [t3env](https://env.t3.gg) - Type-safe environment variables
-- **Linting**: ESLint with TanStack and Convex configurations
-- **Formatting**: Prettier
+- **Linting & Formatting**: [Biome](https://biomejs.dev) - Fast, unified toolchain for linting and formatting
 - **Code Review**: [CodeRabbit](https://coderabbit.ai) - AI-powered code review automation
 
 ## Getting Started
@@ -106,6 +108,10 @@ JRNY is a location-based social application designed for travelers, digital noma
    # Application
    SITE_URL=http://localhost:3000
 
+   # Google OAuth (required for authentication)
+   GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+
    # Sentry (optional for development)
    VITE_SENTRY_DSN=your-sentry-dsn
    SENTRY_DSN=your-sentry-dsn
@@ -117,6 +123,20 @@ JRNY is a location-based social application designed for travelers, digital noma
    STRIPE_SECRET_KEY=your-stripe-secret-key
    VITE_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
    ```
+
+   **Google OAuth Setup**:
+   1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/dashboard)
+   2. Create a new project or select existing one
+   3. Enable Google+ API
+   4. Navigate to Credentials → Create Credentials → OAuth 2.0 Client ID
+   5. Configure OAuth consent screen
+   6. Add authorized redirect URI: `https://your-deployment.convex.site/api/auth/callback/google`
+   7. Copy Client ID and Client Secret to `.env.local`
+   8. Deploy credentials to Convex:
+      ```bash
+      npx convex env set GOOGLE_CLIENT_ID "your-client-id"
+      npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"
+      ```
 
 4. **Initialize Convex**:
    ```bash
@@ -140,26 +160,48 @@ JRNY is a location-based social application designed for travelers, digital noma
 - `bun run dev:convex` - Start only the Convex backend
 - `bun run build` - Build for production
 - `bun run preview` - Preview production build locally with Cloudflare Workers
-- `bun run lint` - Run TypeScript and ESLint checks
-- `bun run format` - Format code with Prettier
+- `bun run lint` - Run TypeScript and Biome checks
+- `bun run lint:fix` - Run linter with auto-fix
+- `bun run format` - Format code with Biome
+- `bun run format:check` - Check formatting without writing
 - `bun run deploy` - Deploy to Cloudflare Workers
 
 ### Project Structure
 
 ```
 jrny-app-demo/
-├── convex/              # Convex backend functions and schema
-│   ├── auth.ts          # Authentication configuration
-│   ├── schema.ts        # Database schema
-│   └── myFunctions.ts   # Backend functions
+├── convex/                    # Convex backend functions and schema
+│   ├── auth.ts                # Better-Auth with Google OAuth configuration
+│   ├── auth.config.ts         # Auth provider configuration
+│   ├── http.ts                # HTTP router for auth endpoints
+│   ├── schema.ts              # Database schema
+│   └── myFunctions.ts         # Backend functions
 ├── src/
-│   ├── routes/          # TanStack Router file-based routes
-│   ├── env.client.ts    # Client-side environment validation
-│   ├── env.server.ts    # Server-side environment validation
-│   └── router.tsx       # Router configuration
-├── public/              # Static assets
-├── wrangler.jsonc       # Cloudflare Workers configuration
-└── instrument.server.mjs # Sentry server-side instrumentation
+│   ├── components/
+│   │   ├── auth/              # Authentication components
+│   │   │   ├── google-sign-in-button.tsx
+│   │   │   └── user-nav.tsx   # User navigation with avatar dropdown
+│   │   └── ui/                # shadcn/ui components
+│   │       ├── button.tsx
+│   │       ├── avatar.tsx
+│   │       └── dropdown-menu.tsx
+│   ├── lib/
+│   │   ├── auth-client.ts     # Better-Auth client configuration
+│   │   ├── auth-server.ts     # Server-side auth utilities
+│   │   └── utils.ts           # Utility functions (cn, etc.)
+│   ├── routes/                # TanStack Router file-based routes
+│   │   ├── __root.tsx         # Root layout with header & navigation
+│   │   └── index.tsx          # Home page
+│   ├── styles/
+│   │   └── app.css            # Tailwind v4 + theme configuration
+│   ├── env.client.ts          # Client-side environment validation
+│   ├── env.server.ts          # Server-side environment validation
+│   └── router.tsx             # Router configuration with Convex
+├── public/                    # Static assets
+├── components.json            # shadcn/ui configuration
+├── biome.json                 # Biome linting & formatting config
+├── wrangler.jsonc             # Cloudflare Workers configuration
+└── instrument.server.mjs      # Sentry server-side instrumentation
 ```
 
 ## Deployment
@@ -177,6 +219,17 @@ jrny-app-demo/
    wrangler secret put CONVEX_SITE_URL
    wrangler secret put SITE_URL
    wrangler secret put SENTRY_DSN
+   ```
+
+   **Also deploy Google OAuth credentials to Convex**:
+   ```bash
+   npx convex env set GOOGLE_CLIENT_ID "your-production-client-id" --prod
+   npx convex env set GOOGLE_CLIENT_SECRET "your-production-client-secret" --prod
+   ```
+
+   **Important**: Update the Google OAuth callback URL in Google Cloud Console for production:
+   ```
+   https://your-production-deployment.convex.site/api/auth/callback/google
    ```
 
 3. **Update `wrangler.jsonc`** with your production URLs

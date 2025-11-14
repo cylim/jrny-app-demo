@@ -278,6 +278,8 @@ You can modify these in `src/router.tsx` (client) and `instrument.server.mjs` (s
 - **Framework**: TanStack Start (SSR-capable React meta-framework)
 - **Router**: TanStack Router with file-based routing
 - **Styling**: Tailwind CSS v4 (note: using `@tailwindcss/vite` plugin)
+- **UI Components**: shadcn/ui - Accessible, customizable component library built on Radix UI
+- **Icons**: Lucide React for consistent iconography
 - **State Management**: TanStack Query (React Query) integrated with Convex
 - **Port**: Development server runs on port 3000
 
@@ -300,9 +302,16 @@ You can modify these in `src/router.tsx` (client) and `instrument.server.mjs` (s
 ### Backend Architecture
 
 - **Backend**: Convex (serverless backend-as-a-service)
-- **Auth**: Better-Auth integrated via `@convex-dev/better-auth`
+- **Auth**: Better-Auth integrated via `@convex-dev/better-auth` with Google OAuth
 - **Database**: Convex's built-in transactional database
 - **Functions**: Defined in `convex/` directory
+
+**Authentication Setup**:
+- Uses Google Sign-In via Better-Auth's social providers
+- Configuration in `convex/auth.ts` with `socialProviders.google`
+- OAuth callback handled by Convex HTTP router at `/api/auth/callback/google`
+- Session management via Better-Auth cookies
+- No email/password authentication (Google OAuth only)
 
 **Convex Function Organization**:
 - Public functions defined with `query`, `mutation`, `action`
@@ -312,6 +321,8 @@ You can modify these in `src/router.tsx` (client) and `instrument.server.mjs` (s
 **Convex Configuration**:
 - `convex/convex.config.ts`: Defines app-level config and registers Better-Auth
 - `convex/auth.config.ts`: Better-Auth provider configuration
+- `convex/auth.ts`: Better-Auth instance with Google OAuth provider
+- `convex/http.ts`: HTTP router that registers auth endpoints
 - `convex/schema.ts`: Database schema definitions
 
 ### Data Fetching Pattern
@@ -450,7 +461,28 @@ This project uses **t3env** (`@t3-oss/env-core`) for type-safe, validated enviro
   - Used in: `instrument.server.mjs` for server-side Sentry initialization
   - Includes: SSR error tracking, performance monitoring, console integration
 
-**Convex Functions**: The `convex/` directory runs in Convex's managed runtime (not your Node.js server). Convex functions access environment variables directly via `process.env` - they do NOT use the t3env schemas in `src/`. Example: `convex/auth.config.ts` uses `process.env.CONVEX_SITE_URL`.
+**Convex Functions** (deployed via `npx convex env set`):
+The `convex/` directory runs in Convex's managed runtime (not your Node.js server). Convex functions access environment variables directly via `process.env` - they do NOT use the t3env schemas in `src/`.
+
+- `GOOGLE_CLIENT_ID` (required): Google OAuth client ID
+  - Example: `your-app.apps.googleusercontent.com`
+  - Used in: `convex/auth.ts` for Google OAuth configuration
+  - Deploy: `npx convex env set GOOGLE_CLIENT_ID "your-client-id"`
+- `GOOGLE_CLIENT_SECRET` (required): Google OAuth client secret
+  - Example: `GOCSPX-...`
+  - Used in: `convex/auth.ts` for Google OAuth configuration
+  - Deploy: `npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"`
+
+**Google OAuth Setup**:
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/dashboard)
+2. Create OAuth 2.0 Client ID
+3. Add authorized redirect URI: `https://your-deployment.convex.site/api/auth/callback/google`
+4. Copy Client ID and Secret
+5. Deploy to Convex:
+   ```bash
+   npx convex env set GOOGLE_CLIENT_ID "your-client-id"
+   npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"
+   ```
 
 **Usage Examples**:
 
@@ -508,6 +540,56 @@ const siteUrl = process.env.CONVEX_SITE_URL // Direct access
 - Tailwind CSS v4 with Vite plugin (not PostCSS)
 - Main styles in `src/styles/app.css`
 - Dark mode support via `dark:` classes
+- CSS variables for theming defined in `:root` and `.dark` classes
+
+### shadcn/ui Components
+
+This project uses **shadcn/ui** for UI components - a collection of accessible, customizable components built on Radix UI primitives.
+
+**Configuration**:
+- `components.json`: shadcn/ui configuration file
+- Style: "default" (clean, simple design)
+- Base color: "zinc" (cool gray palette)
+- CSS variables: enabled for easy theming
+- Path aliases: `@/components`, `@/lib/utils`
+
+**Installed Components**:
+- `Button`: Primary UI button with variants (default, destructive, outline, secondary, ghost, link)
+- `Avatar`: User avatar with image and fallback support
+- `DropdownMenu`: Accessible dropdown menu for navigation and actions
+
+**Component Location**:
+- All shadcn/ui components are in `src/components/ui/`
+- Components are copied into your codebase (not imported from a package)
+- You own the code and can customize as needed
+
+**Adding New Components**:
+```bash
+bunx shadcn@latest add [component-name]
+```
+
+**Example Usage**:
+```tsx
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+
+<Button variant="default">Click me</Button>
+<Avatar>
+  <AvatarImage src="/avatar.jpg" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>
+```
+
+**Utility Function**:
+- `src/lib/utils.ts` exports `cn()` function for merging Tailwind classes
+- Uses `clsx` and `tailwind-merge` for optimal class name handling
+
+**Authentication Components**:
+- `src/components/auth/google-sign-in-button.tsx`: Google OAuth button
+- `src/components/auth/user-nav.tsx`: User navigation with avatar dropdown
+  - Shows sign-in button for anonymous users
+  - Shows avatar with dropdown menu for logged-in users
+  - Dropdown includes Profile, Settings (placeholders), and Sign Out
 
 ## Common Pitfalls
 
