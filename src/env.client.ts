@@ -10,6 +10,7 @@ export const clientEnv = createEnv({
   clientPrefix: 'VITE_',
   client: {
     VITE_CONVEX_URL: z.url().min(10),
+    VITE_CONVEX_SITE_URL: z.url().min(10),
   },
 
   /**
