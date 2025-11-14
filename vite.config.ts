@@ -9,6 +9,9 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    outDir: '.output',
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     tailwindcss(),
