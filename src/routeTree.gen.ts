@@ -9,9 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AnotherPageRouteImport } from './routes/anotherPage'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
+import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnotherPageRoute = AnotherPageRouteImport.update({
   id: '/anotherPage',
   path: '/anotherPage',
@@ -22,35 +31,92 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameOrIdRoute = UUsernameOrIdRouteImport.update({
+  id: '/u/$usernameOrId',
+  path: '/u/$usernameOrId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CShortSlugRoute = CShortSlugRouteImport.update({
+  id: '/c/$shortSlug',
+  path: '/c/$shortSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
+  '/c/$shortSlug': typeof CShortSlugRoute
+  '/u/$usernameOrId': typeof UUsernameOrIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
+  '/c/$shortSlug': typeof CShortSlugRoute
+  '/u/$usernameOrId': typeof UUsernameOrIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anotherPage': typeof AnotherPageRoute
+  '/settings': typeof SettingsRoute
+  '/c/$shortSlug': typeof CShortSlugRoute
+  '/u/$usernameOrId': typeof UUsernameOrIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/anotherPage'
+  fullPaths:
+    | '/'
+    | '/anotherPage'
+    | '/settings'
+    | '/c/$shortSlug'
+    | '/u/$usernameOrId'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/anotherPage'
-  id: '__root__' | '/' | '/anotherPage'
+  to:
+    | '/'
+    | '/anotherPage'
+    | '/settings'
+    | '/c/$shortSlug'
+    | '/u/$usernameOrId'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/anotherPage'
+    | '/settings'
+    | '/c/$shortSlug'
+    | '/u/$usernameOrId'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnotherPageRoute: typeof AnotherPageRoute
+  SettingsRoute: typeof SettingsRoute
+  CShortSlugRoute: typeof CShortSlugRoute
+  UUsernameOrIdRoute: typeof UUsernameOrIdRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/anotherPage': {
       id: '/anotherPage'
       path: '/anotherPage'
@@ -65,12 +131,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$usernameOrId': {
+      id: '/u/$usernameOrId'
+      path: '/u/$usernameOrId'
+      fullPath: '/u/$usernameOrId'
+      preLoaderRoute: typeof UUsernameOrIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$shortSlug': {
+      id: '/c/$shortSlug'
+      path: '/c/$shortSlug'
+      fullPath: '/c/$shortSlug'
+      preLoaderRoute: typeof CShortSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnotherPageRoute: AnotherPageRoute,
+  SettingsRoute: SettingsRoute,
+  CShortSlugRoute: CShortSlugRoute,
+  UUsernameOrIdRoute: UUsernameOrIdRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

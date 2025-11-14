@@ -1,0 +1,160 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { convexQuery } from '@convex-dev/react-query'
+import { Github, Linkedin, Twitter } from 'lucide-react'
+import { api } from '~@/convex/_generated/api'
+import { UserVisitsList } from '@/components/visits/user-visits-list'
+import { AddVisitButton } from '@/components/visits/add-visit-button'
+import type { User } from '@/types/user'
+
+export const Route = createFileRoute('/u/$usernameOrId')({
+  component: UserProfilePage,
+})
+
+/**
+ * Render the user profile page for the current route's username or ID.
+ *
+ * Fetches the target user and the currently authenticated user, shows a "User Not Found"
+ * message if the target user doesn't exist, and renders the profile header (avatar, name,
+ * username, bio, and social links). If the viewer owns the profile, an AddVisitButton is shown.
+ * Conditionally displays the user's visit history or a privacy notice based on ownership and
+ * the user's hideVisitHistory setting.
+ *
+ * @returns The rendered user profile page element.
+ */
+function UserProfilePage() {
+  const { usernameOrId } = Route.useParams()
+
+  // Fetch user data
+  const { data: user } = useSuspenseQuery(
+    convexQuery(api.users.getUserByUsernameOrId, { usernameOrId }),
+  )
+
+  // Fetch current user to check if this is their own profile
+  const { data: currentUser } = useSuspenseQuery(
+    convexQuery(api.users.getCurrentUser, {}),
+  )
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-4">User Not Found</h1>
+          <p className="text-muted-foreground mb-8">
+            The user you're looking for doesn't exist.
+          </p>
+          <a href="/" className="text-primary hover:underline font-medium">
+            Return to Home
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  const isOwnProfile = currentUser?._id === user._id
+  const typedUser = user as User
+  const showVisitHistory = isOwnProfile || typedUser.settings?.hideVisitHistory !== true
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* User Header */}
+        <div className="flex items-center gap-6 mb-8">
+          {user.image ? (
+            <img
+              src={user.image}
+              alt={user.name}
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold">
+              {user.name[0]}
+            </div>
+          )}
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold mb-1">{user.name}</h1>
+            {user.username && (
+              <p className="text-lg text-muted-foreground">@{user.username}</p>
+            )}
+
+            {/* Bio */}
+            {typedUser.bio && (
+              <p className="mt-3 text-base text-foreground max-w-2xl">{typedUser.bio}</p>
+            )}
+
+            {/* Social Links */}
+            {typedUser.socialLinks && (
+              <div className="mt-3 flex gap-3">
+                {typedUser.socialLinks.github && (
+                  <a
+                    href={typedUser.socialLinks.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Github className="h-5 w-5" />
+                  </a>
+                )}
+                {typedUser.socialLinks.x && (
+                  <a
+                    href={typedUser.socialLinks.x}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Twitter className="h-5 w-5" />
+                  </a>
+                )}
+                {typedUser.socialLinks.linkedin && (
+                  <a
+                    href={typedUser.socialLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </a>
+                )}
+                {typedUser.socialLinks.telegram && (
+                  <a
+                    href={typedUser.socialLinks.telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      role="img"
+                    >
+                      <title>Telegram</title>
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+          {isOwnProfile && <AddVisitButton />}
+        </div>
+
+        {/* Visited Cities Section */}
+        {showVisitHistory ? (
+          <div className="bg-card border rounded-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6">
+              {isOwnProfile ? 'My Travels' : 'Travels'}
+            </h2>
+            <UserVisitsList userId={user._id} />
+          </div>
+        ) : (
+          <div className="bg-card border rounded-lg p-6">
+            <p className="text-center text-muted-foreground">
+              This user has chosen to keep their travel history private.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

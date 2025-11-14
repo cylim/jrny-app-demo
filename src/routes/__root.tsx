@@ -1,25 +1,30 @@
+import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import {
-  
+  fetchSession,
+  getCookieName,
+} from '@convex-dev/better-auth/react-start'
+import type { ConvexQueryClient } from '@convex-dev/react-query'
+import * as Sentry from '@sentry/tanstackstart-react'
+import type { QueryClient } from '@tanstack/react-query'
+import type { ErrorComponentProps } from '@tanstack/react-router'
+import {
+  createRootRouteWithContext,
   HeadContent,
+  Link,
   Outlet,
   Scripts,
-  createRootRouteWithContext,
-  useRouteContext
+  useRouteContext,
 } from '@tanstack/react-router'
-import * as React from 'react'
-
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie, getRequest } from '@tanstack/react-start/server'
-import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
-import * as Sentry from '@sentry/tanstackstart-react'
-import type {ErrorComponentProps} from '@tanstack/react-router';
 import type { ConvexReactClient } from 'convex/react'
-import type { ConvexQueryClient } from '@convex-dev/react-query'
-import type { QueryClient } from '@tanstack/react-query'
+import * as React from 'react'
+import { ModeToggle } from '~/components/mode-toggle'
+import { ThemeProvider } from '~/components/theme-provider'
+import { UserNav } from '~/components/auth/user-nav'
+import { Toaster } from '~/components/ui/sonner'
 import { authClient } from '~/lib/auth-client'
 import appCss from '~/styles/app.css?url'
-
 
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { createAuth } = await import('~@/convex/auth')
@@ -32,7 +37,16 @@ const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   }
 })
 
-// Custom error component that reports errors to Sentry
+/**
+ * Reports the rendering error to Sentry and renders a user-facing error page.
+ *
+ * The UI informs the user that an error occurred, offers "Reload page" and "Go home"
+ * actions, and (in non-production builds) shows error message and stack trace.
+ *
+ * @param props.error - The caught Error object to report and display (dev-only).
+ * @param props.info - Optional React error info; its component stack is sent to Sentry.
+ * @returns A React element that renders the error page wrapped in RootDocument.
+ */
 function RootErrorComponent(props: ErrorComponentProps) {
   React.useEffect(() => {
     // Capture the error to Sentry
@@ -49,10 +63,12 @@ function RootErrorComponent(props: ErrorComponentProps) {
     <RootDocument>
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4 rounded-lg border border-red-500/20 bg-red-500/10 p-6">
-          <h1 className="text-2xl font-bold text-red-500">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-red-500">
+            Something went wrong
+          </h1>
           <p className="text-neutral-300">
-            An error occurred while rendering this page. The error has been reported to our
-            team.
+            An error occurred while rendering this page. The error has been
+            reported to our team.
           </p>
           {import.meta.env.MODE !== 'production' && (
             <details className="mt-4">
@@ -68,13 +84,17 @@ function RootErrorComponent(props: ErrorComponentProps) {
           )}
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => window.location.reload()}
               className="rounded bg-neutral-700 px-4 py-2 text-sm hover:bg-neutral-600"
             >
               Reload page
             </button>
             <button
-              onClick={() => (window.location.href = '/')}
+              type="button"
+              onClick={() => {
+                window.location.href = '/'
+              }}
               className="rounded bg-neutral-700 px-4 py-2 text-sm hover:bg-neutral-600"
             >
               Go home
@@ -143,7 +163,11 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
-
+/**
+ * Provides the application's root component tree with authentication context and the document layout.
+ *
+ * @returns A React element that wraps the app in a ConvexBetterAuthProvider (supplying `convexClient` and `authClient`), renders the document layout via `RootDocument`, and mounts the matched child route with `Outlet`.
+ */
 function RootComponent() {
   const context = useRouteContext({ from: Route.id })
   return (
@@ -158,15 +182,46 @@ function RootComponent() {
   )
 }
 
+/**
+ * Renders the root HTML document and application layout used across all pages.
+ *
+ * @param children - Page content to render inside the document's main area
+ * @returns The root HTML element containing head, themed body, site header, main content area, toasts, and client scripts
+ */
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className="bg-neutral-950 text-neutral-50">
-        {children}
-        <Scripts />
+      <body className="bg-background text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="relative flex min-h-screen flex-col">
+            <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+              <div className="container flex h-14 max-w-screen-2xl items-center">
+                <div className="mr-4 flex">
+                  <Link to="/" className="mr-6 flex items-center space-x-2">
+                    <span className="font-bold">JRNY</span>
+                  </Link>
+                </div>
+                <div className="flex flex-1 items-center justify-end space-x-2">
+                  <nav className="flex items-center gap-2">
+                    <ModeToggle />
+                    <UserNav />
+                  </nav>
+                </div>
+              </div>
+            </header>
+            <main className="flex-1">{children}</main>
+          </div>
+          <Toaster />
+          <Scripts />
+        </ThemeProvider>
       </body>
     </html>
   )

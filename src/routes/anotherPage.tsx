@@ -1,13 +1,21 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
-import { useAction } from 'convex/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useAction } from 'convex/react'
+import { Button } from '~/components/ui/button'
 import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/anotherPage')({
   component: AnotherPage,
 })
 
+/**
+ * Renders the "Convex + Tanstack Start" page that displays a list of numbers and provides a control to add a random number.
+ *
+ * Shows the fetched numbers, a button that invokes the Convex action to add a random number and displays a success alert, and a link back to the root.
+ *
+ * @returns The page's JSX element.
+ */
 function AnotherPage() {
   const callMyAction = useAction(api.myFunctions.myAction)
 
@@ -24,8 +32,7 @@ function AnotherPage() {
         <p>Numbers: {data.numbers.join(', ')}</p>
         <p>Click the button below to add a random number to the database.</p>
         <p>
-          <button
-            className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
+          <Button
             onClick={() => {
               callMyAction({
                 first: Math.round(Math.random() * 100),
@@ -33,7 +40,7 @@ function AnotherPage() {
             }}
           >
             Call action to add a random number
-          </button>
+          </Button>
         </p>
         <Link to="/" className="text-blue-600 underline hover:no-underline">
           Back
