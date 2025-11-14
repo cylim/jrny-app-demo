@@ -1,25 +1,25 @@
+import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import {
-  
+  fetchSession,
+  getCookieName,
+} from '@convex-dev/better-auth/react-start'
+import type { ConvexQueryClient } from '@convex-dev/react-query'
+import * as Sentry from '@sentry/tanstackstart-react'
+import type { QueryClient } from '@tanstack/react-query'
+import type { ErrorComponentProps } from '@tanstack/react-router'
+import {
+  createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
-  createRootRouteWithContext,
-  useRouteContext
+  useRouteContext,
 } from '@tanstack/react-router'
-import * as React from 'react'
-
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie, getRequest } from '@tanstack/react-start/server'
-import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
-import * as Sentry from '@sentry/tanstackstart-react'
-import type {ErrorComponentProps} from '@tanstack/react-router';
 import type { ConvexReactClient } from 'convex/react'
-import type { ConvexQueryClient } from '@convex-dev/react-query'
-import type { QueryClient } from '@tanstack/react-query'
+import * as React from 'react'
 import { authClient } from '~/lib/auth-client'
 import appCss from '~/styles/app.css?url'
-
 
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { createAuth } = await import('~@/convex/auth')
@@ -49,10 +49,12 @@ function RootErrorComponent(props: ErrorComponentProps) {
     <RootDocument>
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4 rounded-lg border border-red-500/20 bg-red-500/10 p-6">
-          <h1 className="text-2xl font-bold text-red-500">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-red-500">
+            Something went wrong
+          </h1>
           <p className="text-neutral-300">
-            An error occurred while rendering this page. The error has been reported to our
-            team.
+            An error occurred while rendering this page. The error has been
+            reported to our team.
           </p>
           {import.meta.env.MODE !== 'production' && (
             <details className="mt-4">
@@ -142,7 +144,6 @@ export const Route = createRootRouteWithContext<{
   },
   component: RootComponent,
 })
-
 
 function RootComponent() {
   const context = useRouteContext({ from: Route.id })

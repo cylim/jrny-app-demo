@@ -1,11 +1,11 @@
+import { ConvexQueryClient } from '@convex-dev/react-query'
+import * as Sentry from '@sentry/tanstackstart-react'
+import { QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
-import { ConvexQueryClient } from '@convex-dev/react-query'
-import { QueryClient } from '@tanstack/react-query'
-import * as Sentry from '@sentry/tanstackstart-react'
-import { routeTree } from './routeTree.gen'
 import { clientEnv } from '~/env.client'
+import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
   const CONVEX_URL = clientEnv.VITE_CONVEX_URL
@@ -68,7 +68,8 @@ export function getRouter() {
       // Session Replay sample rates
       // This sets the sample rate at 10%. You may want to change it to 100% while in development
       // and then sample at a lower rate in production.
-      replaysSessionSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
+      replaysSessionSampleRate:
+        import.meta.env.MODE === 'production' ? 0.1 : 1.0,
 
       // If you're not already sampling the entire session, change the sample rate to 100%
       // when sampling sessions where errors occur.

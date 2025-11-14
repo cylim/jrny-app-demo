@@ -14,17 +14,27 @@ npm run dev
 ```
 This runs both the Convex backend (`npm:dev:convex`) and Vite dev server (`npm:dev:web`) concurrently. The Convex dev server syncs your functions to the cloud.
 
-### Type Checking
+### Linting and Type Checking
 ```bash
 npm run lint
 ```
-Runs TypeScript compiler and ESLint. Note: This project uses strict TypeScript settings.
+Runs TypeScript compiler and Biome linter. Note: This project uses strict TypeScript settings.
+
+To automatically fix linting issues:
+```bash
+npm run lint:fix
+```
 
 ### Format Code
 ```bash
 npm run format
 ```
-Runs Prettier on all files.
+Runs Biome formatter on all files. Biome handles both linting and formatting.
+
+To check formatting without writing:
+```bash
+npm run format:check
+```
 
 ### Build for Production
 ```bash
@@ -487,9 +497,12 @@ const siteUrl = process.env.CONVEX_SITE_URL // Direct access
 
 **Validation**: t3env validates all environment variables at application startup. Missing or invalid variables will throw errors immediately, preventing runtime issues.
 
-### ESLint Configuration
-- Uses both TanStack ESLint config and Convex ESLint plugin
-- Convex `_generated` directory is globally ignored
+### Biome Configuration
+- Uses Biome for both linting and formatting (replaces ESLint and Prettier)
+- Configuration in `biome.json`
+- Convex `_generated` directory and auto-generated files are ignored
+- Supports TypeScript, JavaScript, JSX, and JSON formatting
+- Import organization enabled
 
 ### Styling
 - Tailwind CSS v4 with Vite plugin (not PostCSS)
@@ -530,3 +543,10 @@ src/
 
 public/               # Static assets (favicons, etc.)
 ```
+
+## Active Technologies
+- TypeScript 5.9+ with strict mode enabled (001-travel-tracking)
+- Convex's built-in transactional database with indexed queries (001-travel-tracking)
+
+## Recent Changes
+- 001-travel-tracking: Added TypeScript 5.9+ with strict mode enabled

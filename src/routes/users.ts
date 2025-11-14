@@ -1,18 +1,18 @@
-import { createServerFn } from "@tanstack/react-start";
-import { api } from "convex/_generated/api";
-import { fetchMutation } from "@/lib/auth-server";
+import { createServerFn } from '@tanstack/react-start'
+import { api } from 'convex/_generated/api'
+import { fetchMutation } from '@/lib/auth-server'
 
 type UpdatePasswordData = {
-  currentPassword: string;
-  newPassword: string;
-};
+  currentPassword: string
+  newPassword: string
+}
 
-export const updatePassword = createServerFn({ method: "POST" }).handler(
+export const updatePassword = createServerFn({ method: 'POST' }).handler(
   async (ctx: any) => {
-    const { currentPassword, newPassword } = ctx.data as UpdatePasswordData;
+    const { currentPassword, newPassword } = ctx.data as UpdatePasswordData
     await fetchMutation(api.users.updateUserPassword, {
       currentPassword,
       newPassword,
-    });
-  }
-);
+    })
+  },
+)

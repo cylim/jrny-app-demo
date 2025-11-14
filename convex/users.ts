@@ -1,6 +1,6 @@
-import { v } from "convex/values";
-import { mutation } from "./_generated/server";
-import { authComponent, createAuth } from "./auth";
+import { v } from 'convex/values'
+import { mutation } from './_generated/server'
+import { authComponent, createAuth } from './auth'
 
 export const updateUserPassword = mutation({
   args: {
@@ -8,13 +8,13 @@ export const updateUserPassword = mutation({
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx)
     await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
       headers,
-    });
+    })
   },
-});
+})
