@@ -237,3 +237,49 @@ export const setUsername = mutation({
     return { success: true }
   },
 })
+
+/**
+ * Get a user by username or ID
+ * Tries username lookup first, then falls back to ID
+ */
+export const getUserByUsernameOrId = query({
+  args: { usernameOrId: v.string() },
+  returns: v.union(
+    v.object({
+      _id: v.id('users'),
+      authUserId: v.string(),
+      name: v.string(),
+      email: v.string(),
+      image: v.optional(v.string()),
+      username: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      lastSeen: v.number(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { usernameOrId }) => {
+    // Try username lookup first
+    const userByUsername = await ctx.db
+      .query('users')
+      .withIndex('by_username', (q) => q.eq('username', usernameOrId))
+      .unique()
+
+    if (userByUsername) {
+      return userByUsername
+    }
+
+    // Fall back to ID lookup
+    try {
+      const user = await ctx.db.get(usernameOrId as any)
+      if (user && 'authUserId' in user) {
+        // It's a valid user ID
+        return user as any
+      }
+    } catch {
+      // Not a valid ID either
+    }
+
+    return null
+  },
+})

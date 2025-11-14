@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "jrny-app-demo",
-  "compatibility_date": "2025-11-14",
+  "compatibility_date": "2025-11-09",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
 

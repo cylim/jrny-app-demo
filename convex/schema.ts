@@ -44,4 +44,23 @@ export default defineSchema({
     .index('by_slug', ['slug'])
     .index('by_country', ['country'])
     .index('by_region', ['region']),
+  visits: defineTable({
+    // Foreign keys
+    userId: v.id('users'),
+    cityId: v.id('cities'),
+    // Date information (Unix timestamps in milliseconds)
+    startDate: v.number(),
+    endDate: v.number(),
+    // Optional metadata
+    notes: v.optional(v.string()),
+    isPrivate: v.boolean(),
+    // Timestamps
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_user_id', ['userId'])
+    .index('by_city_id', ['cityId'])
+    .index('by_user_and_city', ['userId', 'cityId'])
+    .index('by_start_date', ['startDate'])
+    .index('by_city_and_start', ['cityId', 'startDate']),
 })
