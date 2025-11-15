@@ -81,6 +81,7 @@ function EventDetailPage() {
   // Edit/Cancel state
   const [showEditForm, setShowEditForm] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
@@ -90,6 +91,7 @@ function EventDetailPage() {
 
   const handleEdit = () => {
     setShowEditForm(true)
+    setUpdateError(null)
   }
 
   const handleUpdateEvent = async (values: {
@@ -103,15 +105,21 @@ function EventDetailPage() {
     isParticipantListHidden: boolean
   }) => {
     setIsUpdating(true)
+    setUpdateError(null)
     try {
       await updateEvent({
         eventId: event._id,
         ...values,
       })
       setShowEditForm(false)
+      setUpdateError(null)
     } catch (error) {
       console.error('Failed to update event:', error)
-      throw error
+      setUpdateError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to update event. Please try again.',
+      )
     } finally {
       setIsUpdating(false)
     }
@@ -242,13 +250,21 @@ function EventDetailPage() {
               <h3 className="text-lg font-semibold">Edit Event</h3>
               <button
                 type="button"
-                onClick={() => setShowEditForm(false)}
+                onClick={() => {
+                  setShowEditForm(false)
+                  setUpdateError(null)
+                }}
                 className="rounded-full p-2 hover:bg-pink-100 dark:hover:bg-pink-900/30"
                 disabled={isUpdating}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
+            {updateError && (
+              <div className="mb-4 rounded-2xl bg-red-100 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                {updateError}
+              </div>
+            )}
             <EventForm
               mode="edit"
               initialValues={{

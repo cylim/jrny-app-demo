@@ -1,6 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { Id } from 'convex/_generated/dataModel'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -14,6 +15,85 @@ import { api } from '~@/convex/_generated/api'
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
 })
+
+/**
+ * Component that fetches and displays user events (upcoming and past)
+ * Only rendered when user exists to avoid invalid query parameters
+ */
+function UserEventsSection({
+  userId,
+  isOwnProfile,
+}: {
+  userId: Id<'users'>
+  isOwnProfile: boolean
+}) {
+  const { data: userEvents } = useSuspenseQuery(
+    convexQuery(api.events.getUserEvents, { userId }),
+  )
+
+  if (!userEvents) {
+    return null
+  }
+
+  return (
+    <div
+      role="tabpanel"
+      id="events-panel"
+      aria-labelledby="events-tab"
+      className="space-y-8"
+    >
+      {/* Upcoming Events */}
+      <div>
+        <h2 className="mb-4 text-2xl font-semibold">
+          Upcoming Events ({userEvents.upcoming.length})
+        </h2>
+        {userEvents.upcoming.length === 0 ? (
+          <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              {isOwnProfile
+                ? "You haven't joined any upcoming events yet."
+                : "This user hasn't joined any upcoming events yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {userEvents.upcoming.map((event) => (
+              <EventCard
+                key={event._id}
+                event={{ ...event, participantCount: 0 }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Past Events */}
+      <div>
+        <h2 className="mb-4 text-2xl font-semibold">
+          Past Events ({userEvents.past.length})
+        </h2>
+        {userEvents.past.length === 0 ? (
+          <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              {isOwnProfile
+                ? "You haven't attended any past events yet."
+                : "This user hasn't attended any past events yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {userEvents.past.map((event) => (
+              <EventCard
+                key={event._id}
+                event={{ ...event, participantCount: 0 }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /**
  * Render the user profile page for the current route's username or ID.
@@ -39,16 +119,8 @@ function UserProfilePage() {
     convexQuery(api.users.getCurrentUser, {}),
   )
 
-  // Tab state - must be declared before any early returns
+  // Tab state
   const [activeTab, setActiveTab] = useState<'visits' | 'events'>('visits')
-
-  // Fetch user events - must be declared before any early returns
-  // If user is null, we pass a placeholder ID that won't be used because we'll return early
-  const { data: userEvents } = useSuspenseQuery(
-    convexQuery(api.events.getUserEvents, {
-      userId: user?._id ?? ('' as never),
-    }),
-  )
 
   if (!user) {
     return (
@@ -220,63 +292,8 @@ function UserProfilePage() {
             </div>
           ))}
 
-        {activeTab === 'events' && userEvents && (
-          <div
-            role="tabpanel"
-            id="events-panel"
-            aria-labelledby="events-tab"
-            className="space-y-8"
-          >
-            {/* Upcoming Events */}
-            <div>
-              <h2 className="mb-4 text-2xl font-semibold">
-                Upcoming Events ({userEvents.upcoming.length})
-              </h2>
-              {userEvents.upcoming.length === 0 ? (
-                <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
-                  <p className="text-zinc-600 dark:text-zinc-400">
-                    {isOwnProfile
-                      ? "You haven't joined any upcoming events yet."
-                      : "This user hasn't joined any upcoming events yet."}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {userEvents.upcoming.map((event) => (
-                    <EventCard
-                      key={event._id}
-                      event={{ ...event, participantCount: 0 }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Past Events */}
-            <div>
-              <h2 className="mb-4 text-2xl font-semibold">
-                Past Events ({userEvents.past.length})
-              </h2>
-              {userEvents.past.length === 0 ? (
-                <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
-                  <p className="text-zinc-600 dark:text-zinc-400">
-                    {isOwnProfile
-                      ? "You haven't attended any past events yet."
-                      : "This user hasn't attended any past events yet."}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {userEvents.past.map((event) => (
-                    <EventCard
-                      key={event._id}
-                      event={{ ...event, participantCount: 0 }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+        {activeTab === 'events' && (
+          <UserEventsSection userId={user._id} isOwnProfile={isOwnProfile} />
         )}
       </div>
     </div>

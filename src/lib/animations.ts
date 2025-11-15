@@ -68,7 +68,7 @@ export const pulsate = (delay = 0) => ({
     transition: {
       duration: durations.normal * 1.5,
       repeat: Infinity,
-      ease: 'easeInOut',
+      ease: 'easeInOut' as const,
       delay,
     },
   },
