@@ -625,10 +625,3 @@ src/
 
 public/               # Static assets (favicons, etc.)
 ```
-
-## Active Technologies
-- TypeScript 5.9+ with strict mode enabled (001-travel-tracking)
-- Convex's built-in transactional database with indexed queries (001-travel-tracking)
-
-## Recent Changes
-- 001-travel-tracking: Added TypeScript 5.9+ with strict mode enabled

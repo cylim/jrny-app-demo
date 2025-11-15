@@ -7,13 +7,19 @@ import { useMutation } from 'convex/react'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { api } from '~@/convex/_generated/api'
 import type { User } from '@/types/user'
+import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -55,8 +61,12 @@ function SettingsPage() {
   // Social links
   const [github, setGithub] = useState(typedUser?.socialLinks?.github || '')
   const [x, setX] = useState(typedUser?.socialLinks?.x || '')
-  const [linkedin, setLinkedin] = useState(typedUser?.socialLinks?.linkedin || '')
-  const [telegram, setTelegram] = useState(typedUser?.socialLinks?.telegram || '')
+  const [linkedin, setLinkedin] = useState(
+    typedUser?.socialLinks?.linkedin || '',
+  )
+  const [telegram, setTelegram] = useState(
+    typedUser?.socialLinks?.telegram || '',
+  )
 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -99,7 +109,10 @@ function SettingsPage() {
     setSuccess(null)
 
     try {
-      const result = await updatePrivacySettings({ globalPrivacy, hideVisitHistory })
+      const result = await updatePrivacySettings({
+        globalPrivacy,
+        hideVisitHistory,
+      })
 
       if (result && !result.success) {
         setError(result.error || 'Failed to update privacy settings')
@@ -137,17 +150,19 @@ function SettingsPage() {
     <div className="container mx-auto max-w-4xl py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your profile and privacy settings</p>
+        <p className="text-muted-foreground">
+          Manage your profile and privacy settings
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md bg-destructive/15 p-4 text-destructive">
+        <div className="mb-4 kirby-rounded-sm bg-destructive/15 p-4 text-destructive">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 rounded-md bg-green-500/15 p-4 text-green-600">
+        <div className="mb-4 kirby-rounded-sm bg-green-500/15 p-4 text-green-600">
           {success}
         </div>
       )}
@@ -200,7 +215,11 @@ function SettingsPage() {
               </p>
             </div>
 
-            <Button onClick={handleSaveProfile} disabled={isSaving}>
+            <Button
+              variant="kirby"
+              onClick={handleSaveProfile}
+              disabled={isSaving}
+            >
               {isSaving ? 'Saving...' : 'Save Profile'}
             </Button>
           </CardContent>
@@ -219,7 +238,9 @@ function SettingsPage() {
               <Checkbox
                 id="globalPrivacy"
                 checked={globalPrivacy}
-                onCheckedChange={(checked) => setGlobalPrivacy(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setGlobalPrivacy(checked as boolean)
+                }
               />
               <div className="space-y-1">
                 <Label
@@ -229,8 +250,8 @@ function SettingsPage() {
                   Hide from overlap visits and city pages
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  When enabled, others won't see you in their overlap visitors or on city
-                  pages
+                  When enabled, others won't see you in their overlap visitors
+                  or on city pages
                 </p>
               </div>
             </div>
@@ -251,13 +272,17 @@ function SettingsPage() {
                   Hide visit history on profile
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Your visit history will be hidden from your public profile (you can still
-                  see it)
+                  Your visit history will be hidden from your public profile
+                  (you can still see it)
                 </p>
               </div>
             </div>
 
-            <Button onClick={handleSavePrivacy} disabled={isSaving}>
+            <Button
+              variant="kirby"
+              onClick={handleSavePrivacy}
+              disabled={isSaving}
+            >
               {isSaving ? 'Saving...' : 'Save Privacy Settings'}
             </Button>
           </CardContent>
@@ -287,8 +312,7 @@ function SettingsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="x" className="flex items-center gap-2">
-                <Twitter className="h-4 w-4" />
-                X (Twitter)
+                <Twitter className="h-4 w-4" />X (Twitter)
               </Label>
               <Input
                 id="x"
@@ -321,7 +345,11 @@ function SettingsPage() {
               />
             </div>
 
-            <Button onClick={handleSaveSocialLinks} disabled={isSaving}>
+            <Button
+              variant="kirby"
+              onClick={handleSaveSocialLinks}
+              disabled={isSaving}
+            >
               {isSaving ? 'Saving...' : 'Save Social Links'}
             </Button>
           </CardContent>

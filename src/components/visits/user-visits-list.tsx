@@ -1,8 +1,8 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~@/convex/_generated/api'
-import { VisitCard } from './visit-card'
 import type { Id } from '~@/convex/_generated/dataModel'
+import { VisitCard } from './visit-card'
 
 interface UserVisitsListProps {
   userId: Id<'users'>

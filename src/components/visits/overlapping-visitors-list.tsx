@@ -1,5 +1,5 @@
-import { formatDateRange } from '@/lib/date-utils'
 import { Link } from '@tanstack/react-router'
+import { formatDateRange } from '@/lib/date-utils'
 import type { Id } from '~@/convex/_generated/dataModel'
 
 interface OverlappingVisitor {
@@ -53,7 +53,9 @@ export function OverlappingVisitorsList({
           <div className="flex-1 min-w-0">
             <Link
               to="/u/$usernameOrId"
-              params={{ usernameOrId: visitor.user.username ?? visitor.user._id }}
+              params={{
+                usernameOrId: visitor.user.username ?? visitor.user._id,
+              }}
               className="font-medium hover:text-primary transition-colors"
             >
               {visitor.user.name}

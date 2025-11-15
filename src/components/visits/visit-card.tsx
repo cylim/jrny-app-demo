@@ -1,11 +1,11 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from '~@/convex/_generated/api'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Calendar, Users } from 'lucide-react'
-import { OverlappingVisitorsList } from './overlapping-visitors-list'
 import { formatDateRange } from '@/lib/date-utils'
+import { api } from '~@/convex/_generated/api'
 import type { Id } from '~@/convex/_generated/dataModel'
+import { OverlappingVisitorsList } from './overlapping-visitors-list'
 
 interface VisitCardProps {
   visit: {

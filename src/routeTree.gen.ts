@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as AnotherPageRouteImport } from './routes/anotherPage'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
 import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
@@ -21,9 +21,9 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnotherPageRoute = AnotherPageRouteImport.update({
-  id: '/anotherPage',
-  path: '/anotherPage',
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,7 +49,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
@@ -57,7 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
@@ -66,7 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
@@ -76,7 +76,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/anotherPage'
+    | '/discover'
     | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
@@ -84,7 +84,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/anotherPage'
+    | '/discover'
     | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
@@ -92,7 +92,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/anotherPage'
+    | '/discover'
     | '/settings'
     | '/c/$shortSlug'
     | '/u/$usernameOrId'
@@ -101,7 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnotherPageRoute: typeof AnotherPageRoute
+  DiscoverRoute: typeof DiscoverRoute
   SettingsRoute: typeof SettingsRoute
   CShortSlugRoute: typeof CShortSlugRoute
   UUsernameOrIdRoute: typeof UUsernameOrIdRoute
@@ -117,11 +117,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/anotherPage': {
-      id: '/anotherPage'
-      path: '/anotherPage'
-      fullPath: '/anotherPage'
-      preLoaderRoute: typeof AnotherPageRouteImport
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,7 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnotherPageRoute: AnotherPageRoute,
+  DiscoverRoute: DiscoverRoute,
   SettingsRoute: SettingsRoute,
   CShortSlugRoute: CShortSlugRoute,
   UUsernameOrIdRoute: UUsernameOrIdRoute,

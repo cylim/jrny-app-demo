@@ -1,11 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 import { Github, Linkedin, Twitter } from 'lucide-react'
-import { api } from '~@/convex/_generated/api'
-import { UserVisitsList } from '@/components/visits/user-visits-list'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
+import { UserVisitsList } from '@/components/visits/user-visits-list'
 import type { User } from '@/types/user'
+import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
@@ -53,7 +53,8 @@ function UserProfilePage() {
 
   const isOwnProfile = currentUser?._id === user._id
   const typedUser = user as User
-  const showVisitHistory = isOwnProfile || typedUser.settings?.hideVisitHistory !== true
+  const showVisitHistory =
+    isOwnProfile || typedUser.settings?.hideVisitHistory !== true
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -79,7 +80,9 @@ function UserProfilePage() {
 
             {/* Bio */}
             {typedUser.bio && (
-              <p className="mt-3 text-base text-foreground max-w-2xl">{typedUser.bio}</p>
+              <p className="mt-3 text-base text-foreground max-w-2xl">
+                {typedUser.bio}
+              </p>
             )}
 
             {/* Social Links */}
