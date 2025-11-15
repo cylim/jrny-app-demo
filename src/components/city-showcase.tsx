@@ -1,7 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import * as Sentry from '@sentry/tanstackstart-react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Suspense, useEffect } from 'react'
 import { FALLBACK_CITIES, type FeaturedCity } from '~/types/city'
 import { api } from '~@/convex/_generated/api'
@@ -69,6 +69,7 @@ function CityShowcaseContent({ count = 9 }: CityShowcaseProps) {
  * @param count - Number of cities to display (default: 9)
  */
 export function CityShowcase({ count = 8 }: CityShowcaseProps) {
+  const navigate = useNavigate()
   return (
     <div className="w-full">
       <Sentry.ErrorBoundary
@@ -87,7 +88,7 @@ export function CityShowcase({ count = 8 }: CityShowcaseProps) {
                   key={city._id}
                   city={city}
                   onClick={(city) => {
-                    window.location.href = `/c/${city.shortSlug}`
+                    navigate({ to: `/c/${city.shortSlug}` })
                   }}
                 />
               ))}

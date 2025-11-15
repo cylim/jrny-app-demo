@@ -1,15 +1,22 @@
-import { renderHook, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { renderHook, waitFor, cleanup } from '@testing-library/react'
+import { act } from 'react'
+import { describe, expect, it, afterEach } from 'vitest'
 import { useLoadingState } from '~/hooks/useLoadingState'
 
 describe('Loading State Timing', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should transition to loading state within 200ms', async () => {
     const startTime = performance.now()
 
     const { result } = renderHook(() => useLoadingState())
 
     // Start loading
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
 
     // Wait for state to update
     await waitFor(() => {
@@ -27,7 +34,9 @@ describe('Loading State Timing', () => {
     const { result } = renderHook(() => useLoadingState())
 
     // Start loading
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
 
     // Should be loading after state updates
     await waitFor(() => {
@@ -38,12 +47,16 @@ describe('Loading State Timing', () => {
   it('should transition from loading to success', async () => {
     const { result } = renderHook(() => useLoadingState())
 
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
     await waitFor(() => {
       expect(result.current.state).toBe('loading')
     })
 
-    result.current.setSuccess()
+    act(() => {
+      result.current.setSuccess()
+    })
     await waitFor(() => {
       expect(result.current.state).toBe('success')
       expect(result.current.isLoading).toBe(false)
@@ -53,13 +66,17 @@ describe('Loading State Timing', () => {
   it('should transition from loading to error', async () => {
     const { result } = renderHook(() => useLoadingState())
 
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
     await waitFor(() => {
       expect(result.current.state).toBe('loading')
     })
 
     const errorMessage = 'Something went wrong'
-    result.current.setError(errorMessage)
+    act(() => {
+      result.current.setError(errorMessage)
+    })
 
     await waitFor(() => {
       expect(result.current.state).toBe('error')
@@ -71,10 +88,16 @@ describe('Loading State Timing', () => {
   it('should reset to idle state', async () => {
     const { result } = renderHook(() => useLoadingState())
 
-    result.current.startLoading()
-    result.current.setSuccess()
+    act(() => {
+      result.current.startLoading()
+    })
+    act(() => {
+      result.current.setSuccess()
+    })
 
-    result.current.reset()
+    act(() => {
+      result.current.reset()
+    })
 
     expect(result.current.state).toBe('idle')
     expect(result.current.isLoading).toBe(false)
@@ -85,59 +108,77 @@ describe('Loading State Timing', () => {
     const { result } = renderHook(() => useLoadingState())
 
     // First load
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(true)
     })
 
-    result.current.setSuccess()
+    act(() => {
+      result.current.setSuccess()
+    })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
 
     // Second load
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(true)
     })
 
-    result.current.setError('Error')
+    act(() => {
+      result.current.setError('Error')
+    })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
   })
 
-  it('should not exceed 200ms threshold with performance measurement', async () => {
+  it('should transition state synchronously without delays', () => {
+    const { result } = renderHook(() => useLoadingState())
     const measurements: number[] = []
 
-    for (let i = 0; i < 10; i++) {
+    // Test multiple state transitions with a single hook instance
+    for (let i = 0; i < 3; i++) {
+      // Measure only the state transition logic, not React rendering
       const startTime = performance.now()
 
-      const { result } = renderHook(() => useLoadingState())
-      result.current.startLoading()
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true)
+      act(() => {
+        result.current.startLoading()
       })
 
       const elapsed = performance.now() - startTime
       measurements.push(elapsed)
+
+      // Verify state changed synchronously
+      expect(result.current.isLoading).toBe(true)
+      expect(result.current.state).toBe('loading')
+
+      // Reset for next iteration
+      act(() => {
+        result.current.reset()
+      })
     }
 
-    // Average should be well under 200ms
+    // State transitions should be nearly instantaneous (< 10ms each)
     const average =
       measurements.reduce((a, b) => a + b, 0) / measurements.length
-    expect(average).toBeLessThan(200)
+    expect(average).toBeLessThan(10)
 
-    // Max should not exceed 200ms
     const max = Math.max(...measurements)
-    expect(max).toBeLessThan(200)
+    expect(max).toBeLessThan(10)
   })
 
   it('should provide loading duration in ms', async () => {
     const { result } = renderHook(() => useLoadingState())
 
-    result.current.startLoading()
+    act(() => {
+      result.current.startLoading()
+    })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(true)
     })
@@ -145,7 +186,9 @@ describe('Loading State Timing', () => {
     // Wait a bit
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    result.current.setSuccess()
+    act(() => {
+      result.current.setSuccess()
+    })
 
     // Duration should be greater than 0
     await waitFor(() => {

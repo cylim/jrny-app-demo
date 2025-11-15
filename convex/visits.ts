@@ -1,13 +1,54 @@
 import { v } from 'convex/values'
-import type { Doc } from './_generated/dataModel'
-import { mutation, query } from './_generated/server'
+import type { Doc, Id } from './_generated/dataModel'
+import { internalMutation, mutation, query } from './_generated/server'
 import { authComponent } from './auth'
+
+/**
+ * Helper function to atomically calculate visitCount for a city
+ * This replaces the read-modify-write pattern with a source-of-truth calculation
+ */
+async function getVisitCountForCity(
+  ctx: any,
+  cityId: Id<'cities'>,
+): Promise<number> {
+  const visits = await ctx.db
+    .query('visits')
+    .withIndex('by_city_id', (q: any) => q.eq('cityId', cityId))
+    .collect()
+
+  return visits.length
+}
+
+/**
+ * Query to get the real-time visit count for a city
+ * This is the atomic, source-of-truth calculation
+ */
+export const getCityVisitCount = query({
+  args: { cityId: v.id('cities') },
+  returns: v.number(),
+  handler: async (ctx, { cityId }) => {
+    return await getVisitCountForCity(ctx, cityId)
+  },
+})
+
+/**
+ * Internal mutation to sync visitCount cache for a city
+ * Should be called from a scheduled function for eventual consistency
+ */
+export const syncCityVisitCount = internalMutation({
+  args: { cityId: v.id('cities') },
+  returns: v.null(),
+  handler: async (ctx, { cityId }) => {
+    const count = await getVisitCountForCity(ctx, cityId)
+    await ctx.db.patch(cityId, { visitCount: count })
+  },
+})
 
 /**
  * Create a new visit for the authenticated user
  *
  * Validates the city exists, ensures start date is before end date,
- * creates the visit record, and automatically increments the city's visitCount.
+ * creates the visit record, and atomically updates the city's visitCount cache.
  *
  * @param cityId - The ID of the city being visited
  * @param startDate - Visit start date as Unix timestamp in milliseconds
@@ -70,10 +111,10 @@ export const createVisit = mutation({
       updatedAt: now,
     })
 
-    // Update city visitCount
-    const currentVisitCount = city.visitCount ?? 0
+    // Atomically update city visitCount cache by recalculating from source
+    const count = await getVisitCountForCity(ctx, cityId)
     await ctx.db.patch(cityId, {
-      visitCount: currentVisitCount + 1,
+      visitCount: count,
     })
 
     return { success: true, visitId }
@@ -156,8 +197,8 @@ export const updateVisit = mutation({
 /**
  * Delete a visit for the authenticated user
  *
- * Verifies the user owns the visit, decrements the city's visitCount,
- * and removes the visit record from the database.
+ * Verifies the user owns the visit, removes the visit record,
+ * and atomically updates the city's visitCount cache.
  *
  * @param visitId - The ID of the visit to delete
  * @returns Object with success status or error message
@@ -191,17 +232,17 @@ export const deleteVisit = mutation({
       return { success: false, error: 'Unauthorized' }
     }
 
-    // Get city to update visitCount
-    const city = await ctx.db.get(visit.cityId)
-    if (city) {
-      const currentVisitCount = city.visitCount ?? 0
-      await ctx.db.patch(visit.cityId, {
-        visitCount: Math.max(0, currentVisitCount - 1),
-      })
-    }
+    // Store cityId before deletion
+    const cityId = visit.cityId
 
     // Delete visit
     await ctx.db.delete(visitId)
+
+    // Atomically update city visitCount cache by recalculating from source
+    const count = await getVisitCountForCity(ctx, cityId)
+    await ctx.db.patch(cityId, {
+      visitCount: count,
+    })
 
     return { success: true }
   },

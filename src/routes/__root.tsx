@@ -10,6 +10,7 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import {
   createRootRouteWithContext,
   HeadContent,
+  Link,
   Outlet,
   Scripts,
   useRouteContext,
@@ -92,15 +93,7 @@ function RootErrorComponent(props: ErrorComponentProps) {
             >
               Reload page
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href = '/'
-              }}
-              className="rounded bg-neutral-700 px-4 py-2 text-sm hover:bg-neutral-600"
-            >
-              Go home
-            </button>
+            <Link to="/">Go home</Link>
           </div>
         </div>
       </div>

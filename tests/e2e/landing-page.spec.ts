@@ -269,10 +269,9 @@ test.describe('Landing Page E2E Tests', () => {
     // Wait for navigation
     await page.waitForLoadState('networkidle')
 
-    // Verify navigation occurred
-    const currentUrl = page.url()
-    expect(currentUrl).not.toContain('localhost:3000/')
+    // Verify navigation occurred (URL should not be root)
+    await expect(page).not.toHaveURL('/')
     // Should navigate to cities or explore page
-    expect(currentUrl).toMatch(/(cities|explore|discover)/)
+    await expect(page).toHaveURL(/(cities|explore|discover)/)
   })
 })

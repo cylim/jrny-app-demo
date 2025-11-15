@@ -164,7 +164,7 @@ test.describe('Kirby Styling Responsive Design', () => {
 
     // Resize to desktop
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.waitForTimeout(500) // Wait for any resize animations
+    await page.waitForLoadState('networkidle')
 
     // Verify Kirby styling persists after resize
     const desktopStyles = await page.evaluate(() => {

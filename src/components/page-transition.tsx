@@ -15,7 +15,7 @@ interface PageTransitionProps {
  */
 export function PageTransition({ children, routeKey }: PageTransitionProps) {
   return (
-    <AnimatePresence mode="sync" initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={routeKey}
         initial={{ opacity: 1 }}

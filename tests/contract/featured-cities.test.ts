@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { api } from '~@/convex/_generated/api'
 import schema from '~@/convex/schema'
 
@@ -120,8 +120,8 @@ describe('getFeaturedCities Query Contract', () => {
           region: 'Region',
           latitude: '0.0',
           longitude: '0.0',
-          image: null,
-          visitCount: null,
+          image: undefined,
+          visitCount: undefined,
         })
       })
     }
@@ -219,7 +219,7 @@ describe('getFeaturedCities Query Contract', () => {
         region: 'Region',
         latitude: '0.0',
         longitude: '0.0',
-        image: null,
+        image: undefined,
         visitCount: 500,
       })
     })

@@ -164,8 +164,7 @@ test.describe('Background Animation Performance and Accessibility', () => {
     const screenshot1 = await page.screenshot()
     expect(screenshot1).toBeTruthy()
 
-    // Wait 500ms
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // Take screenshot after animation
     const screenshot2 = await page.screenshot()
