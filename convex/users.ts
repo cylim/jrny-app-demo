@@ -108,18 +108,26 @@ export const getCurrentUser = query({
   args: {},
   returns: v.union(userShape, v.null()),
   handler: async (ctx) => {
-    const authUser = await authComponent.getAuthUser(ctx)
+    try {
+      const authUser = await authComponent.getAuthUser(ctx)
 
-    if (!authUser) {
-      return null
+      if (!authUser) {
+        return null
+      }
+
+      const user = await ctx.db
+        .query('users')
+        .withIndex('by_auth_user_id', (q) => q.eq('authUserId', authUser._id))
+        .unique()
+
+      return user
+    } catch (error) {
+      // If user is not authenticated, return null instead of throwing
+      if (error instanceof Error && error.message.includes('Unauthenticated')) {
+        return null
+      }
+      throw error
     }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', authUser._id))
-      .unique()
-
-    return user
   },
 })
 

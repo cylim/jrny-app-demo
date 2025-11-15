@@ -80,7 +80,16 @@ export const createVisit = mutation({
   }),
   handler: async (ctx, { cityId, startDate, endDate, notes, isPrivate }) => {
     // Auth check
-    const authUser = await authComponent.getAuthUser(ctx)
+    let authUser = null
+    try {
+      authUser = await authComponent.getAuthUser(ctx)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Unauthenticated')) {
+        return { success: false, error: 'Not authenticated' }
+      }
+      throw error
+    }
+
     if (!authUser) {
       return { success: false, error: 'Not authenticated' }
     }
@@ -157,7 +166,16 @@ export const updateVisit = mutation({
   }),
   handler: async (ctx, { visitId, startDate, endDate, notes, isPrivate }) => {
     // Auth check
-    const authUser = await authComponent.getAuthUser(ctx)
+    let authUser = null
+    try {
+      authUser = await authComponent.getAuthUser(ctx)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Unauthenticated')) {
+        return { success: false, error: 'Not authenticated' }
+      }
+      throw error
+    }
+
     if (!authUser) {
       return { success: false, error: 'Not authenticated' }
     }
@@ -219,7 +237,16 @@ export const deleteVisit = mutation({
   }),
   handler: async (ctx, { visitId }) => {
     // Auth check
-    const authUser = await authComponent.getAuthUser(ctx)
+    let authUser = null
+    try {
+      authUser = await authComponent.getAuthUser(ctx)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Unauthenticated')) {
+        return { success: false, error: 'Not authenticated' }
+      }
+      throw error
+    }
+
     if (!authUser) {
       return { success: false, error: 'Not authenticated' }
     }
@@ -289,7 +316,18 @@ export const getVisitsByUser = query({
   ),
   handler: async (ctx, { userId }) => {
     // Get current viewer
-    const authUser = await authComponent.getAuthUser(ctx)
+    let authUser = null
+    try {
+      authUser = await authComponent.getAuthUser(ctx)
+    } catch (error) {
+      // User is not authenticated, authUser remains null
+      if (
+        !(error instanceof Error && error.message.includes('Unauthenticated'))
+      ) {
+        throw error
+      }
+    }
+
     const viewer = authUser
       ? await ctx.db
           .query('users')

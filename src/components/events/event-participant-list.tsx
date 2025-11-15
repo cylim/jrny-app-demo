@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import type { Id } from 'convex/_generated/dataModel'
 import { Users } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -24,6 +25,7 @@ interface EventParticipantListProps {
     userId: Id<'users'>
     userName: string
     userImage?: string
+    username?: string
   }>
   /** Is the current viewer the event owner? */
   isOwner: boolean
@@ -53,7 +55,7 @@ export function EventParticipantList({
     participants.length === 1
 
   return (
-    <div className="rounded-3xl border-2 border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="">
       {/* Header */}
       <div className="mb-4 flex items-center gap-3">
         <Users className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
@@ -85,31 +87,31 @@ export function EventParticipantList({
           </div>
 
           {/* Show the participant (themselves) */}
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {participants.map((participant) => (
-              <div
-                key={participant._id}
-                className="flex items-center gap-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={participant.userImage}
-                    alt={participant.userName}
-                  />
-                  <AvatarFallback className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
-                    {participant.userName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {participant.userName}
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    (You)
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-wrap gap-3">
+            {participants.map((participant) => {
+              const userLink = participant.username
+                ? `/u/${participant.username}`
+                : `/u/${participant.userId}`
+
+              return (
+                <Link
+                  key={participant._id}
+                  to={userLink}
+                  className="group relative"
+                  title={`${participant.userName} (You)`}
+                >
+                  <Avatar className="h-12 w-12 transition-transform hover:scale-110">
+                    <AvatarImage
+                      src={participant.userImage}
+                      alt={participant.userName}
+                    />
+                    <AvatarFallback className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
+                      {participant.userName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}
@@ -124,28 +126,31 @@ export function EventParticipantList({
             </p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {participants.map((participant) => (
-              <div
-                key={participant._id}
-                className="flex items-center gap-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 p-3 transition-colors hover:border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800/50 dark:hover:border-zinc-700"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={participant.userImage}
-                    alt={participant.userName}
-                  />
-                  <AvatarFallback className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
-                    {participant.userName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {participant.userName}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-wrap gap-3">
+            {participants.map((participant) => {
+              const userLink = participant.username
+                ? `/u/${participant.username}`
+                : `/u/${participant.userId}`
+
+              return (
+                <Link
+                  key={participant._id}
+                  to={userLink}
+                  className="group relative"
+                  title={participant.userName}
+                >
+                  <Avatar className="h-12 w-12 transition-transform hover:scale-110">
+                    <AvatarImage
+                      src={participant.userImage}
+                      alt={participant.userName}
+                    />
+                    <AvatarFallback className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
+                      {participant.userName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              )
+            })}
           </div>
         ))}
     </div>

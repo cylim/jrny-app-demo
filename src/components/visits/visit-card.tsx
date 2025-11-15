@@ -38,14 +38,16 @@ export function VisitCard({ visit }: VisitCardProps) {
   )
 
   return (
-    <Link
-      to="/c/$shortSlug"
-      params={{ shortSlug: visit.city.shortSlug }}
-      className="relative block border rounded-lg overflow-hidden h-64 group hover:ring-2 hover:ring-primary/50 transition-all"
-    >
+    <div className="relative border rounded-lg overflow-hidden h-64 group hover:ring-2 hover:ring-primary/50 transition-all">
+      <Link
+        to="/c/$shortSlug"
+        params={{ shortSlug: visit.city.shortSlug }}
+        className="absolute inset-0 z-0"
+        aria-label={`View ${visit.city.name}`}
+      />
       {/* Background Image */}
       {visit.city.image && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 pointer-events-none">
           <img
             src={visit.city.image}
             alt={visit.city.name}
@@ -57,13 +59,13 @@ export function VisitCard({ visit }: VisitCardProps) {
       )}
 
       {/* Date Range - Top Right */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 text-sm text-white/90 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
+      <div className="absolute top-4 right-4 flex items-center gap-2 text-sm text-white/90 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none z-10">
         <Calendar className="w-4 h-4" />
         <span>{formatDateRange(visit.startDate, visit.endDate)}</span>
       </div>
 
       {/* Content Overlay */}
-      <div className="relative h-full p-6 flex flex-col justify-between text-white">
+      <div className="relative h-full p-6 flex flex-col justify-between text-white pointer-events-none z-10">
         {/* Top Section */}
         <div>
           {/* City Name */}
@@ -80,8 +82,8 @@ export function VisitCard({ visit }: VisitCardProps) {
 
         {/* Bottom Section - Overlapping Visitors */}
         {overlappingVisitors.length > 0 && (
-          <div className="pt-4 border-t border-white/20">
-            <div className="flex items-center gap-2 text-sm font-medium mb-3">
+          <div className="pt-4 border-t border-white/20 pointer-events-auto max-h-[140px] overflow-y-auto overflow-x-hidden scrollbar-thin">
+            <div className="flex items-center gap-2 text-sm font-medium mb-3 pointer-events-none sticky top-0  pb-2 -mt-1">
               <Users className="w-4 h-4" />
               <span>
                 Crossed paths with {overlappingVisitors.length}{' '}
@@ -92,6 +94,6 @@ export function VisitCard({ visit }: VisitCardProps) {
           </div>
         )}
       </div>
-    </Link>
+    </div>
   )
 }

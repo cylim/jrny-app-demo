@@ -404,7 +404,7 @@ export function EventForm({
             className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
           >
             Hide participant list
-            <Badge variant="default" className="text-xs">
+            <Badge variant="default" className="text-xs ml-1">
               Pro
             </Badge>
           </label>
