@@ -114,7 +114,7 @@ describe('AnimatedBackground Component', () => {
     expect(background).toBeInTheDocument()
 
     // Check that elements don't have motion properties (should be regular divs, not motion.div)
-    const elements = container.querySelectorAll('[data-testid^="bubbles-"]')
+    const elements = container.querySelectorAll('[data-testid^="bubble-"]')
     elements.forEach((element) => {
       expect(element.tagName).toBe('DIV')
     })

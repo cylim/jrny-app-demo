@@ -2,14 +2,18 @@ import { convexQuery } from '@convex-dev/react-query'
 import * as Sentry from '@sentry/tanstackstart-react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useRouter } from '@tanstack/react-router'
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { FALLBACK_CITIES, type FeaturedCity } from '~/types/city'
 import { api } from '~@/convex/_generated/api'
 import { CityCard } from './city-card'
-import { LoadingDots } from './ui/loading-dots'
+import { LoadingState } from './ui/loading-state'
 
 interface CityShowcaseProps {
   count?: number
+}
+
+interface CityShowcaseContentProps extends CityShowcaseProps {
+  startTimeRef: React.MutableRefObject<number>
 }
 
 /**
@@ -18,9 +22,11 @@ interface CityShowcaseProps {
  * Falls back to FALLBACK_CITIES if query fails or returns empty
  * Includes loading state with performance tracking
  */
-function CityShowcaseContent({ count = 9 }: CityShowcaseProps) {
+function CityShowcaseContent({
+  count = 8,
+  startTimeRef,
+}: CityShowcaseContentProps) {
   const router = useRouter()
-  const startTime = performance.now()
 
   // Fetch featured cities from Convex
   const { data: cities, error } = useSuspenseQuery(
@@ -28,12 +34,14 @@ function CityShowcaseContent({ count = 9 }: CityShowcaseProps) {
   )
 
   // Track fetch duration for performance monitoring
+  // Using startTimeRef from parent ensures we measure actual query latency,
+  // not just render-to-commit time after Suspense resolves
   useEffect(() => {
-    const fetchDuration = performance.now() - startTime
+    const fetchDuration = performance.now() - startTimeRef.current
     Sentry.metrics.distribution('city.showcase.fetch_duration', fetchDuration, {
       unit: 'millisecond',
     })
-  }, [startTime])
+  }, [startTimeRef])
 
   // Use fallback cities if query returns empty or fails
   const displayCities: FeaturedCity[] =
@@ -66,10 +74,15 @@ function CityShowcaseContent({ count = 9 }: CityShowcaseProps) {
  * - Desktop (≥ 768px): 3 columns (9-12 cities)
  * - Large Desktop (≥ 1024px): 4 columns (9-12 cities)
  *
- * @param count - Number of cities to display (default: 9)
+ * @param count - Number of cities to display (default: 8)
  */
 export function CityShowcase({ count = 8 }: CityShowcaseProps) {
   const navigate = useNavigate()
+
+  // Store query start time in a ref that survives Suspense boundary
+  // This ensures we measure actual network/query latency, not just render time
+  const startTimeRef = useRef(performance.now())
+
   return (
     <div className="w-full">
       <Sentry.ErrorBoundary
@@ -102,15 +115,13 @@ export function CityShowcase({ count = 8 }: CityShowcaseProps) {
       >
         <Suspense
           fallback={
-            <output
-              className="flex min-h-[400px] items-center justify-center"
-              aria-label="Loading featured cities"
-            >
-              <LoadingDots variant="pink" size="lg" />
-            </output>
+            <LoadingState
+              message="Loading featured cities..."
+              minHeight="400px"
+            />
           }
         >
-          <CityShowcaseContent count={count} />
+          <CityShowcaseContent count={count} startTimeRef={startTimeRef} />
         </Suspense>
       </Sentry.ErrorBoundary>
     </div>

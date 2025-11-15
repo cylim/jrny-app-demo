@@ -24,6 +24,9 @@ const loadingMetrics = new Map<string, LoadingMetrics>()
  * @param operationId - Unique identifier for the loading operation
  */
 export function markLoadingStart(operationId: string): void {
+  // Guard against SSR - performance API not available on server
+  if (typeof performance === 'undefined') return
+
   const startTime = performance.now()
 
   // Create performance mark
@@ -54,6 +57,9 @@ export function markLoadingEnd(
   operationId: string,
   displayedAt?: number,
 ): void {
+  // Guard against SSR - performance API not available on server
+  if (typeof performance === 'undefined') return
+
   const endTime = performance.now()
   const metrics = loadingMetrics.get(operationId)
 
@@ -193,6 +199,9 @@ export function getLoadingMetrics(
  */
 export function clearLoadingMetrics(operationId: string): void {
   loadingMetrics.delete(operationId)
+
+  // Guard against SSR - performance API not available on server
+  if (typeof performance === 'undefined') return
 
   // Clean up performance marks
   try {

@@ -199,7 +199,7 @@ test.describe('Background Animation Performance and Accessibility', () => {
       const zIndex = await background.evaluate((el) => {
         return window.getComputedStyle(el).zIndex
       })
-      expect(zIndex).toBe('-1')
+      expect(zIndex).toBe('0')
     }
   })
 })

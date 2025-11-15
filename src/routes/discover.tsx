@@ -1,11 +1,12 @@
 import { convexQuery } from '@convex-dev/react-query'
 import * as Sentry from '@sentry/tanstackstart-react'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CityCard } from '~/components/city-card'
 import { FilterBar, type SortOption } from '~/components/discover/filter-bar'
-import { LoadingDots } from '~/components/ui/loading-dots'
+import { ErrorState } from '~/components/ui/error-state'
+import { LoadingState } from '~/components/ui/loading-state'
 import type { CityListItem } from '~/types/city'
 import { api } from '~@/convex/_generated/api'
 
@@ -25,20 +26,17 @@ function Discover() {
   const [selectedCountry, setSelectedCountry] = useState<string>('all')
   const [sortOption, setSortOption] = useState<SortOption>('most-visited')
 
-  // Fetch all cities
-  const { data: allCities, error } = useSuspenseQuery(
-    convexQuery(api.cities.getAllCities, {}),
-  )
-
-  // Report error to Sentry
-  if (error) {
-    Sentry.captureException(error, {
-      tags: { component: 'Discover' },
-    })
-  }
+  // Fetch all cities with explicit error and loading handling
+  const {
+    data: allCities,
+    error,
+    isLoading,
+  } = useQuery(convexQuery(api.cities.getAllCities, {}))
 
   // Extract unique regions from all cities
+  // NOTE: All hooks must be called before any early returns (Rules of Hooks)
   const regions = useMemo(() => {
+    if (!allCities) return []
     const uniqueRegions = new Set(
       allCities.map((city: CityListItem) => city.region),
     )
@@ -47,6 +45,7 @@ function Discover() {
 
   // Extract unique countries based on selected region
   const countries = useMemo(() => {
+    if (!allCities) return []
     const citiesToFilter =
       selectedRegion === 'all'
         ? allCities
@@ -60,14 +59,9 @@ function Discover() {
     return Array.from(uniqueCountries).sort()
   }, [allCities, selectedRegion])
 
-  // Reset country filter when region changes
-  const handleRegionChange = (region: string) => {
-    setSelectedRegion(region)
-    setSelectedCountry('all')
-  }
-
   // Filter and sort cities
   const filteredCities = useMemo(() => {
+    if (!allCities) return []
     let result = [...allCities]
 
     // Apply search filter
@@ -110,6 +104,42 @@ function Discover() {
 
     return result
   }, [allCities, searchQuery, selectedRegion, selectedCountry, sortOption])
+
+  // Report errors to Sentry
+  useEffect(() => {
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { component: 'Discover', route: '/discover' },
+        level: 'error',
+      })
+    }
+  }, [error])
+
+  // Reset country filter when region changes
+  const handleRegionChange = (region: string) => {
+    setSelectedRegion(region)
+    setSelectedCountry('all')
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return <LoadingState message="Loading cities..." />
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <ErrorState
+        title="Failed to load cities"
+        message="We couldn't load the cities. Please try again later."
+      />
+    )
+  }
+
+  // Ensure we have data before proceeding
+  if (!allCities) {
+    return null
+  }
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -191,12 +221,5 @@ function Discover() {
  * Loading component displayed while cities are being fetched
  */
 export function DiscoverPending() {
-  return (
-    <main className="flex min-h-[60vh] items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <LoadingDots />
-        <p className="text-muted-foreground">Loading cities...</p>
-      </div>
-    </main>
-  )
+  return <LoadingState message="Loading cities..." />
 }

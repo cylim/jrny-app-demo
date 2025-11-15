@@ -18,15 +18,10 @@ test.describe('Loading Indicator Performance', () => {
 
       // Wait for loading indicator to appear
       const loadingIndicator = page.locator('[aria-label="Loading"]')
-      const appeared = await loadingIndicator
-        .isVisible({ timeout: 200 })
-        .catch(() => false)
 
-      if (appeared) {
-        const elapsed = Date.now() - startTime
-        // Loading indicator should appear within 200ms
-        expect(elapsed).toBeLessThan(200)
-      }
+      await expect(loadingIndicator).toBeVisible({ timeout: 200 })
+      const elapsed = Date.now() - startTime
+      expect(elapsed).toBeLessThanOrEqual(200)
     }
   })
 
