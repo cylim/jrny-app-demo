@@ -27,12 +27,22 @@ JRNY is a location-based social application designed for travelers, digital noma
 - Real-time updates when travelers check in or out of locations
 - Privacy controls to opt out of visibility in all traveler lists
 
+### 🎉 City Events & Meetups (NEW)
+- **Create Events**: Organize meetups, tours, or social gatherings in any city
+- **Event Discovery**: Browse upcoming events on city pages sorted by date
+- **Join Events**: RSVP to events with automatic capacity management
+- **Event Management**: Edit event details, cancel events, or leave as a participant
+- **Privacy Controls**: Hide participant lists from non-participants
+- **Profile Integration**: View upcoming and past events in your user profile
+- **Real-time Updates**: See participant counts update live as users join/leave
+
 ### 🔒 Privacy & Authentication
 - Secure authentication via Better-Auth with Google Sign-In
 - One-click OAuth authentication
 - Global privacy toggle to control visibility in all traveler lists
+- Event-level privacy: Hide participant lists from non-participants
 - Public city pages for non-logged-in users (without user data)
-- Account deletion removes all user data from visitor lists
+- Account deletion removes all user data from visitor lists and events
 
 ### 🎨 Kirby-Style UI Design
 - Playful, welcoming interface with soft pastel colors (pinks, blues, purples)
@@ -193,10 +203,11 @@ jrny-app-demo/
 │   ├── auth.ts                # Better-Auth with Google OAuth configuration
 │   ├── auth.config.ts         # Auth provider configuration
 │   ├── http.ts                # HTTP router for auth endpoints
-│   ├── schema.ts              # Database schema (users, cities, visits)
+│   ├── schema.ts              # Database schema (users, cities, visits, events)
 │   ├── cities.ts              # City-related queries and mutations
 │   ├── users.ts               # User profile queries and mutations
-│   └── visits.ts              # Visit tracking queries and mutations
+│   ├── visits.ts              # Visit tracking queries and mutations
+│   └── events.ts              # Event management queries and mutations
 ├── src/
 │   ├── components/
 │   │   ├── auth/              # Authentication components
@@ -208,6 +219,12 @@ jrny-app-demo/
 │   │   │   ├── dropdown-menu.tsx
 │   │   │   ├── loading-dots.tsx  # Pulsating dots loader
 │   │   │   └── [other shadcn components]
+│   │   ├── events/             # Event components
+│   │   │   ├── event-card.tsx  # Event display card
+│   │   │   ├── event-form.tsx  # Create/edit event form
+│   │   │   ├── event-actions.tsx  # Join/Leave/Edit buttons
+│   │   │   └── event-participant-list.tsx  # Participant avatars
+│   │   ├── visits/             # Visit tracking components
 │   │   ├── animated-background.tsx  # Framer Motion background
 │   │   ├── animated-trees.tsx       # Decorative animations
 │   │   ├── city-card.tsx            # City display component
@@ -224,6 +241,7 @@ jrny-app-demo/
 │   │   ├── discover.tsx       # City discovery page
 │   │   ├── settings.tsx       # User settings page
 │   │   ├── c/                 # City pages (/c/:shortSlug)
+│   │   ├── e/                 # Event detail pages (/e/:eventId)
 │   │   └── u/                 # User profile pages (/u/:username)
 │   ├── styles/
 │   │   └── app.css            # Tailwind v4 + Kirby-style theme
@@ -232,7 +250,9 @@ jrny-app-demo/
 │   └── router.tsx             # Router configuration with Convex
 ├── specs/                     # Feature specifications
 │   ├── 001-travel-tracking/   # Travel tracking feature spec
-│   └── 002-kirby-ui-refactor/ # UI refactor feature spec
+│   ├── 002-kirby-ui-refactor/ # UI refactor feature spec
+│   ├── 003-db-seed/           # Database seeding feature spec
+│   └── 004-city-events/       # City events & meetups feature spec
 ├── public/                    # Static assets
 ├── components.json            # shadcn/ui configuration
 ├── biome.json                 # Biome linting & formatting config

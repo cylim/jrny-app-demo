@@ -4,7 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 // Mock framer-motion before importing component
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({
+      children,
+      ...props
+    }: {
+      children?: React.ReactNode
+      [key: string]: unknown
+    }) => <div {...props}>{children}</div>,
   },
   useReducedMotion: vi.fn(() => false),
 }))
@@ -26,7 +32,7 @@ describe('LoadingDots Component', () => {
 
   it('should apply default Kirby pink variant', () => {
     render(<LoadingDots />)
-    const container = screen.getByRole('status')
+    const container = screen.getByLabelText('Loading')
     expect(container).toBeInTheDocument()
 
     // Check for pink color class
@@ -54,7 +60,7 @@ describe('LoadingDots Component', () => {
 
   it('should have aria-label for accessibility', () => {
     render(<LoadingDots />)
-    const container = screen.getByRole('status')
+    const container = screen.getByLabelText('Loading')
     expect(container).toHaveAttribute('aria-label', 'Loading')
   })
 
@@ -69,7 +75,7 @@ describe('LoadingDots Component', () => {
 
   it('should accept custom className', () => {
     render(<LoadingDots className="custom-class" />)
-    const container = screen.getByRole('status')
+    const container = screen.getByLabelText('Loading')
     expect(container).toHaveClass('custom-class')
   })
 

@@ -1,14 +1,18 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { motion } from 'framer-motion'
-import { Calendar, MapPin, User, ArrowLeft } from 'lucide-react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
 import type { Id } from 'convex/_generated/dataModel'
-import { EventParticipantList } from '~/components/events/event-participant-list'
-import { EventActions } from '~/components/events/event-actions'
-import { fadeIn, slideUp } from '~/lib/animations'
+import { useMutation } from 'convex/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, Calendar, MapPin, User, X } from 'lucide-react'
+import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { EventActions } from '~/components/events/event-actions'
+import { EventForm } from '~/components/events/event-form'
+import { EventParticipantList } from '~/components/events/event-participant-list'
+import { fadeIn, slideUp } from '~/lib/animations'
 
 /**
  * Event detail page (/e/$eventId)
@@ -31,6 +35,7 @@ export const Route = createFileRoute('/e/$eventId')({
 
 function EventDetailPage() {
   const { eventId } = Route.useParams()
+  const navigate = useNavigate()
 
   // Fetch event data with real-time updates
   const { data: event } = useSuspenseQuery(
@@ -73,6 +78,59 @@ function EventDetailPage() {
 
   // Check authentication status (placeholder - will integrate with auth later)
   const isAuthenticated = true // TODO: Get from auth context
+
+  // Edit/Cancel state
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+
+  const updateEvent = useMutation(api.events.updateEvent)
+  const cancelEvent = useMutation(api.events.cancelEvent)
+
+  const handleEdit = () => {
+    setShowEditForm(true)
+  }
+
+  const handleUpdateEvent = async (values: {
+    title: string
+    description: string
+    startTime: number
+    endTime?: number
+    timezone: string
+    location: string
+    maxCapacity?: number
+    isParticipantListHidden: boolean
+  }) => {
+    setIsUpdating(true)
+    try {
+      await updateEvent({
+        eventId: event._id,
+        ...values,
+      })
+      setShowEditForm(false)
+    } catch (error) {
+      console.error('Failed to update event:', error)
+      throw error
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleCancelEvent = async () => {
+    setIsCancelling(true)
+    try {
+      await cancelEvent({ eventId: event._id })
+      setShowCancelConfirm(false)
+      // Navigate back to city page
+      navigate({ to: `/c/${event.cityId}` })
+    } catch (error) {
+      console.error('Failed to cancel event:', error)
+      alert('Failed to cancel event. Please try again.')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
 
   return (
     <motion.div
@@ -168,6 +226,93 @@ function EventDetailPage() {
         </div>
       </motion.div>
 
+      {/* Edit Event Form */}
+      <AnimatePresence>
+        {showEditForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden rounded-3xl border-2 border-pink-200 bg-pink-50 p-6 dark:border-pink-900/50 dark:bg-pink-900/20"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Edit Event</h3>
+              <button
+                type="button"
+                onClick={() => setShowEditForm(false)}
+                className="rounded-full p-2 hover:bg-pink-100 dark:hover:bg-pink-900/30"
+                disabled={isUpdating}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <EventForm
+              mode="edit"
+              initialValues={{
+                title: event.title,
+                description: event.description,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                timezone: event.timezone,
+                location: event.location,
+                maxCapacity: event.maxCapacity,
+                isParticipantListHidden: event.isParticipantListHidden,
+              }}
+              onSubmit={handleUpdateEvent}
+              isLoading={isUpdating}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Confirmation Dialog */}
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => !isCancelling && setShowCancelConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-md rounded-3xl border-2 border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-4 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                Cancel Event?
+              </h3>
+              <p className="mb-6 text-zinc-700 dark:text-zinc-300">
+                Are you sure you want to cancel this event? This action cannot
+                be undone. All participants will still be able to see the event
+                details, but it will be marked as cancelled.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={isCancelling}
+                  className="flex-1 rounded-full"
+                >
+                  Keep Event
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleCancelEvent}
+                  disabled={isCancelling}
+                  className="flex-1 rounded-full"
+                >
+                  {isCancelling ? 'Cancelling...' : 'Cancel Event'}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Event Actions */}
       <motion.div variants={slideUp} className="mb-8">
         <EventActions
@@ -177,6 +322,8 @@ function EventDetailPage() {
           isFull={event.isFull}
           isPast={isPast}
           isAuthenticated={isAuthenticated}
+          onEdit={handleEdit}
+          onCancel={() => setShowCancelConfirm(true)}
         />
       </motion.div>
 

@@ -1,21 +1,21 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { useMutation } from 'convex/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Plus, X } from 'lucide-react'
 import { Suspense, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { LoadingDots } from '@/components/ui/loading-dots'
 import {
   CurrentVisitorsList,
   CurrentVisitorsListSkeleton,
 } from '@/components/visits/current-visitors-list'
 import { authClient } from '@/lib/auth-client'
-import { api } from '~@/convex/_generated/api'
-import type { Id } from '~@/convex/_generated/dataModel'
 import { EventCard } from '~/components/events/event-card'
 import { EventForm } from '~/components/events/event-form'
-import { Button } from '@/components/ui/button'
-import { Plus, X } from 'lucide-react'
-import { LoadingDots } from '@/components/ui/loading-dots'
-import { useMutation } from 'convex/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { api } from '~@/convex/_generated/api'
+import type { Id } from '~@/convex/_generated/dataModel'
 
 export const Route = createFileRoute('/c/$shortSlug')({
   component: CityPage,

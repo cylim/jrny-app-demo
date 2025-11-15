@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { useMutation } from 'convex/react'
-import { Button } from '@/components/ui/button'
 import { api } from 'convex/_generated/api'
 import type { Id } from 'convex/_generated/dataModel'
-import { UserPlus, UserMinus, Pencil, Ban, Trash2 } from 'lucide-react'
+import { useMutation } from 'convex/react'
+import { Ban, Pencil, Trash2, UserMinus, UserPlus } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Event action buttons component
@@ -70,9 +70,7 @@ export function EventActions({
       await joinEvent({ eventId })
       // Optimistic update handled by Convex live query
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to join event',
-      )
+      setError(err instanceof Error ? err.message : 'Failed to join event')
     } finally {
       setIsJoining(false)
     }
@@ -86,9 +84,7 @@ export function EventActions({
       await leaveEvent({ eventId })
       // Optimistic update handled by Convex live query
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to leave event',
-      )
+      setError(err instanceof Error ? err.message : 'Failed to leave event')
     } finally {
       setIsLeaving(false)
     }
@@ -109,32 +105,27 @@ export function EventActions({
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         {/* Join/Leave Button (non-owners, future events only) */}
-        {showJoinLeave && (
-            isParticipant ? (
-              <Button
-                onClick={handleLeave}
-                disabled={isLeaving}
-                variant="outline"
-                className="rounded-full px-6"
-              >
-                <UserMinus className="mr-2 h-4 w-4" />
-                {isLeaving ? 'Leaving...' : 'Leave Event'}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleJoin}
-                disabled={isJoining || isFull}
-                className="rounded-full px-6"
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                {isJoining
-                  ? 'Joining...'
-                  : isFull
-                    ? 'Event Full'
-                    : 'Join Event'}
-              </Button>
-            )
-        )}
+        {showJoinLeave &&
+          (isParticipant ? (
+            <Button
+              onClick={handleLeave}
+              disabled={isLeaving}
+              variant="outline"
+              className="rounded-full px-6"
+            >
+              <UserMinus className="mr-2 h-4 w-4" />
+              {isLeaving ? 'Leaving...' : 'Leave Event'}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleJoin}
+              disabled={isJoining || isFull}
+              className="rounded-full px-6"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              {isJoining ? 'Joining...' : isFull ? 'Event Full' : 'Join Event'}
+            </Button>
+          ))}
 
         {/* Owner-only buttons */}
         {isOwner && !isPast && (

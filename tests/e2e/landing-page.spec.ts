@@ -236,7 +236,7 @@ test.describe('Landing Page E2E Tests', () => {
 
     // Kirby rounded corners should be at least 16px
     expect(borderRadius).toMatch(/\d+px/)
-    const radiusValue = Number.parseInt(borderRadius)
+    const radiusValue = Number.parseInt(borderRadius, 10)
     expect(radiusValue).toBeGreaterThanOrEqual(16)
 
     // Verify pastel pink background (approximation)

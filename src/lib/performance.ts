@@ -94,7 +94,7 @@ export function markLoadingEnd(
       `loading-start-${operationId}`,
       `loading-end-${operationId}`,
     )
-  } catch (error) {
+  } catch (_error) {
     // Ignore if marks don't exist
   }
 
@@ -208,7 +208,7 @@ export function clearLoadingMetrics(operationId: string): void {
     performance.clearMarks(`loading-start-${operationId}`)
     performance.clearMarks(`loading-end-${operationId}`)
     performance.clearMeasures(`loading-${operationId}`)
-  } catch (error) {
+  } catch (_error) {
     // Ignore if marks don't exist
   }
 }

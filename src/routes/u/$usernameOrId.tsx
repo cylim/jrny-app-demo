@@ -2,14 +2,14 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Github, Linkedin, Twitter } from 'lucide-react'
+import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TestUserBadge } from '@/components/ui/test-user-badge'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
 import { UserVisitsList } from '@/components/visits/user-visits-list'
-import { EventCard } from '~/components/events/event-card'
 import type { User } from '@/types/user'
+import { EventCard } from '~/components/events/event-card'
 import { api } from '~@/convex/_generated/api'
-import { useState } from 'react'
 
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
@@ -39,6 +39,17 @@ function UserProfilePage() {
     convexQuery(api.users.getCurrentUser, {}),
   )
 
+  // Tab state - must be declared before any early returns
+  const [activeTab, setActiveTab] = useState<'visits' | 'events'>('visits')
+
+  // Fetch user events - must be declared before any early returns
+  // If user is null, we pass a placeholder ID that won't be used because we'll return early
+  const { data: userEvents } = useSuspenseQuery(
+    convexQuery(api.events.getUserEvents, {
+      userId: user?._id ?? ('' as never),
+    }),
+  )
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -59,14 +70,6 @@ function UserProfilePage() {
   const typedUser = user as User
   const showVisitHistory =
     isOwnProfile || typedUser.settings?.hideVisitHistory !== true
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'visits' | 'events'>('visits')
-
-  // Fetch user events (only when user exists, which is guaranteed here)
-  const { data: userEvents } = useSuspenseQuery(
-    convexQuery(api.events.getUserEvents, { userId: user._id }),
-  )
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -179,24 +182,21 @@ function UserProfilePage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'visits' && (
-          <>
-            {showVisitHistory ? (
-              <div className="bg-card/30 border rounded-lg p-6">
-                <h2 className="text-2xl font-semibold mb-6">
-                  {isOwnProfile ? 'My Travels' : 'Travels'}
-                </h2>
-                <UserVisitsList userId={user._id} />
-              </div>
-            ) : (
-              <div className="bg-card border rounded-lg p-6">
-                <p className="text-center text-muted-foreground">
-                  This user has chosen to keep their travel history private.
-                </p>
-              </div>
-            )}
-          </>
-        )}
+        {activeTab === 'visits' &&
+          (showVisitHistory ? (
+            <div className="bg-card/30 border rounded-lg p-6">
+              <h2 className="text-2xl font-semibold mb-6">
+                {isOwnProfile ? 'My Travels' : 'Travels'}
+              </h2>
+              <UserVisitsList userId={user._id} />
+            </div>
+          ) : (
+            <div className="bg-card border rounded-lg p-6">
+              <p className="text-center text-muted-foreground">
+                This user has chosen to keep their travel history private.
+              </p>
+            </div>
+          ))}
 
         {activeTab === 'events' && userEvents && (
           <div className="space-y-8">
@@ -216,7 +216,10 @@ function UserProfilePage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {userEvents.upcoming.map((event) => (
-                    <EventCard key={event._id} event={{ ...event, participantCount: 0 }} />
+                    <EventCard
+                      key={event._id}
+                      event={{ ...event, participantCount: 0 }}
+                    />
                   ))}
                 </div>
               )}
@@ -238,7 +241,10 @@ function UserProfilePage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {userEvents.past.map((event) => (
-                    <EventCard key={event._id} event={{ ...event, participantCount: 0 }} />
+                    <EventCard
+                      key={event._id}
+                      event={{ ...event, participantCount: 0 }}
+                    />
                   ))}
                 </div>
               )}

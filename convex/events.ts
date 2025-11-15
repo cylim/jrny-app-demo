@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { internalMutation, mutation, query } from './_generated/server'
 
 /**
  * Get detailed event information including participant count and list
@@ -285,7 +285,7 @@ export const createEvent = mutation({
     // Validation: Timezone must be valid IANA timezone
     try {
       new Intl.DateTimeFormat(undefined, { timeZone: args.timezone })
-    } catch (e) {
+    } catch (_e) {
       throw new Error('Invalid timezone')
     }
 
@@ -445,6 +445,253 @@ export const leaveEvent = mutation({
 
     // Delete participation record
     await ctx.db.delete(participation._id)
+
+    return null
+  },
+})
+
+/**
+ * Update event details
+ * Requires authentication and ownership
+ * Validates all updates and prevents conflicts
+ */
+export const updateEvent = mutation({
+  args: {
+    eventId: v.id('events'),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    startTime: v.optional(v.number()),
+    endTime: v.optional(v.union(v.number(), v.null())),
+    timezone: v.optional(v.string()),
+    location: v.optional(v.string()),
+    maxCapacity: v.optional(v.union(v.number(), v.null())),
+    isParticipantListHidden: v.optional(v.boolean()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Authentication check
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      throw new Error('Not authenticated')
+    }
+
+    // Get user ID from identity
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
+      .unique()
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    // Event must exist
+    const event = await ctx.db.get(args.eventId)
+    if (!event) {
+      throw new Error('Event not found')
+    }
+
+    // Authorization: Only owner can update
+    if (event.ownerId !== user._id) {
+      throw new Error('Only the event owner can update this event')
+    }
+
+    // Validation: Title length (if provided)
+    if (args.title !== undefined) {
+      if (args.title.length < 1 || args.title.length > 100) {
+        throw new Error('Title must be 1-100 characters')
+      }
+    }
+
+    // Validation: Description length (if provided)
+    if (args.description !== undefined) {
+      if (args.description.length < 1 || args.description.length > 5000) {
+        throw new Error('Description must be 1-5000 characters')
+      }
+    }
+
+    // Validation: Start time must be in future (if provided)
+    if (args.startTime !== undefined) {
+      if (args.startTime <= Date.now()) {
+        throw new Error('Event start time must be in the future')
+      }
+    }
+
+    // Validation: End time must be after start time (if provided)
+    const finalStartTime = args.startTime ?? event.startTime
+    const finalEndTime = args.endTime === null ? undefined : args.endTime
+    if (finalEndTime !== undefined && finalEndTime <= finalStartTime) {
+      throw new Error('Event end time must be after start time')
+    }
+
+    // Validation: Timezone must be valid IANA timezone (if provided)
+    if (args.timezone !== undefined) {
+      try {
+        new Intl.DateTimeFormat(undefined, { timeZone: args.timezone })
+      } catch (_e) {
+        throw new Error('Invalid timezone')
+      }
+    }
+
+    // Validation: Location length (if provided)
+    if (args.location !== undefined) {
+      if (args.location.length < 1 || args.location.length > 500) {
+        throw new Error('Location must be 1-500 characters')
+      }
+    }
+
+    // Validation: Max capacity must be >= current participant count (if provided)
+    if (args.maxCapacity !== undefined && args.maxCapacity !== null) {
+      if (args.maxCapacity < 1) {
+        throw new Error('Max capacity must be at least 1')
+      }
+
+      const participantCount = await ctx.db
+        .query('eventParticipants')
+        .withIndex('by_event', (q) => q.eq('eventId', args.eventId))
+        .collect()
+        .then((p) => p.length)
+
+      if (args.maxCapacity < participantCount) {
+        throw new Error(
+          `Cannot reduce capacity below current participant count (${participantCount})`,
+        )
+      }
+    }
+
+    // Build update object (only include provided fields)
+    const updates: Partial<{
+      title: string
+      description: string
+      startTime: number
+      endTime: number | undefined
+      timezone: string
+      location: string
+      maxCapacity: number | undefined
+      isParticipantListHidden: boolean
+    }> = {}
+
+    if (args.title !== undefined) updates.title = args.title
+    if (args.description !== undefined) updates.description = args.description
+    if (args.startTime !== undefined) updates.startTime = args.startTime
+    if (args.endTime !== undefined)
+      updates.endTime = args.endTime === null ? undefined : args.endTime
+    if (args.timezone !== undefined) updates.timezone = args.timezone
+    if (args.location !== undefined) updates.location = args.location
+    if (args.maxCapacity !== undefined)
+      updates.maxCapacity =
+        args.maxCapacity === null ? undefined : args.maxCapacity
+    if (args.isParticipantListHidden !== undefined)
+      updates.isParticipantListHidden = args.isParticipantListHidden
+
+    // Update event
+    await ctx.db.patch(args.eventId, updates)
+
+    return null
+  },
+})
+
+/**
+ * Cancel an event
+ * Requires authentication and ownership
+ * Sets isCancelled flag to true
+ */
+export const cancelEvent = mutation({
+  args: { eventId: v.id('events') },
+  returns: v.null(),
+  handler: async (ctx, { eventId }) => {
+    // Authentication check
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      throw new Error('Not authenticated')
+    }
+
+    // Get user ID from identity
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
+      .unique()
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    // Event must exist
+    const event = await ctx.db.get(eventId)
+    if (!event) {
+      throw new Error('Event not found')
+    }
+
+    // Authorization: Only owner can cancel
+    if (event.ownerId !== user._id) {
+      throw new Error('Only the event owner can cancel this event')
+    }
+
+    // Already cancelled check
+    if (event.isCancelled) {
+      throw new Error('Event is already cancelled')
+    }
+
+    // Update event to mark as cancelled
+    await ctx.db.patch(eventId, { isCancelled: true })
+
+    return null
+  },
+})
+
+/**
+ * Delete all events owned by a user (internal mutation for account deletion)
+ * Called when a user account is deleted to maintain data integrity
+ * Cascades to delete all eventParticipants for each owned event
+ */
+export const deleteUserEvents = internalMutation({
+  args: { userId: v.id('users') },
+  returns: v.null(),
+  handler: async (ctx, { userId }) => {
+    // Get all events owned by this user
+    const ownedEvents = await ctx.db
+      .query('events')
+      .withIndex('by_owner', (q) => q.eq('ownerId', userId))
+      .collect()
+
+    // Delete all event participants for each owned event, then delete the event
+    for (const event of ownedEvents) {
+      // Delete all participants for this event
+      const participants = await ctx.db
+        .query('eventParticipants')
+        .withIndex('by_event', (q) => q.eq('eventId', event._id))
+        .collect()
+
+      for (const participant of participants) {
+        await ctx.db.delete(participant._id)
+      }
+
+      // Delete the event itself
+      await ctx.db.delete(event._id)
+    }
+
+    return null
+  },
+})
+
+/**
+ * Delete all event participations by a user (internal mutation for account deletion)
+ * Called when a user account is deleted to remove them from all events they joined
+ */
+export const deleteUserParticipations = internalMutation({
+  args: { userId: v.id('users') },
+  returns: v.null(),
+  handler: async (ctx, { userId }) => {
+    // Get all event participations for this user
+    const participations = await ctx.db
+      .query('eventParticipants')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .collect()
+
+    // Delete each participation record
+    for (const participation of participations) {
+      await ctx.db.delete(participation._id)
+    }
 
     return null
   },

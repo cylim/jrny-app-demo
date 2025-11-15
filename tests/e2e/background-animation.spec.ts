@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
 
+interface WindowWithFrameCounter extends Window {
+  frameCount: number
+  startTime: number
+}
+
 /**
  * E2E tests for AnimatedBackground component
  *
@@ -17,12 +22,13 @@ test.describe('Background Animation Performance and Accessibility', () => {
 
     // Start performance measurement
     await page.evaluate(() => {
-      ;(window as any).frameCount = 0
-      ;(window as any).startTime = performance.now()
+      const w = window as unknown as WindowWithFrameCounter
+      w.frameCount = 0
+      w.startTime = performance.now()
 
       const countFrames = () => {
-        ;(window as any).frameCount++
-        if (performance.now() - (window as any).startTime < 2000) {
+        w.frameCount++
+        if (performance.now() - w.startTime < 2000) {
           requestAnimationFrame(countFrames)
         }
       }
@@ -34,8 +40,9 @@ test.describe('Background Animation Performance and Accessibility', () => {
 
     // Calculate FPS
     const fps = await page.evaluate(() => {
-      const elapsed = (performance.now() - (window as any).startTime) / 1000
-      return (window as any).frameCount / elapsed
+      const w = window as unknown as WindowWithFrameCounter
+      const elapsed = (performance.now() - w.startTime) / 1000
+      return w.frameCount / elapsed
     })
 
     // Verify FPS is at least 55fps

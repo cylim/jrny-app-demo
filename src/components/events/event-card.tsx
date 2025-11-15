@@ -1,8 +1,8 @@
+import { Link } from '@tanstack/react-router'
+import type { Id } from 'convex/_generated/dataModel'
 import { motion } from 'framer-motion'
 import { Calendar, MapPin, Users } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 import { fadeIn } from '~/lib/animations'
-import type { Id } from 'convex/_generated/dataModel'
 
 /**
  * Event card component for displaying event summaries
@@ -115,8 +115,7 @@ export function EventCard({ event }: EventCardProps) {
             <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
             <span>
               {event.participantCount}
-              {event.maxCapacity !== undefined &&
-                ` / ${event.maxCapacity}`}{' '}
+              {event.maxCapacity !== undefined && ` / ${event.maxCapacity}`}{' '}
               {event.participantCount === 1 ? 'participant' : 'participants'}
             </span>
           </div>

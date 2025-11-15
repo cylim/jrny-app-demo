@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { CityCard } from '~/components/city-card'
 import type { FeaturedCity } from '~/types/city'
+import type { Id } from '~@/convex/_generated/dataModel'
 
 /**
  * Unit tests for CityCard component
@@ -19,7 +20,7 @@ import type { FeaturedCity } from '~/types/city'
 describe('CityCard Component', () => {
   it('should render city name, image, and visit count', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Tokyo',
       shortSlug: 'tokyo',
       image: 'https://example.com/tokyo.jpg',
@@ -42,7 +43,7 @@ describe('CityCard Component', () => {
 
   it('should format visit count with thousands separators', () => {
     const mockCity1: FeaturedCity = {
-      _id: 'test-1' as any,
+      _id: 'test-1' as Id<'cities'>,
       name: 'Paris',
       shortSlug: 'paris',
       image: 'https://example.com/paris.jpg',
@@ -56,7 +57,7 @@ describe('CityCard Component', () => {
     expect(screen.getByText(/1,234,567/)).toBeInTheDocument()
 
     const mockCity2: FeaturedCity = {
-      _id: 'test-2' as any,
+      _id: 'test-2' as Id<'cities'>,
       name: 'London',
       shortSlug: 'london',
       image: 'https://example.com/london.jpg',
@@ -73,7 +74,7 @@ describe('CityCard Component', () => {
     const mockOnClick = vi.fn()
 
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Barcelona',
       shortSlug: 'barcelona',
       image: 'https://example.com/barcelona.jpg',
@@ -91,7 +92,7 @@ describe('CityCard Component', () => {
 
   it('should have proper accessibility attributes', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'New York',
       shortSlug: 'new-york-city',
       image: 'https://example.com/newyork.jpg',
@@ -109,7 +110,7 @@ describe('CityCard Component', () => {
 
   it('should handle missing image gracefully', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Berlin',
       shortSlug: 'berlin',
       image: null,
@@ -128,7 +129,7 @@ describe('CityCard Component', () => {
 
   it('should apply Kirby styling with rounded corners', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Sydney',
       shortSlug: 'sydney',
       image: 'https://example.com/sydney.jpg',
@@ -151,7 +152,7 @@ describe('CityCard Component', () => {
 
   it('should show hover and tap effects with Framer Motion', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Dubai',
       shortSlug: 'dubai',
       image: 'https://example.com/dubai.jpg',
@@ -170,7 +171,7 @@ describe('CityCard Component', () => {
 
   it('should display test IDs for E2E testing', () => {
     const mockCity: FeaturedCity = {
-      _id: 'test-city-1' as any,
+      _id: 'test-city-1' as Id<'cities'>,
       name: 'Singapore',
       shortSlug: 'singapore',
       image: 'https://example.com/singapore.jpg',

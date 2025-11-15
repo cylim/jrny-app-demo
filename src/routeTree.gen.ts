@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
-import { Route as EEventIdRouteImport } from './routes/e/$eventId'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as EEventIdRouteImport } from './routes/e/$eventId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
@@ -37,6 +37,11 @@ const UUsernameOrIdRoute = UUsernameOrIdRouteImport.update({
   path: '/u/$usernameOrId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EEventIdRoute = EEventIdRouteImport.update({
+  id: '/e/$eventId',
+  path: '/e/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CShortSlugRoute = CShortSlugRouteImport.update({
   id: '/c/$shortSlug',
   path: '/c/$shortSlug',
@@ -45,11 +50,6 @@ const CShortSlugRoute = CShortSlugRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EEventIdRoute = EEventIdRouteImport.update({
-  id: '/e/$eventId',
-  path: '/e/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -151,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameOrIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/e/$eventId': {
+      id: '/e/$eventId'
+      path: '/e/$eventId'
+      fullPath: '/e/$eventId'
+      preLoaderRoute: typeof EEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$shortSlug': {
       id: '/c/$shortSlug'
       path: '/c/$shortSlug'
@@ -163,13 +170,6 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/e/$eventId': {
-      id: '/e/$eventId'
-      path: '/e/$eventId'
-      fullPath: '/e/$eventId'
-      preLoaderRoute: typeof EEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
