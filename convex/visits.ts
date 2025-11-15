@@ -60,6 +60,12 @@ export const createVisit = mutation({
       updatedAt: now,
     })
 
+    // Update city visitCount
+    const currentVisitCount = city.visitCount ?? 0
+    await ctx.db.patch(cityId, {
+      visitCount: currentVisitCount + 1,
+    })
+
     return { success: true, visitId }
   },
 })
@@ -156,6 +162,15 @@ export const deleteVisit = mutation({
 
     if (!user || visit.userId !== user._id) {
       return { success: false, error: 'Unauthorized' }
+    }
+
+    // Get city to update visitCount
+    const city = await ctx.db.get(visit.cityId)
+    if (city) {
+      const currentVisitCount = city.visitCount ?? 0
+      await ctx.db.patch(visit.cityId, {
+        visitCount: Math.max(0, currentVisitCount - 1),
+      })
     }
 
     // Delete visit
