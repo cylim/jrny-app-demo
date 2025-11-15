@@ -68,7 +68,7 @@ export const pulsate = (delay = 0) => ({
     transition: {
       duration: durations.normal * 1.5,
       repeat: Infinity,
-      ease: 'easeInOut',
+      ease: 'easeInOut' as const,
       delay,
     },
   },
@@ -127,4 +127,13 @@ export const staggerContainer = {
 export const staggerItem = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: bounceSpring },
+}
+
+/**
+ * Slide up animation variant
+ */
+export const slideUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: bounceSpring },
+  exit: { opacity: 0, y: 20 },
 }

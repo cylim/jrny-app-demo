@@ -9,12 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
+import { Route as EEventIdRouteImport } from './routes/e/$eventId'
+import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -36,6 +37,11 @@ const UUsernameOrIdRoute = UUsernameOrIdRouteImport.update({
   path: '/u/$usernameOrId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EEventIdRoute = EEventIdRouteImport.update({
+  id: '/e/$eventId',
+  path: '/e/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CShortSlugRoute = CShortSlugRouteImport.update({
   id: '/c/$shortSlug',
   path: '/c/$shortSlug',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
+  '/e/$eventId': typeof EEventIdRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
+  '/e/$eventId': typeof EEventIdRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
+  '/e/$eventId': typeof EEventIdRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/settings'
     | '/c/$shortSlug'
+    | '/e/$eventId'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/settings'
     | '/c/$shortSlug'
+    | '/e/$eventId'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/settings'
     | '/c/$shortSlug'
+    | '/e/$eventId'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   SettingsRoute: typeof SettingsRoute
   CShortSlugRoute: typeof CShortSlugRoute
+  EEventIdRoute: typeof EEventIdRoute
   UUsernameOrIdRoute: typeof UUsernameOrIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameOrIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/e/$eventId': {
+      id: '/e/$eventId'
+      path: '/e/$eventId'
+      fullPath: '/e/$eventId'
+      preLoaderRoute: typeof EEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$shortSlug': {
       id: '/c/$shortSlug'
       path: '/c/$shortSlug'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   SettingsRoute: SettingsRoute,
   CShortSlugRoute: CShortSlugRoute,
+  EEventIdRoute: EEventIdRoute,
   UUsernameOrIdRoute: UUsernameOrIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
@@ -167,9 +188,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
 import type { getRouter } from './router.tsx'
-
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

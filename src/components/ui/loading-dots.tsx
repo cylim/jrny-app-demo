@@ -46,8 +46,7 @@ export function LoadingDots({
   const dots = Array.from({ length: dotCount }, (_, i) => i)
 
   return (
-    <div
-      role="status"
+    <output
       aria-label={ariaLabel}
       aria-live="polite"
       className={cn('flex items-center justify-center gap-1', className)}
@@ -70,7 +69,6 @@ export function LoadingDots({
 
         // Animated dots with staggered delays (0.1s apart)
         const delay = i * 0.1
-        const animation = pulsate(delay) as any
 
         return (
           <motion.div
@@ -81,13 +79,13 @@ export function LoadingDots({
               variantClasses[variant],
               sizeClasses[size],
             )}
-            variants={animation}
+            variants={pulsate(delay)}
             initial="initial"
             animate="animate"
           />
         )
       })}
       <span className="sr-only">{ariaLabel}</span>
-    </div>
+    </output>
   )
 }

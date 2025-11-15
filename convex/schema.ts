@@ -86,4 +86,33 @@ export default defineSchema({
     .index('by_start_date', ['startDate'])
     .index('by_city_and_start', ['cityId', 'startDate'])
     .index('by_city_and_end_date', ['cityId', 'endDate']),
+  events: defineTable({
+    // Event details
+    title: v.string(),
+    description: v.string(),
+    // Time information (Unix timestamps in milliseconds)
+    startTime: v.number(),
+    endTime: v.optional(v.number()),
+    timezone: v.string(), // IANA timezone (e.g., "America/New_York")
+    // Location
+    location: v.string(),
+    // Foreign keys
+    cityId: v.id('cities'),
+    ownerId: v.id('users'),
+    // Event settings
+    maxCapacity: v.optional(v.number()), // Optional participant limit
+    isParticipantListHidden: v.boolean(), // Privacy control for participant list
+    isCancelled: v.boolean(), // Whether event is cancelled
+  })
+    .index('by_city', ['cityId'])
+    .index('by_city_and_start', ['cityId', 'startTime'])
+    .index('by_owner', ['ownerId']),
+  eventParticipants: defineTable({
+    // Foreign keys
+    eventId: v.id('events'),
+    userId: v.id('users'),
+  })
+    .index('by_event', ['eventId'])
+    .index('by_user', ['userId'])
+    .index('by_event_and_user', ['eventId', 'userId']),
 })

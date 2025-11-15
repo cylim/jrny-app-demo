@@ -1,17 +1,99 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { Id } from 'convex/_generated/dataModel'
 import { Github, Linkedin, Twitter } from 'lucide-react'
+import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TestUserBadge } from '@/components/ui/test-user-badge'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
 import { UserVisitsList } from '@/components/visits/user-visits-list'
 import type { User } from '@/types/user'
+import { EventCard } from '~/components/events/event-card'
 import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
 })
+
+/**
+ * Component that fetches and displays user events (upcoming and past)
+ * Only rendered when user exists to avoid invalid query parameters
+ */
+function UserEventsSection({
+  userId,
+  isOwnProfile,
+}: {
+  userId: Id<'users'>
+  isOwnProfile: boolean
+}) {
+  const { data: userEvents } = useSuspenseQuery(
+    convexQuery(api.events.getUserEvents, { userId }),
+  )
+
+  if (!userEvents) {
+    return null
+  }
+
+  return (
+    <div
+      role="tabpanel"
+      id="events-panel"
+      aria-labelledby="events-tab"
+      className="space-y-8"
+    >
+      {/* Upcoming Events */}
+      <div>
+        <h2 className="mb-4 text-2xl font-semibold">
+          Upcoming Events ({userEvents.upcoming.length})
+        </h2>
+        {userEvents.upcoming.length === 0 ? (
+          <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              {isOwnProfile
+                ? "You haven't joined any upcoming events yet."
+                : "This user hasn't joined any upcoming events yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {userEvents.upcoming.map((event) => (
+              <EventCard
+                key={event._id}
+                event={{ ...event, participantCount: 0 }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Past Events */}
+      <div>
+        <h2 className="mb-4 text-2xl font-semibold">
+          Past Events ({userEvents.past.length})
+        </h2>
+        {userEvents.past.length === 0 ? (
+          <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              {isOwnProfile
+                ? "You haven't attended any past events yet."
+                : "This user hasn't attended any past events yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {userEvents.past.map((event) => (
+              <EventCard
+                key={event._id}
+                event={{ ...event, participantCount: 0 }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /**
  * Render the user profile page for the current route's username or ID.
@@ -36,6 +118,9 @@ function UserProfilePage() {
   const { data: currentUser } = useSuspenseQuery(
     convexQuery(api.users.getCurrentUser, {}),
   )
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'visits' | 'events'>('visits')
 
   if (!user) {
     return (
@@ -142,20 +227,73 @@ function UserProfilePage() {
           {isOwnProfile && <AddVisitButton />}
         </div>
 
-        {/* Visited Cities Section */}
-        {showVisitHistory ? (
-          <div className="bg-card/30 border rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6">
-              {isOwnProfile ? 'My Travels' : 'Travels'}
-            </h2>
-            <UserVisitsList userId={user._id} />
-          </div>
-        ) : (
-          <div className="bg-card border rounded-lg p-6">
-            <p className="text-center text-muted-foreground">
-              This user has chosen to keep their travel history private.
-            </p>
-          </div>
+        {/* Tab Navigation */}
+        <div
+          className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800"
+          role="tablist"
+          aria-label="Profile sections"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'visits'}
+            aria-controls="visits-panel"
+            id="visits-tab"
+            onClick={() => setActiveTab('visits')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'visits'
+                ? 'border-b-2 border-pink-500 text-zinc-900 dark:text-zinc-100'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            }`}
+          >
+            Visits
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'events'}
+            aria-controls="events-panel"
+            id="events-tab"
+            onClick={() => setActiveTab('events')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'events'
+                ? 'border-b-2 border-pink-500 text-zinc-900 dark:text-zinc-100'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            }`}
+          >
+            Events
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'visits' &&
+          (showVisitHistory ? (
+            <div
+              role="tabpanel"
+              id="visits-panel"
+              aria-labelledby="visits-tab"
+              className="bg-card/30 border rounded-lg p-6"
+            >
+              <h2 className="text-2xl font-semibold mb-6">
+                {isOwnProfile ? 'My Travels' : 'Travels'}
+              </h2>
+              <UserVisitsList userId={user._id} />
+            </div>
+          ) : (
+            <div
+              role="tabpanel"
+              id="visits-panel"
+              aria-labelledby="visits-tab"
+              className="bg-card border rounded-lg p-6"
+            >
+              <p className="text-center text-muted-foreground">
+                This user has chosen to keep their travel history private.
+              </p>
+            </div>
+          ))}
+
+        {activeTab === 'events' && (
+          <UserEventsSection userId={user._id} isOwnProfile={isOwnProfile} />
         )}
       </div>
     </div>

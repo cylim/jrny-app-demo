@@ -674,6 +674,35 @@ This app allows users to record their travel history with dates and discover oth
 
 **Overlap Detection**: Two visits overlap if they share at least one calendar day. System uses day-level precision (not hour/minute).
 
+### City Events & Meetups
+
+This feature allows users to organize and discover social gatherings in cities they're visiting or living in.
+
+**Core Entities**:
+- **Events**: Social gatherings/meetups in specific cities with date, time, location, and capacity
+- **Event Participants**: Links users to events they've joined (many-to-many relationship)
+
+**Key Features**:
+1. **Create Events**: Organize meetups, tours, or social gatherings from city pages
+2. **Event Discovery**: Browse upcoming events on city pages, sorted by start time
+3. **Join/Leave Events**: RSVP to events with automatic capacity management and duplicate prevention
+4. **Event Management**: Edit event details, cancel events (owner only)
+5. **Privacy Controls**: Hide participant lists from non-participants (owner can always see full list)
+6. **Profile Integration**: View upcoming and past events in user profile with dedicated "Events" tab
+7. **Real-time Updates**: Convex live queries automatically update participant counts as users join/leave
+8. **Cascade Delete**: When users delete their accounts, all owned events and participations are removed
+
+**Event States**:
+- **Upcoming**: `startTime > Date.now()` and `isCancelled = false`
+- **Past**: `startTime < Date.now()`
+- **Cancelled**: `isCancelled = true` (filtered from all event lists)
+
+**Privacy Logic** (in `getEvent` query):
+- **Owner**: Always sees full participant list
+- **Participant** (when `isParticipantListHidden = true`): Only sees their own participation
+- **Non-participant** (when `isParticipantListHidden = true`): Sees "Participant list hidden by organizer"
+- **Anonymous users**: Can view event details but cannot see participants if hidden
+
 ### Database Schema
 
 See `convex/schema.ts` for complete schema. Key tables:
@@ -696,6 +725,19 @@ See `convex/schema.ts` for complete schema. Key tables:
 - `notes` (optional), `isPrivate` (boolean)
 - Indexed by: `by_user_id`, `by_city_id`, `by_user_and_city`, `by_start_date`, `by_city_and_start`
 
+**events**:
+- `title`, `description`, `location` (strings)
+- `startTime`, `endTime` (Unix timestamps in milliseconds, optional endTime)
+- `timezone` (IANA timezone string, e.g., "America/New_York")
+- `cityId` (Id<'cities'>), `ownerId` (Id<'users'>)
+- `maxCapacity` (optional number, >= 1)
+- `isParticipantListHidden`, `isCancelled` (booleans)
+- Indexed by: `by_city`, `by_city_and_start`, `by_owner`
+
+**eventParticipants**:
+- `eventId` (Id<'events'>), `userId` (Id<'users'>)
+- Indexed by: `by_event`, `by_user`, `by_event_and_user`
+
 ## File Structure
 
 ```
@@ -705,10 +747,11 @@ convex/
   ├── auth.ts           # Better-Auth instance with Google OAuth
   ├── convex.config.ts  # App-level Convex config
   ├── http.ts           # HTTP router for auth endpoints
-  ├── schema.ts         # Database schema (users, cities, visits)
+  ├── schema.ts         # Database schema (users, cities, visits, events, eventParticipants)
   ├── cities.ts         # City queries and mutations
   ├── users.ts          # User profile queries and mutations
-  └── visits.ts         # Visit tracking queries and mutations
+  ├── visits.ts         # Visit tracking queries and mutations
+  └── events.ts         # Event management queries and mutations
 
 src/
   ├── components/
@@ -718,6 +761,12 @@ src/
   │   ├── page-transition.tsx      # Page navigation transitions
   │   ├── route-loading-bar.tsx    # Loading progress bar
   │   ├── auth/                    # Authentication components
+  │   ├── events/                  # Event management components
+  │   │   ├── event-card.tsx       # Event display card
+  │   │   ├── event-form.tsx       # Create/edit event form
+  │   │   ├── event-actions.tsx    # Join/Leave/Edit/Cancel buttons
+  │   │   └── event-participant-list.tsx  # Participant avatars
+  │   ├── visits/                  # Visit tracking components
   │   └── ui/                      # shadcn/ui components
   │       ├── loading-dots.tsx     # Pulsating dots loader
   │       └── [other components]
@@ -733,6 +782,8 @@ src/
   │   ├── settings.tsx             # User settings page
   │   ├── c/                       # City pages (/c/:shortSlug)
   │   │   └── $shortSlug.tsx
+  │   ├── e/                       # Event detail pages (/e/:eventId)
+  │   │   └── $eventId.tsx
   │   └── u/                       # User profiles (/u/:username)
   │       └── $username.tsx
   ├── routeTree.gen.ts             # Auto-generated route tree
@@ -744,7 +795,9 @@ src/
 
 specs/                             # Feature specifications
   ├── 001-travel-tracking/         # Travel tracking feature spec
-  └── 002-kirby-ui-refactor/       # UI refactor feature spec
+  ├── 002-kirby-ui-refactor/       # UI refactor feature spec
+  ├── 003-db-seed/                 # Database seeding feature spec
+  └── 004-city-events/             # City events & meetups feature spec
 
 public/                            # Static assets (favicons, etc.)
 ```

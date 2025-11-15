@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
 
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean
+  value: number
+}
+
 test.describe('Loading Indicator Performance', () => {
   test('should display loading indicator within 200ms of navigation', async ({
     page,
@@ -83,11 +88,12 @@ test.describe('Loading Indicator Performance', () => {
 
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
+            const layoutShiftEntry = entry as LayoutShiftEntry
             if (
               entry.entryType === 'layout-shift' &&
-              !(entry as any).hadRecentInput
+              !layoutShiftEntry.hadRecentInput
             ) {
-              clsValue += (entry as any).value
+              clsValue += layoutShiftEntry.value
             }
           }
         })

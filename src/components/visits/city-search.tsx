@@ -23,7 +23,7 @@ interface CitySearchProps {
 export function CitySearch({ value, onChange }: CitySearchProps) {
   const [search, setSearch] = useState('')
   const { data: allCities } = useSuspenseQuery(
-    convexQuery(api.cities.getAllCities as any, {}),
+    convexQuery(api.cities.getAllCities, {}),
   )
 
   const filteredCities = useMemo(() => {
@@ -31,14 +31,14 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
     const searchLower = search.toLowerCase()
     return allCities
       .filter(
-        (city: any) =>
+        (city) =>
           city.name.toLowerCase().includes(searchLower) ||
           city.country.toLowerCase().includes(searchLower),
       )
       .slice(0, 20) // Limit to 20 results
   }, [allCities, search])
 
-  const selectedCity = allCities.find((city: any) => city._id === value)
+  const selectedCity = allCities.find((city) => city._id === value)
 
   return (
     <div className="space-y-2">
@@ -60,7 +60,7 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
       )}
 
       <div className="max-h-64 overflow-y-auto border rounded-lg">
-        {filteredCities.map((city: any) => (
+        {filteredCities.map((city) => (
           <button
             key={city._id}
             type="button"
