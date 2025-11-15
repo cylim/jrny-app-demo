@@ -156,7 +156,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         property: 'og:image',
-        content: '/android-chrome-512x512.png',
+        content: `${import.meta.env.SITE_URL || 'https://demo.jrny.app'}/android-chrome-512x512.png`,
       },
       {
         property: 'og:image:width',
@@ -186,7 +186,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: 'twitter:image',
-        content: '/android-chrome-512x512.png',
+        content: `${import.meta.env.SITE_URL || 'https://demo.jrny.app'}/android-chrome-512x512.png`,
       },
       {
         name: 'twitter:image:alt',
