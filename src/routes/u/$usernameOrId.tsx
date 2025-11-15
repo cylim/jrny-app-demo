@@ -144,7 +144,7 @@ function UserProfilePage() {
 
         {/* Visited Cities Section */}
         {showVisitHistory ? (
-          <div className="bg-card border rounded-lg p-6">
+          <div className="bg-card/30 border rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-6">
               {isOwnProfile ? 'My Travels' : 'Travels'}
             </h2>
