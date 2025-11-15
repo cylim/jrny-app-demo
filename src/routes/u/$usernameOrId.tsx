@@ -156,9 +156,17 @@ function UserProfilePage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+        <div
+          className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800"
+          role="tablist"
+          aria-label="Profile sections"
+        >
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'visits'}
+            aria-controls="visits-panel"
+            id="visits-tab"
             onClick={() => setActiveTab('visits')}
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'visits'
@@ -170,6 +178,10 @@ function UserProfilePage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'events'}
+            aria-controls="events-panel"
+            id="events-tab"
             onClick={() => setActiveTab('events')}
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'events'
@@ -184,14 +196,24 @@ function UserProfilePage() {
         {/* Tab Content */}
         {activeTab === 'visits' &&
           (showVisitHistory ? (
-            <div className="bg-card/30 border rounded-lg p-6">
+            <div
+              role="tabpanel"
+              id="visits-panel"
+              aria-labelledby="visits-tab"
+              className="bg-card/30 border rounded-lg p-6"
+            >
               <h2 className="text-2xl font-semibold mb-6">
                 {isOwnProfile ? 'My Travels' : 'Travels'}
               </h2>
               <UserVisitsList userId={user._id} />
             </div>
           ) : (
-            <div className="bg-card border rounded-lg p-6">
+            <div
+              role="tabpanel"
+              id="visits-panel"
+              aria-labelledby="visits-tab"
+              className="bg-card border rounded-lg p-6"
+            >
               <p className="text-center text-muted-foreground">
                 This user has chosen to keep their travel history private.
               </p>
@@ -199,7 +221,12 @@ function UserProfilePage() {
           ))}
 
         {activeTab === 'events' && userEvents && (
-          <div className="space-y-8">
+          <div
+            role="tabpanel"
+            id="events-panel"
+            aria-labelledby="events-tab"
+            className="space-y-8"
+          >
             {/* Upcoming Events */}
             <div>
               <h2 className="mb-4 text-2xl font-semibold">

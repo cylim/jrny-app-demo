@@ -76,12 +76,17 @@ export function EventCard({ event }: EventCardProps) {
             {event.title}
           </h3>
           <div className="flex flex-shrink-0 gap-2">
-            {isPast && (
+            {event.isCancelled && (
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                Cancelled
+              </span>
+            )}
+            {isPast && !event.isCancelled && (
               <span className="rounded-full bg-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
                 Past
               </span>
             )}
-            {isFull && !isPast && (
+            {isFull && !isPast && !event.isCancelled && (
               <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-medium text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
                 Event Full
               </span>

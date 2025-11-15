@@ -139,6 +139,34 @@ export function EventForm({
     return Object.keys(newErrors).length === 0
   }
 
+  /**
+   * Convert datetime-local input to Unix timestamp in the target timezone
+   * The datetime-local input gives us a local time (no timezone info), but we want
+   * to interpret it as a time in the target timezone, not the user's browser timezone.
+   */
+  const convertToTargetTimezone = (dateTimeLocal: string): number => {
+    // Parse the datetime-local value as if it were in the target timezone
+    // Example: "2025-01-15T14:00" should be treated as 2PM in the selected timezone
+    const [datePart, timePart] = dateTimeLocal.split('T')
+    const isoString = `${datePart}T${timePart}:00`
+
+    // Parse the ISO string as local time, then format it in the target timezone
+    // to get a string representation we can parse back
+    // This leverages the browser's timezone handling to get the correct offset
+    const tempDate = new Date(isoString)
+    const targetTimeString = new Date(tempDate).toLocaleString('en-US', {
+      timeZone: timezone,
+    })
+
+    // Parse back to get the correct timestamp
+    // This accounts for the timezone offset
+    const result = new Date(targetTimeString)
+    const offset = result.getTime() - tempDate.getTime()
+
+    // Apply the reverse offset to get the correct timestamp
+    return tempDate.getTime() - offset
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -146,8 +174,10 @@ export function EventForm({
       return
     }
 
-    const startTime = new Date(startDateTime).getTime()
-    const endTime = endDateTime ? new Date(endDateTime).getTime() : undefined
+    const startTime = convertToTargetTimezone(startDateTime)
+    const endTime = endDateTime
+      ? convertToTargetTimezone(endDateTime)
+      : undefined
 
     await onSubmit({
       title,

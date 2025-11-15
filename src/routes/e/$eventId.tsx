@@ -1,6 +1,6 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
 import type { Id } from 'convex/_generated/dataModel'
 import { useMutation } from 'convex/react'
@@ -35,7 +35,6 @@ export const Route = createFileRoute('/e/$eventId')({
 
 function EventDetailPage() {
   const { eventId } = Route.useParams()
-  const navigate = useNavigate()
 
   // Fetch event data with real-time updates
   const { data: event } = useSuspenseQuery(
@@ -84,6 +83,7 @@ function EventDetailPage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
 
   const updateEvent = useMutation(api.events.updateEvent)
   const cancelEvent = useMutation(api.events.cancelEvent)
@@ -119,14 +119,17 @@ function EventDetailPage() {
 
   const handleCancelEvent = async () => {
     setIsCancelling(true)
+    setCancelError(null)
     try {
       await cancelEvent({ eventId: event._id })
       setShowCancelConfirm(false)
-      // Navigate back to city page
-      navigate({ to: `/c/${event.cityId}` })
     } catch (error) {
       console.error('Failed to cancel event:', error)
-      alert('Failed to cancel event. Please try again.')
+      setCancelError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to cancel event. Please try again.',
+      )
     } finally {
       setIsCancelling(false)
     }
@@ -290,10 +293,18 @@ function EventDetailPage() {
                 be undone. All participants will still be able to see the event
                 details, but it will be marked as cancelled.
               </p>
+              {cancelError && (
+                <div className="mb-4 rounded-2xl bg-red-100 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                  {cancelError}
+                </div>
+              )}
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => setShowCancelConfirm(false)}
+                  onClick={() => {
+                    setShowCancelConfirm(false)
+                    setCancelError(null)
+                  }}
                   disabled={isCancelling}
                   className="flex-1 rounded-full"
                 >

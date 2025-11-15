@@ -1,6 +1,6 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus, X } from 'lucide-react'
@@ -51,6 +51,7 @@ function UpcomingEventsSection({
   const { data: events } = useSuspenseQuery(
     convexQuery(api.events.listUpcomingEvents, { cityId }),
   )
+  const navigate = useNavigate()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -73,8 +74,8 @@ function UpcomingEventsSection({
         ...values,
       })
       setShowCreateForm(false)
-      // Navigate to event detail page
-      window.location.href = `/e/${eventId}`
+      // Navigate to event detail page using TanStack Router
+      navigate({ to: '/e/$eventId', params: { eventId } })
     } catch (error) {
       console.error('Failed to create event:', error)
       throw error
