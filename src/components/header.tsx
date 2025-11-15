@@ -14,7 +14,7 @@ export function Header() {
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <span className="font-bold">JRNY</span>
+          <img src="/favicon.png" alt="JRNY" className="h-8 w-8 dark:invert" />
         </Link>
 
         {/* Navigation */}
