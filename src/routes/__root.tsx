@@ -202,7 +202,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-background text-foreground">
+      <body className="bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300 text-foreground dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-orange-900">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
