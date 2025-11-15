@@ -189,48 +189,70 @@ function CityPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* City Header */}
-      <div className="max-w-4xl mx-auto">
-        {city.image && (
-          <div className="mb-8 rounded-lg overflow-hidden">
-            <img
-              src={city.image}
-              alt={city.name}
-              className="w-full h-64 object-cover"
-            />
+    <div className="pb-8">
+      {/* City Header with Image */}
+      {city.image && (
+        <div className="relative w-full mb-8">
+          <img
+            src={city.image}
+            alt={city.name}
+            className="w-full h-80 object-cover"
+          />
+          {/* Overlay with city name and geographic data */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6">
+            <div className="max-w-4xl mx-auto w-full">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
+                {city.name}
+              </h1>
+              <p className="text-xl text-white/90 mb-4">
+                {city.country} • {city.region}
+              </p>
+              {/* Geographic Information Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-white/70 text-xs mb-1">Latitude</p>
+                  <p className="font-medium text-white">{city.latitude}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-white/70 text-xs mb-1">Longitude</p>
+                  <p className="font-medium text-white">{city.longitude}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-white/70 text-xs mb-1">Country Code</p>
+                  <p className="font-medium text-white">{city.countryCode}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-white/70 text-xs mb-1">Region</p>
+                  <p className="font-medium text-white">{city.region}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto">
+
+        {/* Who's Here Now Section - Only for logged-in users */}
+        {session?.user ? (
+          <div className="bg-card border rounded-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
+            <Suspense fallback={<CurrentVisitorsListSkeleton />}>
+              <CurrentVisitorsSection cityId={city._id} cityName={city.name} />
+            </Suspense>
+          </div>
+        ) : (
+          <div className="bg-muted/30 rounded-lg p-6 text-center mb-8">
+            <h2 className="text-xl font-semibold mb-2">
+              See Who's Traveling Here
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Log in to discover other travelers in {city.name} and connect with
+              people visiting this destination.
+            </p>
           </div>
         )}
-
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{city.name}</h1>
-          <p className="text-xl text-muted-foreground">
-            {city.country} • {city.region}
-          </p>
-        </div>
-
-        {/* Geographic Information */}
-        <div className="bg-muted/30 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Location Details</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Latitude</p>
-              <p className="font-medium">{city.latitude}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Longitude</p>
-              <p className="font-medium">{city.longitude}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Country Code</p>
-              <p className="font-medium">{city.countryCode}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Region</p>
-              <p className="font-medium">{city.region}</p>
-            </div>
-          </div>
-        </div>
 
         {/* Upcoming Events Section */}
         <div className="mb-8">
@@ -247,32 +269,7 @@ function CityPage() {
             />
           </Suspense>
         </div>
-
-        {/* Who's Here Now Section - Only for logged-in users */}
-        {session?.user ? (
-          <div className="bg-card border rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
-            <Suspense fallback={<CurrentVisitorsListSkeleton />}>
-              <CurrentVisitorsSection cityId={city._id} cityName={city.name} />
-            </Suspense>
-          </div>
-        ) : (
-          <div className="bg-muted/30 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">
-              See Who's Traveling Here
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Log in to discover other travelers in {city.name} and connect with
-              people visiting this destination.
-            </p>
-            <a
-              href="/"
-              className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium"
-            >
-              Sign In to View Travelers
-            </a>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )
