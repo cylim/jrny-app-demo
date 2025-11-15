@@ -1,12 +1,35 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { Suspense } from 'react'
+import {
+  CurrentVisitorsList,
+  CurrentVisitorsListSkeleton,
+} from '@/components/visits/current-visitors-list'
 import { authClient } from '@/lib/auth-client'
 import { api } from '~@/convex/_generated/api'
+import type { Id } from '~@/convex/_generated/dataModel'
 
 export const Route = createFileRoute('/c/$shortSlug')({
   component: CityPage,
 })
+
+/**
+ * Component that fetches and displays current visitors for a city
+ */
+function CurrentVisitorsSection({
+  cityId,
+  cityName,
+}: {
+  cityId: Id<'cities'>
+  cityName: string
+}) {
+  const { data: visitors } = useSuspenseQuery(
+    convexQuery(api.visits.getCurrentVisitors, { cityId }),
+  )
+
+  return <CurrentVisitorsList visitors={visitors} cityName={cityName} />
+}
 
 /**
  * Render the city page for the current `shortSlug` route parameter.
@@ -88,10 +111,9 @@ function CityPage() {
         {session?.user ? (
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
-            <p className="text-muted-foreground">
-              This section will show travelers currently in {city.name}.
-            </p>
-            {/* TODO: Implement visitor list feature */}
+            <Suspense fallback={<CurrentVisitorsListSkeleton />}>
+              <CurrentVisitorsSection cityId={city._id} cityName={city.name} />
+            </Suspense>
           </div>
         ) : (
           <div className="bg-muted/30 rounded-lg p-6 text-center">

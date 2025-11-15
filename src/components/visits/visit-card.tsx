@@ -38,61 +38,60 @@ export function VisitCard({ visit }: VisitCardProps) {
   )
 
   return (
-    <div className="border rounded-lg p-6 hover:bg-muted/50 transition-colors">
-      <div className="flex gap-4">
-        {/* City Image */}
-        {visit.city.image && (
-          <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
-            <img
-              src={visit.city.image}
-              alt={visit.city.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+    <Link
+      to="/c/$shortSlug"
+      params={{ shortSlug: visit.city.shortSlug }}
+      className="relative block border rounded-lg overflow-hidden h-64 group hover:ring-2 hover:ring-primary/50 transition-all"
+    >
+      {/* Background Image */}
+      {visit.city.image && (
+        <div className="absolute inset-0">
+          <img
+            src={visit.city.image}
+            alt={visit.city.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+        </div>
+      )}
 
-        {/* Visit Details */}
-        <div className="flex-1 min-w-0">
+      {/* Date Range - Top Right */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 text-sm text-white/90 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
+        <Calendar className="w-4 h-4" />
+        <span>{formatDateRange(visit.startDate, visit.endDate)}</span>
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative h-full p-6 flex flex-col justify-between text-white">
+        {/* Top Section */}
+        <div>
           {/* City Name */}
-          <Link
-            to="/c/$shortSlug"
-            params={{ shortSlug: visit.city.shortSlug }}
-            className="text-xl font-semibold hover:text-primary transition-colors"
-          >
+          <h3 className="text-2xl font-semibold group-hover:text-primary transition-colors">
             {visit.city.name}
-          </Link>
-          <p className="text-sm text-muted-foreground mb-3">
-            {visit.city.country}
-          </p>
-
-          {/* Date Range */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Calendar className="w-4 h-4" />
-            <span>{formatDateRange(visit.startDate, visit.endDate)}</span>
-          </div>
+          </h3>
+          <p className="text-sm text-white/90 mb-3">{visit.city.country}</p>
 
           {/* Notes */}
           {visit.notes && (
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-              {visit.notes}
-            </p>
-          )}
-
-          {/* Overlapping Visitors */}
-          {overlappingVisitors.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex items-center gap-2 text-sm font-medium mb-3">
-                <Users className="w-4 h-4" />
-                <span>
-                  Crossed paths with {overlappingVisitors.length}{' '}
-                  {overlappingVisitors.length === 1 ? 'traveler' : 'travelers'}
-                </span>
-              </div>
-              <OverlappingVisitorsList visitors={overlappingVisitors} />
-            </div>
+            <p className="text-sm text-white/90 line-clamp-2">{visit.notes}</p>
           )}
         </div>
+
+        {/* Bottom Section - Overlapping Visitors */}
+        {overlappingVisitors.length > 0 && (
+          <div className="pt-4 border-t border-white/20">
+            <div className="flex items-center gap-2 text-sm font-medium mb-3">
+              <Users className="w-4 h-4" />
+              <span>
+                Crossed paths with {overlappingVisitors.length}{' '}
+                {overlappingVisitors.length === 1 ? 'traveler' : 'travelers'}
+              </span>
+            </div>
+            <OverlappingVisitorsList visitors={overlappingVisitors} />
+          </div>
+        )}
       </div>
-    </div>
+    </Link>
   )
 }

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('Page Transitions', () => {
   test('should navigate from home to discover without flicker', async ({
@@ -17,7 +17,6 @@ test.describe('Page Transitions', () => {
 
     // Wait a bit to observe transition
     await page.waitForLoadState('networkidle')
-
 
     // Take screenshot of discover page
     await page.screenshot({ path: 'test-results/discover-after.png' })
@@ -39,7 +38,6 @@ test.describe('Page Transitions', () => {
 
     // Wait a bit to observe transition
     await page.waitForLoadState('networkidle')
-
 
     // Verify we're on home page
     await expect(page).toHaveURL('/')
@@ -64,7 +62,6 @@ test.describe('Page Transitions', () => {
 
     // Wait a bit to observe transition
     await page.waitForLoadState('networkidle')
-
 
     // Verify we're on a city page (URL should contain /c/)
     await expect(page).toHaveURL(/\/c\//)

@@ -135,7 +135,9 @@ describe('CityCard Component', () => {
       visitCount: 700,
     }
 
-    const { container } = render(<CityCard city={mockCity} onClick={() => {}} />)
+    const { container } = render(
+      <CityCard city={mockCity} onClick={() => {}} />,
+    )
 
     const card = container.firstChild as HTMLElement
     const classes = card.className
@@ -156,7 +158,9 @@ describe('CityCard Component', () => {
       visitCount: 600,
     }
 
-    const { container } = render(<CityCard city={mockCity} onClick={() => {}} />)
+    const { container } = render(
+      <CityCard city={mockCity} onClick={() => {}} />,
+    )
 
     const card = container.firstChild as HTMLElement
 

@@ -1,0 +1,477 @@
+# Convex API Contracts: Database Seeding
+
+# This file documents the Convex function contracts for database seeding.
+# It follows OpenAPI-like structure but is adapted for Convex's function model.
+
+openapi: 3.1.0
+info:
+  title: Database Seeding API
+  description: Convex internal mutations and queries for populating test data
+  version: 1.0.0
+
+paths:
+  # Internal Queries (read operations, no auth required)
+
+  /api.seed.getUserCount:
+    get:
+      summary: Get current count of users in database
+      operationId: getUserCount
+      tags: [Internal Queries]
+      security: []
+      parameters: []
+      responses:
+        '200':
+          description: Current user count
+          content:
+            application/json:
+              schema:
+                type: number
+                example: 150
+
+  /api.seed.getVisitCount:
+    get:
+      summary: Get current count of visits in database
+      operationId: getVisitCount
+      tags: [Internal Queries]
+      security: []
+      parameters: []
+      responses:
+        '200':
+          description: Current visit count
+          content:
+            application/json:
+              schema:
+                type: number
+                example: 3000
+
+  /api.seed.getAllUsers:
+    get:
+      summary: Get all seeded users (for visit generation)
+      operationId: getAllUsers
+      tags: [Internal Queries]
+      security: []
+      parameters: []
+      responses:
+        '200':
+          description: Array of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /api.seed.getTopCities:
+    get:
+      summary: Get top N cities by visit count
+      operationId: getTopCities
+      tags: [Internal Queries]
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: number
+            example: 100
+          description: Number of top cities to return
+      responses:
+        '200':
+          description: Array of top cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+
+  # Internal Mutations (write operations, no auth required)
+
+  /api.seed.insertUsers:
+    post:
+      summary: Batch insert users into database
+      operationId: insertUsers
+      tags: [Internal Mutations]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [users]
+              properties:
+                users:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserInput'
+                  minItems: 1
+                  maxItems: 100
+                  description: Batch of users to insert (recommended batch size: 50)
+      responses:
+        '200':
+          description: Insertion result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [inserted, userIds]
+                properties:
+                  inserted:
+                    type: number
+                    description: Number of users inserted
+                    example: 50
+                  userIds:
+                    type: array
+                    items:
+                      type: string
+                      description: Convex ID of inserted user
+                    example: ["kg2h4j5k6l7m8n9p0q1r2s3t", "kg2h4j5k6l7m8n9p0q1r2s3u"]
+
+  /api.seed.insertVisits:
+    post:
+      summary: Batch insert visits into database
+      operationId: insertVisits
+      tags: [Internal Mutations]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [visits]
+              properties:
+                visits:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/VisitInput'
+                  minItems: 1
+                  maxItems: 100
+                  description: Batch of visits to insert (recommended batch size: 50)
+      responses:
+        '200':
+          description: Insertion result with atomic visitCount updates
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [inserted, visitIds, citiesUpdated]
+                properties:
+                  inserted:
+                    type: number
+                    description: Number of visits inserted
+                    example: 50
+                  visitIds:
+                    type: array
+                    items:
+                      type: string
+                      description: Convex ID of inserted visit
+                  citiesUpdated:
+                    type: number
+                    description: Number of cities with updated visitCount
+                    example: 15
+
+  # Public Queries (for UI, auth-aware)
+
+  /api.visits.getCurrentVisitors:
+    get:
+      summary: Get users currently visiting a city (for "Who's Here" section)
+      operationId: getCurrentVisitors
+      tags: [Public Queries]
+      security: []
+      parameters:
+        - name: cityId
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Convex ID of the city
+            example: "kg2h4j5k6l7m8n9p0q1r2s3t"
+      responses:
+        '200':
+          description: Array of current visitors (filtered by privacy settings)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentVisitor'
+
+components:
+  schemas:
+    # User schemas
+
+    UserInput:
+      type: object
+      required:
+        - authUserId
+        - name
+        - email
+        - updatedAt
+        - lastSeen
+      properties:
+        authUserId:
+          type: string
+          pattern: '^seed_user_\d{6}$'
+          example: "seed_user_000042"
+          description: Unique identifier for seeded user
+        name:
+          type: string
+          minLength: 1
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "seed_42_jane.smith@example.com"
+          description: Must be lowercase and globally unique
+        image:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/123.jpg"
+        username:
+          type: string
+          pattern: '^[a-zA-Z0-9_]+$'
+          nullable: true
+          example: "janesmith42"
+          description: Optional, 20% of users have usernames
+        bio:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: "Passionate traveler exploring the world one city at a time."
+        settings:
+          type: object
+          nullable: true
+          required: [globalPrivacy, hideVisitHistory]
+          properties:
+            globalPrivacy:
+              type: boolean
+              description: Hide from all visitor lists (30% enable)
+              example: false
+            hideVisitHistory:
+              type: boolean
+              description: Hide visit history on profile (20% enable)
+              example: false
+        socialLinks:
+          type: object
+          nullable: true
+          properties:
+            github:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://github.com/janesmith"
+            x:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://x.com/janesmith"
+            linkedin:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://linkedin.com/in/janesmith"
+            telegram:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://t.me/janesmith"
+        isSeed:
+          type: boolean
+          nullable: true
+          description: "NEW: true for faker-generated test users, undefined for real users"
+          example: true
+        updatedAt:
+          type: number
+          description: Unix timestamp in milliseconds
+          example: 1700000000000
+        lastSeen:
+          type: number
+          description: Unix timestamp in milliseconds
+          example: 1700000000000
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserInput'
+        - type: object
+          required: [_id, _creationTime]
+          properties:
+            _id:
+              type: string
+              description: Convex-generated user ID
+              example: "kg2h4j5k6l7m8n9p0q1r2s3t"
+            _creationTime:
+              type: number
+              description: Unix timestamp in milliseconds
+              example: 1700000000000
+
+    # Visit schemas
+
+    VisitInput:
+      type: object
+      required:
+        - userId
+        - cityId
+        - startDate
+        - endDate
+        - isPrivate
+        - updatedAt
+      properties:
+        userId:
+          type: string
+          description: Convex ID of user (from seeded users)
+          example: "kg2h4j5k6l7m8n9p0q1r2s3t"
+        cityId:
+          type: string
+          description: Convex ID of city (from top 100 cities)
+          example: "kg2h4j5k6l7m8n9p0q1r2s3u"
+        startDate:
+          type: number
+          description: Unix timestamp in milliseconds (start of day)
+          example: 1704067200000
+        endDate:
+          type: number
+          description: Unix timestamp in milliseconds (start of day, +30 days)
+          example: 1706745600000
+        notes:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: "Amazing food scene and great weather!"
+        isPrivate:
+          type: boolean
+          description: Whether visit is private (25% are private)
+          example: false
+        isSeed:
+          type: boolean
+          nullable: true
+          description: "NEW: true for faker-generated test visits, undefined for real visits"
+          example: true
+        updatedAt:
+          type: number
+          description: Unix timestamp in milliseconds
+          example: 1700000000000
+
+    Visit:
+      allOf:
+        - $ref: '#/components/schemas/VisitInput'
+        - type: object
+          required: [_id, _creationTime]
+          properties:
+            _id:
+              type: string
+              description: Convex-generated visit ID
+              example: "kg2h4j5k6l7m8n9p0q1r2s3v"
+            _creationTime:
+              type: number
+              description: Unix timestamp in milliseconds
+              example: 1700000000000
+
+    # City schema
+
+    City:
+      type: object
+      required:
+        - _id
+        - _creationTime
+        - name
+        - slug
+        - shortSlug
+        - country
+        - countryCode
+        - region
+        - latitude
+        - longitude
+      properties:
+        _id:
+          type: string
+          description: Convex-generated city ID
+          example: "kg2h4j5k6l7m8n9p0q1r2s3w"
+        _creationTime:
+          type: number
+          example: 1700000000000
+        name:
+          type: string
+          example: "New York"
+        slug:
+          type: string
+          example: "new-york-united-states"
+        shortSlug:
+          type: string
+          example: "nyc"
+        country:
+          type: string
+          example: "United States"
+        countryCode:
+          type: string
+          example: "US"
+        region:
+          type: string
+          example: "North America"
+        latitude:
+          type: string
+          example: "40.7128"
+        longitude:
+          type: string
+          example: "-74.0060"
+        image:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/nyc.jpg"
+        visitCount:
+          type: number
+          nullable: true
+          description: Cached count, updated atomically after visit insertion
+          example: 42
+
+    # Current visitor schema (for "Who's Here" feature)
+
+    CurrentVisitor:
+      type: object
+      required: [user, visit]
+      properties:
+        user:
+          type: object
+          required: [_id, name]
+          properties:
+            _id:
+              type: string
+              example: "kg2h4j5k6l7m8n9p0q1r2s3t"
+            name:
+              type: string
+              example: "Jane Smith"
+            username:
+              type: string
+              nullable: true
+              example: "janesmith42"
+            image:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://example.com/avatar.jpg"
+        visit:
+          type: object
+          required: [_id, startDate, endDate]
+          properties:
+            _id:
+              type: string
+              example: "kg2h4j5k6l7m8n9p0q1r2s3v"
+            startDate:
+              type: number
+              description: Unix timestamp in milliseconds
+              example: 1704067200000
+            endDate:
+              type: number
+              description: Unix timestamp in milliseconds
+              example: 1706745600000
+
+tags:
+  - name: Internal Queries
+    description: Read operations for seed script (no auth required)
+  - name: Internal Mutations
+    description: Write operations for seed script (no auth required)
+  - name: Public Queries
+    description: Read operations for UI (auth-aware, privacy-filtered)

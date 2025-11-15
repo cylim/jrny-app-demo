@@ -1,6 +1,14 @@
 import { v } from 'convex/values'
+import { internal } from './_generated/api'
 import type { Doc, Id } from './_generated/dataModel'
-import { internalMutation, mutation, query } from './_generated/server'
+import type { MutationCtx, QueryCtx } from './_generated/server'
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { authComponent } from './auth'
 
 /**
@@ -8,12 +16,12 @@ import { authComponent } from './auth'
  * This replaces the read-modify-write pattern with a source-of-truth calculation
  */
 async function getVisitCountForCity(
-  ctx: any,
+  ctx: MutationCtx | QueryCtx,
   cityId: Id<'cities'>,
 ): Promise<number> {
   const visits = await ctx.db
     .query('visits')
-    .withIndex('by_city_id', (q: any) => q.eq('cityId', cityId))
+    .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
     .collect()
 
   return visits.length
@@ -179,7 +187,7 @@ export const updateVisit = mutation({
     }
 
     // Build update object
-    const updates: any = {
+    const updates: Partial<Doc<'visits'>> = {
       updatedAt: Date.now(),
     }
     if (startDate !== undefined) updates.startDate = startDate
@@ -265,6 +273,7 @@ export const getVisitsByUser = query({
       notes: v.optional(v.string()),
       isPrivate: v.boolean(),
       updatedAt: v.number(),
+      isSeed: v.optional(v.boolean()),
       // Joined city data
       city: v.object({
         _id: v.id('cities'),
@@ -330,6 +339,158 @@ export const getVisitsByUser = query({
     )
 
     return visitsWithCities
+  },
+})
+
+/**
+ * Get users currently visiting a city (for "Who's Here" section)
+ * Filters out private visits and users with globalPrivacy enabled
+ *
+ * @param cityId - The ID of the city
+ * @returns Array of current visitors with user and visit information
+ */
+export const getCurrentVisitors = query({
+  args: { cityId: v.id('cities') },
+  returns: v.array(
+    v.object({
+      user: v.object({
+        _id: v.id('users'),
+        name: v.string(),
+        username: v.optional(v.string()),
+        image: v.optional(v.string()),
+      }),
+      visit: v.object({
+        _id: v.id('visits'),
+        startDate: v.number(),
+        endDate: v.number(),
+      }),
+    }),
+  ),
+  handler: async (ctx, { cityId }) => {
+    const now = Date.now()
+
+    // Get all visits to this city
+    const cityVisits = await ctx.db
+      .query('visits')
+      .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+      .collect()
+
+    // Filter for current visits (not private, startDate <= now && endDate >= now)
+    const currentVisits = cityVisits.filter(
+      (visit) =>
+        !visit.isPrivate && visit.startDate <= now && visit.endDate >= now,
+    )
+
+    // Deduplicate by userId (keep earliest visit if user has multiple current visits)
+    const uniqueVisitsByUser = new Map<Id<'users'>, (typeof currentVisits)[0]>()
+    for (const visit of currentVisits) {
+      const existing = uniqueVisitsByUser.get(visit.userId)
+      if (!existing || visit.startDate < existing.startDate) {
+        uniqueVisitsByUser.set(visit.userId, visit)
+      }
+    }
+
+    // Batch fetch all users at once to avoid N+1 query problem
+    const userIds = Array.from(uniqueVisitsByUser.keys())
+    const users = await Promise.all(userIds.map((userId) => ctx.db.get(userId)))
+
+    // Create a map for fast lookup
+    const userMap = new Map<Id<'users'>, Doc<'users'>>()
+    for (const user of users) {
+      if (user) {
+        userMap.set(user._id, user)
+      }
+    }
+
+    // Join with user data and filter out users with globalPrivacy
+    const results: Array<{
+      user: {
+        _id: Id<'users'>
+        name: string
+        username: string | undefined
+        image: string | undefined
+      }
+      visit: {
+        _id: Id<'visits'>
+        startDate: number
+        endDate: number
+      }
+    }> = []
+
+    for (const visit of uniqueVisitsByUser.values()) {
+      const user = userMap.get(visit.userId)
+      if (!user) continue
+
+      // Filter out users who have globalPrivacy enabled
+      const typedUser = user as Doc<'users'> & {
+        settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+      }
+      if (typedUser.settings?.globalPrivacy === true) {
+        continue
+      }
+
+      results.push({
+        user: {
+          _id: user._id,
+          name: user.name,
+          username: user.username,
+          image: user.image,
+        },
+        visit: {
+          _id: visit._id,
+          startDate: visit.startDate,
+          endDate: visit.endDate,
+        },
+      })
+    }
+
+    return results
+  },
+})
+
+/**
+ * Get count of current visitors for a city (for displaying on city cards)
+ * More efficient than getCurrentVisitors when only count is needed
+ */
+export const getCurrentVisitorCount = query({
+  args: { cityId: v.id('cities') },
+  returns: v.number(),
+  handler: async (ctx, { cityId }) => {
+    const now = Date.now()
+
+    // Get all visits to this city
+    const cityVisits = await ctx.db
+      .query('visits')
+      .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+      .collect()
+
+    // Filter for current visits (not private, startDate <= now && endDate >= now)
+    const currentVisits = cityVisits.filter(
+      (visit) =>
+        !visit.isPrivate && visit.startDate <= now && visit.endDate >= now,
+    )
+
+    // Deduplicate by userId (count unique users only)
+    const uniqueUserIds = new Set<Id<'users'>>()
+    for (const visit of currentVisits) {
+      uniqueUserIds.add(visit.userId)
+    }
+
+    // Filter out users with globalPrivacy enabled
+    let count = 0
+    for (const userId of uniqueUserIds) {
+      const user = await ctx.db.get(userId)
+      if (!user) continue
+
+      const typedUser = user as Doc<'users'> & {
+        settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+      }
+      if (typedUser.settings?.globalPrivacy !== true) {
+        count++
+      }
+    }
+
+    return count
   },
 })
 
@@ -427,12 +588,28 @@ export const getOverlappingVisitors = query({
         ),
       }))
 
-    // Sort by overlap days (descending)
-    overlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
+    // Deduplicate by userId (keep visit with most overlap days if user has multiple overlapping visits)
+    const uniqueVisitsByUser = new Map<
+      Id<'users'>,
+      { visit: Doc<'visits'>; overlapDays: number }
+    >()
+    for (const { visit: overlappingVisit, overlapDays } of overlappingVisits) {
+      const existing = uniqueVisitsByUser.get(overlappingVisit.userId)
+      if (!existing || overlapDays > existing.overlapDays) {
+        uniqueVisitsByUser.set(overlappingVisit.userId, {
+          visit: overlappingVisit,
+          overlapDays,
+        })
+      }
+    }
+
+    // Convert to array and sort by overlap days (descending)
+    const uniqueOverlappingVisits = Array.from(uniqueVisitsByUser.values())
+    uniqueOverlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
 
     // Join with user data and filter out users with globalPrivacy enabled
     const results = await Promise.all(
-      overlappingVisits.map(
+      uniqueOverlappingVisits.map(
         async ({ visit: overlappingVisit, overlapDays }) => {
           const user = await ctx.db.get(overlappingVisit.userId)
           if (!user) {
@@ -467,5 +644,100 @@ export const getOverlappingVisitors = query({
 
     // Filter out null values (users with globalPrivacy enabled)
     return results.filter((r): r is NonNullable<typeof r> => r !== null)
+  },
+})
+
+/**
+ * Helper function to calculate current visitor count for a city
+ * This is used by the scheduled job to denormalize the count
+ */
+async function calculateCurrentVisitorCount(
+  ctx: MutationCtx | QueryCtx,
+  cityId: Id<'cities'>,
+): Promise<number> {
+  const now = Date.now()
+
+  // Get all visits to this city
+  const cityVisits = await ctx.db
+    .query('visits')
+    .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+    .collect()
+
+  // Filter for current visits (not private, startDate <= now && endDate >= now)
+  const currentVisits = cityVisits.filter(
+    (visit) =>
+      !visit.isPrivate && visit.startDate <= now && visit.endDate >= now,
+  )
+
+  // Deduplicate by userId
+  const uniqueUserIds = new Set<Id<'users'>>()
+  for (const visit of currentVisits) {
+    uniqueUserIds.add(visit.userId)
+  }
+
+  // Filter out users with globalPrivacy enabled
+  let count = 0
+  for (const userId of uniqueUserIds) {
+    const user = await ctx.db.get(userId)
+    if (!user) continue
+
+    const typedUser = user as Doc<'users'> & {
+      settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+    }
+    if (typedUser.settings?.globalPrivacy !== true) {
+      count++
+    }
+  }
+
+  return count
+}
+
+/**
+ * Internal mutation to sync currentVisitorCount cache for a city
+ * Should be called from a scheduled function for eventual consistency
+ */
+export const syncCityCurrentVisitorCount = internalMutation({
+  args: { cityId: v.id('cities') },
+  returns: v.null(),
+  handler: async (ctx, { cityId }) => {
+    const count = await calculateCurrentVisitorCount(ctx, cityId)
+    await ctx.db.patch(cityId, { currentVisitorCount: count })
+    return null
+  },
+})
+
+/**
+ * Internal action to sync currentVisitorCount for all cities
+ * Runs on a schedule (every 5 minutes via crons.ts)
+ */
+export const syncAllCurrentVisitorCounts = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    // Get all cities with pagination to avoid timeouts
+    const cities = await ctx.runQuery(internal.visits.getAllCityIds)
+
+    // Update each city's current visitor count
+    await Promise.all(
+      cities.map((cityId) =>
+        ctx.runMutation(internal.visits.syncCityCurrentVisitorCount, {
+          cityId,
+        }),
+      ),
+    )
+
+    return null
+  },
+})
+
+/**
+ * Internal query to get all city IDs (for scheduled job)
+ */
+export const getAllCityIds = internalQuery({
+  args: {},
+  returns: v.array(v.id('cities')),
+  handler: async (ctx) => {
+    const cities = await ctx.db.query('cities').collect()
+    return cities.map((city) => city._id)
   },
 })

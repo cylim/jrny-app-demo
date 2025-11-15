@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { TestUserBadge } from '@/components/ui/test-user-badge'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
 import { UserVisitsList } from '@/components/visits/user-visits-list'
 import type { User } from '@/types/user'
@@ -69,7 +70,10 @@ function UserProfilePage() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-1">{user.name}</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-4xl font-bold">{user.name}</h1>
+              {typedUser.isSeed && <TestUserBadge />}
+            </div>
             {user.username && (
               <p className="text-lg text-muted-foreground">@{user.username}</p>
             )}
@@ -140,7 +144,7 @@ function UserProfilePage() {
 
         {/* Visited Cities Section */}
         {showVisitHistory ? (
-          <div className="bg-card border rounded-lg p-6">
+          <div className="bg-card/30 border rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-6">
               {isOwnProfile ? 'My Travels' : 'Travels'}
             </h2>

@@ -14,6 +14,7 @@ export const getFeaturedCities = query({
       shortSlug: v.string(),
       image: v.union(v.string(), v.null()),
       visitCount: v.union(v.number(), v.null()),
+      currentVisitorCount: v.optional(v.number()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -45,12 +46,14 @@ export const getFeaturedCities = query({
     // Return requested count (or fewer if not enough cities)
     const selected = shuffled.slice(0, Math.min(args.count, shuffled.length))
 
+    // Map to response format with denormalized currentVisitorCount
     return selected.map((city) => ({
       _id: city._id,
       name: city.name,
       shortSlug: city.shortSlug,
       image: city.image ?? null,
       visitCount: city.visitCount ?? 0,
+      currentVisitorCount: city.currentVisitorCount ?? 0,
     }))
   },
 })
@@ -121,6 +124,7 @@ export const getAllCities = query({
       region: v.string(),
       image: v.union(v.string(), v.null()),
       visitCount: v.union(v.number(), v.null()),
+      currentVisitorCount: v.optional(v.number()),
     }),
   ),
   handler: async (ctx) => {
@@ -131,6 +135,7 @@ export const getAllCities = query({
       .order('desc')
       .collect()
 
+    // Map to response format with denormalized currentVisitorCount
     return cities.map((city) => ({
       _id: city._id,
       name: city.name,
@@ -141,6 +146,7 @@ export const getAllCities = query({
       region: city.region,
       image: city.image ?? null,
       visitCount: city.visitCount ?? null,
+      currentVisitorCount: city.currentVisitorCount ?? 0,
     }))
   },
 })
