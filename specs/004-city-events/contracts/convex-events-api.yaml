@@ -1,0 +1,494 @@
+# Convex Events API Contract
+
+version: 1.0.0
+description: API contract for City Events feature Convex functions
+module: convex/events.ts
+
+## Queries
+
+### getEvent
+description: Get detailed event information including participant count and list
+type: query
+authentication: optional (affects participant list visibility)
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Unique event identifier
+returns:
+  type: object | null
+  properties:
+    _id: Id<'events'>
+    _creationTime: number
+    title: string
+    description: string
+    startTime: number  # Unix milliseconds
+    endTime: number | undefined
+    timezone: string  # IANA timezone
+    location: string
+    cityId: Id<'cities'>
+    ownerId: Id<'users'>
+    maxCapacity: number | undefined
+    isParticipantListHidden: boolean
+    isCancelled: boolean
+    participantCount: number  # Computed
+    participants: Array<EventParticipant> # Visible based on privacy settings
+    isOwner: boolean  # True if viewer is owner
+    isFull: boolean  # True if at capacity
+errors:
+  - null: Event not found
+
+---
+
+### listUpcomingEvents
+description: Get upcoming (future) events in a specific city
+type: query
+authentication: none
+args:
+  cityId:
+    type: Id<'cities'>
+    required: true
+    description: City to get events for
+returns:
+  type: array
+  items:
+    type: Event
+    description: Event objects sorted by startTime (ascending)
+constraints:
+  - Maximum 50 events returned
+  - Excludes cancelled events
+  - Excludes events with startTime < Date.now()
+
+---
+
+### listPastEvents
+description: Get past events in a specific city
+type: query
+authentication: none
+args:
+  cityId:
+    type: Id<'cities'>
+    required: true
+    description: City to get past events for
+returns:
+  type: array
+  items:
+    type: Event
+    description: Event objects sorted by startTime (descending)
+constraints:
+  - Maximum 50 events returned
+  - Excludes cancelled events
+  - Only events with startTime < Date.now()
+
+---
+
+### getUserEvents
+description: Get all events a user has joined (upcoming and past)
+type: query
+authentication: none
+args:
+  userId:
+    type: Id<'users'>
+    required: true
+    description: User to get events for
+returns:
+  type: object
+  properties:
+    upcoming:
+      type: array
+      items: Event
+      description: Future events sorted by startTime (ascending)
+    past:
+      type: array
+      items: Event
+      description: Past events sorted by startTime (descending, newest first)
+constraints:
+  - Excludes cancelled events
+  - Returns events where user is participant (not owner)
+
+---
+
+### getEventParticipants
+description: Get list of participants for an event (respects privacy settings)
+type: query
+authentication: optional (affects visibility)
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to get participants for
+returns:
+  type: array
+  items:
+    type: object
+    properties:
+      _id: Id<'eventParticipants'>
+      userId: Id<'users'>
+      user:
+        type: object
+        properties:
+          _id: Id<'users'>
+          name: string
+          username: string
+          image: string | undefined
+      joinedAt: number  # _creationTime of eventParticipants record
+visibility_rules:
+  - If isParticipantListHidden === false: All participants visible
+  - If isParticipantListHidden === true && viewer is owner: All participants visible
+  - If isParticipantListHidden === true && viewer is participant: Only self visible
+  - If isParticipantListHidden === true && viewer is anonymous: Empty array
+
+---
+
+## Mutations
+
+### createEvent
+description: Create a new event in a city
+type: mutation
+authentication: required
+args:
+  cityId:
+    type: Id<'cities'>
+    required: true
+    description: City where event takes place
+  title:
+    type: string
+    required: true
+    constraints:
+      - minLength: 1
+      - maxLength: 100
+  description:
+    type: string
+    required: true
+    constraints:
+      - minLength: 1
+      - maxLength: 5000
+  startTime:
+    type: number
+    required: true
+    description: Unix milliseconds
+    constraints:
+      - Must be > Date.now()
+  endTime:
+    type: number | undefined
+    required: false
+    description: Unix milliseconds
+    constraints:
+      - If provided, must be > startTime
+  timezone:
+    type: string
+    required: true
+    description: IANA timezone (e.g., "America/New_York")
+    constraints:
+      - Must be valid IANA timezone
+  location:
+    type: string
+    required: true
+    description: Physical location/address
+    constraints:
+      - minLength: 1
+      - maxLength: 500
+  maxCapacity:
+    type: number | undefined
+    required: false
+    description: Maximum number of participants
+    constraints:
+      - If provided, must be >= 1
+  isParticipantListHidden:
+    type: boolean
+    required: false
+    default: false
+    description: Whether to hide participant list from non-owners
+returns:
+  type: Id<'events'>
+  description: ID of newly created event
+errors:
+  - 401: User not authenticated
+  - 400: Validation error (invalid fields)
+  - 404: City not found
+
+---
+
+### updateEvent
+description: Update event details (owner only)
+type: mutation
+authentication: required
+authorization: Must be event owner
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to update
+  title:
+    type: string | undefined
+    required: false
+    constraints:
+      - If provided: minLength 1, maxLength 100
+  description:
+    type: string | undefined
+    required: false
+    constraints:
+      - If provided: minLength 1, maxLength 5000
+  startTime:
+    type: number | undefined
+    required: false
+    description: Unix milliseconds
+    constraints:
+      - If provided: Must be > Date.now()
+  endTime:
+    type: number | undefined | null
+    required: false
+    description: Unix milliseconds (null to remove)
+    constraints:
+      - If provided: Must be > startTime
+  timezone:
+    type: string | undefined
+    required: false
+    description: IANA timezone
+    constraints:
+      - If provided: Must be valid IANA timezone
+  location:
+    type: string | undefined
+    required: false
+    constraints:
+      - If provided: minLength 1, maxLength 500
+  maxCapacity:
+    type: number | undefined | null
+    required: false
+    description: Max participants (null to remove limit)
+    constraints:
+      - If provided: Must be >= current participant count
+  isParticipantListHidden:
+    type: boolean | undefined
+    required: false
+returns:
+  type: null
+errors:
+  - 401: User not authenticated
+  - 403: User is not event owner
+  - 404: Event not found
+  - 400: Validation error
+
+---
+
+### cancelEvent
+description: Mark event as cancelled (owner only)
+type: mutation
+authentication: required
+authorization: Must be event owner
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to cancel
+returns:
+  type: null
+effects:
+  - Event marked as isCancelled = true
+  - Event removed from all event lists (city page, user profiles)
+  - Participants NOT notified (notification system out of scope)
+errors:
+  - 401: User not authenticated
+  - 403: User is not event owner
+  - 404: Event not found
+
+---
+
+### deleteEvent
+description: Permanently delete event and all participants (owner only)
+type: mutation
+authentication: required
+authorization: Must be event owner
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to delete
+returns:
+  type: null
+effects:
+  - Event document deleted
+  - All eventParticipants records for this event deleted (cascade)
+errors:
+  - 401: User not authenticated
+  - 403: User is not event owner
+  - 404: Event not found
+
+---
+
+### joinEvent
+description: Add current user as participant to event
+type: mutation
+authentication: required
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to join
+returns:
+  type: Id<'eventParticipants'>
+  description: ID of created eventParticipants record
+errors:
+  - 401: User not authenticated
+  - 404: Event not found
+  - 400: Event is cancelled
+  - 400: Event is in the past
+  - 400: User already joined event
+  - 400: Event is full (at max capacity)
+
+---
+
+### leaveEvent
+description: Remove current user as participant from event
+type: mutation
+authentication: required
+args:
+  eventId:
+    type: Id<'events'>
+    required: true
+    description: Event to leave
+returns:
+  type: null
+effects:
+  - eventParticipants record deleted
+errors:
+  - 401: User not authenticated
+  - 404: Event not found
+  - 400: User is not a participant
+
+---
+
+## Internal Mutations (called by other Convex functions)
+
+### deleteUserEvents
+description: Delete all events owned by a user (cascade delete on user deletion)
+type: internalMutation
+authentication: internal only
+args:
+  userId:
+    type: Id<'users'>
+    required: true
+    description: User whose events to delete
+returns:
+  type: null
+effects:
+  - All events where ownerId === userId are deleted
+  - All eventParticipants for those events are deleted (cascade)
+
+---
+
+### deleteUserParticipations
+description: Delete all event participations for a user (cascade delete on user deletion)
+type: internalMutation
+authentication: internal only
+args:
+  userId:
+    type: Id<'users'>
+    required: true
+    description: User whose participations to delete
+returns:
+  type: null
+effects:
+  - All eventParticipants where userId === userId are deleted
+
+---
+
+## Type Definitions
+
+### Event
+type: object
+properties:
+  _id: Id<'events'>
+  _creationTime: number
+  title: string
+  description: string
+  startTime: number
+  endTime: number | undefined
+  timezone: string
+  location: string
+  cityId: Id<'cities'>
+  ownerId: Id<'users'>
+  maxCapacity: number | undefined
+  isParticipantListHidden: boolean
+  isCancelled: boolean
+
+### EventParticipant
+type: object
+properties:
+  _id: Id<'eventParticipants'>
+  _creationTime: number
+  eventId: Id<'events'>
+  userId: Id<'users'>
+
+### EventWithDetails
+type: Event & object
+additional_properties:
+  participantCount: number
+  participants: Array<EventParticipant & { user: User }>
+  isOwner: boolean
+  isFull: boolean
+
+---
+
+## Error Handling Patterns
+
+### Authentication Errors
+code: 401
+message: "Not authenticated"
+context: User must be logged in to perform this action
+
+### Authorization Errors
+code: 403
+message: "Not authorized"
+context: User authenticated but lacks permission (e.g., not event owner)
+
+### Validation Errors
+code: 400
+message: Specific validation failure (e.g., "Event is full", "Title too long")
+context: Input validation failed
+
+### Not Found Errors
+code: 404
+message: "Event not found" | "City not found" | "User not found"
+context: Referenced document doesn't exist
+
+---
+
+## Performance Characteristics
+
+### Query Performance Targets
+- getEvent: <50ms p95 (single document + participant join)
+- listUpcomingEvents: <100ms p95 (indexed query, limited to 50 results)
+- getUserEvents: <200ms p95 (indexed query + join)
+
+### Mutation Performance Targets
+- createEvent: <100ms p95 (single insert)
+- joinEvent: <150ms p95 (validation + insert)
+- deleteEvent: <300ms p95 (delete event + cascade delete participants)
+
+### Scalability Limits
+- Events per city: Optimized for <1000 upcoming events (shows top 50)
+- Participants per event: Optimized for <500 participants
+- Events per user: Optimized for <100 joined events
+
+---
+
+## Real-time Updates
+
+All queries use Convex's live query system:
+- Event detail page: Automatically updates when participants join/leave
+- City event list: Automatically updates when new events created
+- User profile tabs: Automatically updates when user joins/leaves events
+
+WebSocket protocol handled by Convex client automatically.
+
+---
+
+## Security Notes
+
+1. **Authentication**: All mutations require authenticated user (ctx.auth.getUserIdentity())
+2. **Authorization**: Event ownership verified for edit/delete/cancel operations
+3. **Input Validation**: All inputs validated with Convex validators (v.string(), v.number(), etc.)
+4. **Privacy**: Participant list visibility enforced at query level
+5. **Capacity Enforcement**: Race-condition-safe capacity checks in joinEvent mutation
+6. **XSS Prevention**: React's default JSX escaping (no dangerouslySetInnerHTML)
