@@ -4,7 +4,17 @@ import { mutation, query } from './_generated/server'
 import { authComponent } from './auth'
 
 /**
- * Create a new visit
+ * Create a new visit for the authenticated user
+ *
+ * Validates the city exists, ensures start date is before end date,
+ * creates the visit record, and automatically increments the city's visitCount.
+ *
+ * @param cityId - The ID of the city being visited
+ * @param startDate - Visit start date as Unix timestamp in milliseconds
+ * @param endDate - Visit end date as Unix timestamp in milliseconds
+ * @param notes - Optional notes about the visit
+ * @param isPrivate - Whether the visit should be private (defaults to false)
+ * @returns Object with success status, visitId if successful, or error message
  */
 export const createVisit = mutation({
   args: {
@@ -71,7 +81,18 @@ export const createVisit = mutation({
 })
 
 /**
- * Update an existing visit
+ * Update an existing visit for the authenticated user
+ *
+ * Allows updating visit dates, notes, and privacy settings.
+ * Verifies the user owns the visit and validates date ranges.
+ * Note: Does not support changing the cityId.
+ *
+ * @param visitId - The ID of the visit to update
+ * @param startDate - Optional new start date as Unix timestamp
+ * @param endDate - Optional new end date as Unix timestamp
+ * @param notes - Optional updated notes
+ * @param isPrivate - Optional updated privacy setting
+ * @returns Object with success status or error message
  */
 export const updateVisit = mutation({
   args: {
@@ -133,7 +154,13 @@ export const updateVisit = mutation({
 })
 
 /**
- * Delete a visit
+ * Delete a visit for the authenticated user
+ *
+ * Verifies the user owns the visit, decrements the city's visitCount,
+ * and removes the visit record from the database.
+ *
+ * @param visitId - The ID of the visit to delete
+ * @returns Object with success status or error message
  */
 export const deleteVisit = mutation({
   args: { visitId: v.id('visits') },
