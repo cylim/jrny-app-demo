@@ -601,27 +601,221 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 6. **Environment Variable Validation**: All required env vars are validated at startup by t3env. If you add a new env var, make sure to add it to both `.env.local` AND the appropriate schema file (`env.client.ts` or `env.server.ts`)
 7. **Router Context Type Safety**: The router context includes `queryClient`, `convexClient`, and `convexQueryClient`. TypeScript will infer these types automatically when using `Route.useRouteContext()`
 
+## Kirby-Style UI Design System
+
+This project uses a **Kirby-inspired design aesthetic** for a playful, welcoming user experience.
+
+### Design Characteristics
+
+- **Color Palette**: Soft pastels (pinks, blues, purples) defined in CSS variables
+- **Border Radius**: Pronounced rounded corners (16-24px) on all interactive elements
+- **Shapes**: Bubble-like, rounded rectangular cards and containers
+- **Animations**: Bouncy, spring-based animations using Framer Motion
+- **Typography**: Friendly, readable fonts with appropriate spacing
+
+### Animation Implementation
+
+**Animation Library**: [Framer Motion](https://www.framer.com/motion/) v12+
+
+**Key Animation Files**:
+- `src/lib/animations.ts`: Reusable animation variants (fadeIn, slideUp, bounce, etc.)
+- `src/components/animated-background.tsx`: Decorative background animations
+- `src/components/animated-trees.tsx`: Playful decorative elements
+- `src/components/page-transition.tsx`: Smooth page navigation transitions
+- `src/components/route-loading-bar.tsx`: Loading progress indicator
+- `src/components/ui/loading-dots.tsx`: Pulsating dots loader (3-5 dots with wave effect)
+
+**Animation Guidelines**:
+- All animations MUST respect `prefers-reduced-motion` media query
+- Target 60fps performance for smooth experience
+- Use spring-based easing for bouncy, playful feel
+- Keep animations subtle and purposeful - they enhance, not distract
+
+**Example Usage**:
+```tsx
+import { motion } from 'framer-motion'
+import { fadeIn, slideUp } from '~/lib/animations'
+
+<motion.div variants={fadeIn} initial="initial" animate="animate">
+  Content here
+</motion.div>
+```
+
+### Loading States
+
+**Primary Loader**: Pulsating dots (LoadingDots component)
+- 3-5 dots arranged horizontally
+- Wave animation effect (dots pulse sequentially)
+- Pastel colors matching Kirby theme
+- Used for data fetches and page transitions
+
+**Progress Bar**: Route loading bar at top of viewport
+- Appears during page navigation
+- Smooth animation from 0-100%
+- Automatically handles TanStack Router navigation
+
+## Application Features
+
+### Travel Tracking
+
+This app allows users to record their travel history with dates and discover other travelers.
+
+**Core Entities**:
+- **Users**: Profile with username, avatar, privacy settings, and travel history
+- **Cities**: Pre-populated table of top 1000 cities worldwide (name, country, region, lat/long, slug)
+- **Visits**: User's trip to a city with arrival/departure dates, notes, and privacy flag
+
+**Key Features**:
+1. **Record Travel Locations**: Users log city visits with arrival/departure dates
+2. **Current Location Discovery**: See who's currently in the same city (no departure date or future departure)
+3. **Historical Overlap Discovery**: Find users who were in the same cities during overlapping dates (day-level precision)
+4. **Privacy Controls**: Global toggle to opt out of all visitor lists
+5. **Public City Pages**: Non-logged-in users can view city info without seeing user data
+
+**Overlap Detection**: Two visits overlap if they share at least one calendar day. System uses day-level precision (not hour/minute).
+
+### Database Schema
+
+See `convex/schema.ts` for complete schema. Key tables:
+
+**users**:
+- `authUserId`, `name`, `email`, `image`, `username`
+- `settings` object with `globalPrivacy` and `hideVisitHistory` flags
+- `socialLinks` object (github, x, linkedin, telegram)
+- Indexed by: `by_auth_user_id`, `by_username`
+
+**cities**:
+- `name`, `slug`, `shortSlug`, `country`, `countryCode`, `region`
+- `latitude`, `longitude`, `image` (optional hero image)
+- `visitCount` (cached count updated by background job)
+- Indexed by: `by_short_slug`, `by_slug`, `by_country`, `by_region`, `by_visit_count`
+
+**visits**:
+- `userId` (Id<'users'>), `cityId` (Id<'cities'>)
+- `startDate`, `endDate` (Unix timestamps in milliseconds)
+- `notes` (optional), `isPrivate` (boolean)
+- Indexed by: `by_user_id`, `by_city_id`, `by_user_and_city`, `by_start_date`, `by_city_and_start`
+
 ## File Structure
 
 ```
 convex/
   ├── _generated/       # Auto-generated types (DO NOT EDIT)
   ├── auth.config.ts    # Better-Auth configuration
+  ├── auth.ts           # Better-Auth instance with Google OAuth
   ├── convex.config.ts  # App-level Convex config
-  ├── myFunctions.ts    # Example Convex functions
-  └── schema.ts         # Database schema
+  ├── http.ts           # HTTP router for auth endpoints
+  ├── schema.ts         # Database schema (users, cities, visits)
+  ├── cities.ts         # City queries and mutations
+  ├── users.ts          # User profile queries and mutations
+  └── visits.ts         # Visit tracking queries and mutations
 
 src/
-  ├── routes/           # TanStack Router file-based routes
-  │   ├── __root.tsx    # Root layout with HTML structure
-  │   ├── index.tsx     # Home page (/)
-  │   └── anotherPage.tsx
-  ├── routeTree.gen.ts  # Auto-generated route tree
-  ├── router.tsx        # Router configuration
-  ├── env.client.ts     # Client-side env validation (t3env)
-  ├── env.server.ts     # Server-side env validation (t3env)
+  ├── components/
+  │   ├── animated-background.tsx  # Framer Motion backgrounds
+  │   ├── animated-trees.tsx       # Decorative animations
+  │   ├── city-card.tsx            # City display component
+  │   ├── page-transition.tsx      # Page navigation transitions
+  │   ├── route-loading-bar.tsx    # Loading progress bar
+  │   ├── auth/                    # Authentication components
+  │   └── ui/                      # shadcn/ui components
+  │       ├── loading-dots.tsx     # Pulsating dots loader
+  │       └── [other components]
+  ├── lib/
+  │   ├── animations.ts            # Framer Motion variants
+  │   ├── auth-client.ts           # Better-Auth client
+  │   ├── auth-server.ts           # Server-side auth
+  │   └── utils.ts                 # Utility functions
+  ├── routes/                      # TanStack Router file-based routes
+  │   ├── __root.tsx               # Root layout with header
+  │   ├── index.tsx                # Landing page with featured cities
+  │   ├── discover.tsx             # City discovery page
+  │   ├── settings.tsx             # User settings page
+  │   ├── c/                       # City pages (/c/:shortSlug)
+  │   │   └── $shortSlug.tsx
+  │   └── u/                       # User profiles (/u/:username)
+  │       └── $username.tsx
+  ├── routeTree.gen.ts             # Auto-generated route tree
+  ├── router.tsx                   # Router configuration
+  ├── env.client.ts                # Client-side env validation (t3env)
+  ├── env.server.ts                # Server-side env validation (t3env)
   └── styles/
-      └── app.css       # Tailwind styles
+      └── app.css                  # Tailwind v4 + Kirby-style theme
 
-public/               # Static assets (favicons, etc.)
+specs/                             # Feature specifications
+  ├── 001-travel-tracking/         # Travel tracking feature spec
+  └── 002-kirby-ui-refactor/       # UI refactor feature spec
+
+public/                            # Static assets (favicons, etc.)
 ```
+
+## Testing
+
+This project uses a comprehensive testing setup for both unit and end-to-end testing.
+
+### Unit Testing with Vitest
+
+**Test Runner**: [Vitest](https://vitest.dev) v4+
+**Testing Library**: [@testing-library/react](https://testing-library.com/react) v16+
+
+**Available Commands**:
+```bash
+bun test              # Run unit tests
+bun test:ui           # Run tests with UI
+bun test:coverage     # Run tests with coverage report
+```
+
+**Test Files**: Place test files next to the code they test with `.test.ts` or `.test.tsx` extension.
+
+**Example Test**:
+```tsx
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { Button } from '~/components/ui/button'
+
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByText('Click me')).toBeInTheDocument()
+  })
+})
+```
+
+**Convex Testing**: Use `convex-test` package for testing Convex functions in isolation.
+
+### End-to-End Testing with Playwright
+
+**Test Runner**: [Playwright](https://playwright.dev) v1.56+
+
+**Available Commands**:
+```bash
+bun test:e2e          # Run E2E tests
+bun test:e2e:ui       # Run E2E tests with UI
+```
+
+**Test Files**: Place E2E tests in `tests/` or `e2e/` directory with `.spec.ts` extension.
+
+**Example E2E Test**:
+```tsx
+import { test, expect } from '@playwright/test'
+
+test('landing page displays featured cities', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: /JRNY/i })).toBeVisible()
+  await expect(page.locator('[data-testid="city-card"]')).toHaveCount(9)
+})
+```
+
+**Setup**:
+- Playwright browsers are installed via `bunx playwright install`
+- Tests run in Chromium, Firefox, and WebKit by default
+- Configured in `playwright.config.ts`
+
+### Testing Best Practices
+
+1. **Unit Tests**: Test individual components and utilities in isolation
+2. **Integration Tests**: Test Convex functions with `convex-test`
+3. **E2E Tests**: Test critical user flows (auth, recording visits, viewing profiles)
+4. **Accessibility**: Use Testing Library queries that encourage accessible code
+5. **Coverage**: Aim for >80% coverage on critical paths
+6. **CI/CD**: Run tests in CI before merging PRs

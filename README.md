@@ -1,47 +1,46 @@
 # JRNY - Journey Recording App
 
-A real-time journey tracking application that allows users to record their travels, track time spent at locations, and discover who else is exploring the same cities.
-
-**Live Demo**: [demo.jrny.app](https://demo.jrny.app)
+A playful, real-time journey tracking application that allows users to record their travels with dates, discover who else is exploring the same cities, and connect with fellow travelers through shared experiences.
 
 ## Overview
 
-JRNY is a location-based social application designed for travelers, digital nomads, and anyone who wants to track their journeys and connect with others in the same location. Record your current position, log how long you stay at each place, and see fellow travelers who are sharing the same city experience.
+JRNY is a location-based social application designed for travelers, digital nomads, and anyone who wants to track their journeys and connect with others. Record where you've been and when, see who's currently in the same city, and discover travelers who visited the same places during overlapping time periods.
 
 ## Features
 
-### 🗺️ Location Tracking
-- Record your current location in real-time
-- Track multiple locations throughout your journey
-- View your location history
+### 🗺️ Travel Location Recording
+- Record your travel locations with arrival and departure dates
+- Track your complete travel history sorted by date
+- View all cities you've visited in one organized profile
+- Mark yourself as "currently in" a location for ongoing trips
 
-### ⏱️ Time Tracking
-- Log how long you stay at each location
-- Automatic time calculation for location visits
-- Historical time data for past locations
+### ⏱️ Date-Based Visit Tracking
+- Log arrival and departure dates for each city visit
+- See visit date ranges for your entire travel history
+- Automatic detection of overlapping visits between travelers
+- Day-level precision for accurate overlap calculations
 
 ### 👥 Social Discovery
-- See who else is currently in the same city as you
-- Connect with fellow travelers and locals
-- Real-time updates as people arrive and leave locations
+- **Current Location Discovery**: See who else is currently in the same city as you
+- **Historical Overlap Discovery**: Find travelers who were in the same cities during your visits
+- View traveler profiles with username and avatar
+- Real-time updates when travelers check in or out of locations
+- Privacy controls to opt out of visibility in all traveler lists
 
 ### 🔒 Privacy & Authentication
 - Secure authentication via Better-Auth with Google Sign-In
 - One-click OAuth authentication
-- Control your location sharing preferences
-- Private journey mode available
+- Global privacy toggle to control visibility in all traveler lists
+- Public city pages for non-logged-in users (without user data)
+- Account deletion removes all user data from visitor lists
 
-### 📍 Smart Location Enrichment
-- Automatic location data enrichment via Firecrawl
-- Discover nearby attractions, restaurants, and points of interest
-- Access travel guides and local information for your destinations
-- Web-scraped content about cities and places you visit
-
-### 💳 Premium Features
-- Subscription plans powered by Autumn (Stripe integration)
-- Unlock advanced journey analytics and insights
-- Extended location history and data export
-- Premium social features and priority support
+### 🎨 Kirby-Style UI Design
+- Playful, welcoming interface with soft pastel colors (pinks, blues, purples)
+- Pronounced rounded corners (16-24px) and bubble-like elements
+- Bouncy, delightful animations using Framer Motion
+- Animated backgrounds for visual depth and engagement
+- Smooth loading transitions with pulsating dots
+- Responsive design maintaining aesthetic across all screen sizes
 
 ## Tech Stack
 
@@ -50,6 +49,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Router**: [TanStack Router](https://tanstack.com/router) - Type-safe file-based routing
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com) - Utility-first CSS framework
 - **UI Components**: [shadcn/ui](https://ui.shadcn.com) - Beautifully designed, accessible components
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) - Production-ready animation library
 - **State Management**: [TanStack Query](https://tanstack.com/query) - Powerful data synchronization
 - **Icons**: [Lucide React](https://lucide.dev) - Beautiful & consistent icon toolkit
 
@@ -61,8 +61,6 @@ JRNY is a location-based social application designed for travelers, digital noma
 ### Infrastructure
 - **Deployment**: [Cloudflare Workers](https://workers.cloudflare.com) - Global edge deployment
 - **Error Monitoring**: [Sentry](https://sentry.io) - Full-stack error tracking and performance monitoring
-- **Payments**: [Autumn](https://www.autumnpayments.com) + [Stripe](https://stripe.com) - Subscription and payment processing
-- **Data Enrichment**: [Firecrawl](https://firecrawl.dev) - Web scraping for location information and travel content
 
 ### Developer Experience
 - **Package Manager**: [Bun](https://bun.sh) - Fast JavaScript runtime and package manager
@@ -70,7 +68,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Validation**: [Zod](https://zod.dev) - TypeScript-first schema validation
 - **Environment**: [t3env](https://env.t3.gg) - Type-safe environment variables
 - **Linting & Formatting**: [Biome](https://biomejs.dev) - Fast, unified toolchain for linting and formatting
-- **Code Review**: [CodeRabbit](https://coderabbit.ai) - AI-powered code review automation
+- **Testing**: [Vitest](https://vitest.dev) + [Playwright](https://playwright.dev) - Unit and E2E testing
 
 ## Getting Started
 
@@ -79,8 +77,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - [Bun](https://bun.sh) 1.0+ (fast JavaScript runtime and package manager)
 - [Convex](https://convex.dev) account (free tier available)
 - [Cloudflare](https://cloudflare.com) account (for deployment)
-- [Stripe](https://stripe.com) account (for payment features)
-- [Firecrawl](https://firecrawl.dev) API key (for location enrichment)
+- [Google Cloud Console](https://console.cloud.google.com) account (for OAuth authentication)
 
 ### Installation
 
@@ -115,13 +112,6 @@ JRNY is a location-based social application designed for travelers, digital noma
    # Sentry (optional for development)
    VITE_SENTRY_DSN=your-sentry-dsn
    SENTRY_DSN=your-sentry-dsn
-
-   # Firecrawl API (for location enrichment)
-   FIRECRAWL_API_KEY=your-firecrawl-api-key
-
-   # Stripe (for payments)
-   STRIPE_SECRET_KEY=your-stripe-secret-key
-   VITE_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
    ```
 
    **Google OAuth Setup**:
@@ -174,29 +164,46 @@ jrny-app-demo/
 │   ├── auth.ts                # Better-Auth with Google OAuth configuration
 │   ├── auth.config.ts         # Auth provider configuration
 │   ├── http.ts                # HTTP router for auth endpoints
-│   ├── schema.ts              # Database schema
-│   └── myFunctions.ts         # Backend functions
+│   ├── schema.ts              # Database schema (users, cities, visits)
+│   ├── cities.ts              # City-related queries and mutations
+│   ├── users.ts               # User profile queries and mutations
+│   └── visits.ts              # Visit tracking queries and mutations
 ├── src/
 │   ├── components/
 │   │   ├── auth/              # Authentication components
 │   │   │   ├── google-sign-in-button.tsx
 │   │   │   └── user-nav.tsx   # User navigation with avatar dropdown
-│   │   └── ui/                # shadcn/ui components
-│   │       ├── button.tsx
-│   │       ├── avatar.tsx
-│   │       └── dropdown-menu.tsx
+│   │   ├── ui/                # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── loading-dots.tsx  # Pulsating dots loader
+│   │   │   └── [other shadcn components]
+│   │   ├── animated-background.tsx  # Framer Motion background
+│   │   ├── animated-trees.tsx       # Decorative animations
+│   │   ├── city-card.tsx            # City display component
+│   │   ├── page-transition.tsx      # Page navigation transitions
+│   │   └── route-loading-bar.tsx    # Loading progress bar
 │   ├── lib/
 │   │   ├── auth-client.ts     # Better-Auth client configuration
 │   │   ├── auth-server.ts     # Server-side auth utilities
+│   │   ├── animations.ts      # Framer Motion animation variants
 │   │   └── utils.ts           # Utility functions (cn, etc.)
 │   ├── routes/                # TanStack Router file-based routes
 │   │   ├── __root.tsx         # Root layout with header & navigation
-│   │   └── index.tsx          # Home page
+│   │   ├── index.tsx          # Landing page with featured cities
+│   │   ├── discover.tsx       # City discovery page
+│   │   ├── settings.tsx       # User settings page
+│   │   ├── c/                 # City pages (/c/:shortSlug)
+│   │   └── u/                 # User profile pages (/u/:username)
 │   ├── styles/
-│   │   └── app.css            # Tailwind v4 + theme configuration
+│   │   └── app.css            # Tailwind v4 + Kirby-style theme
 │   ├── env.client.ts          # Client-side environment validation
 │   ├── env.server.ts          # Server-side environment validation
 │   └── router.tsx             # Router configuration with Convex
+├── specs/                     # Feature specifications
+│   ├── 001-travel-tracking/   # Travel tracking feature spec
+│   └── 002-kirby-ui-refactor/ # UI refactor feature spec
 ├── public/                    # Static assets
 ├── components.json            # shadcn/ui configuration
 ├── biome.json                 # Biome linting & formatting config
@@ -249,6 +256,7 @@ Built on Convex, JRNY provides real-time updates without manual polling:
 - Location updates appear instantly for all users in the same city
 - Check-in/check-out events sync across all connected clients
 - Optimistic updates for smooth UX
+- Automatic overlap detection when travelers visit the same cities
 
 ### Type Safety
 
@@ -264,6 +272,7 @@ Optimized for global performance:
 - Deployed on Cloudflare's edge network
 - Server-side rendering (SSR) for fast initial page loads
 - Code splitting and lazy loading
+- Framer Motion animations optimized for 60fps
 - Session replay and performance monitoring with Sentry
 
 ### Error Tracking
@@ -274,33 +283,24 @@ Comprehensive error monitoring:
 - Session replay for debugging user issues
 - Performance monitoring and traces
 
-### Location Intelligence
+### Delightful UX
 
-Smart location data enrichment powered by Firecrawl:
-- Automatic scraping of location information from the web
-- Discover nearby points of interest, restaurants, and attractions
-- Access curated travel guides and local tips
-- Real-time updates on events and activities in your current city
-- Enriched location profiles with photos, reviews, and recommendations
+Kirby-inspired design for a playful experience:
+- Soft pastel color palette (pinks, blues, purples)
+- Pronounced rounded corners and bubble-like elements
+- Bouncy, spring-based animations using Framer Motion
+- Animated backgrounds with decorative elements
+- Smooth loading transitions with pulsating dots
+- Responsive design maintaining visual consistency
 
-### Payment Processing
+### City Database
 
-Seamless subscription management with Autumn + Stripe:
-- Secure payment processing via Stripe
-- Flexible subscription plans (free, premium, pro)
-- Automatic billing and invoice generation
-- Usage-based pricing for power users
-- Payment method management
-- Subscription upgrades and downgrades
-
-### Code Quality
-
-Automated code review with CodeRabbit:
-- AI-powered code review on every pull request
-- Catch bugs and security issues before deployment
-- Consistent code quality across the team
-- Automated suggestions for improvements
-- Reduces manual code review time
+Pre-populated cities for consistent data:
+- Top 1000 cities worldwide by population
+- Geographic coordinates for each city
+- Autocomplete search for easy city selection
+- URL-friendly slugs for sharing and bookmarking
+- Cached visitor counts for performance
 
 ## Contributing
 
@@ -321,9 +321,8 @@ Automated code review with CodeRabbit:
 - Deployed on [Cloudflare Workers](https://workers.cloudflare.com)
 - Authenticated with [Better-Auth](https://better-auth.com)
 - Monitored by [Sentry](https://sentry.io)
-- Payments by [Autumn](https://www.autumnpayments.com) + [Stripe](https://stripe.com)
-- Location data enriched by [Firecrawl](https://firecrawl.dev)
-- Code reviewed by [CodeRabbit](https://coderabbit.ai)
+- Animated with [Framer Motion](https://www.framer.com/motion/)
+- UI components from [shadcn/ui](https://ui.shadcn.com)
 
 ## Support
 
