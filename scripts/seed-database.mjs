@@ -23,7 +23,7 @@
  */
 
 import { ConvexHttpClient } from 'convex/browser'
-import { api } from '../convex/_generated/api.js'
+import { api, internal } from '../convex/_generated/api.js'
 import { faker } from '@faker-js/faker'
 
 // ============================================================================
@@ -191,7 +191,7 @@ async function seedUsers(client, targetCount) {
   console.log('━'.repeat(30))
 
   // Get current user count
-  const currentCount = await client.query(api.seed.getUserCount, {})
+  const currentCount = await client.query(internal.seed.getUserCount, {})
   console.log(`✓ Already have ${currentCount} users (target: ${targetCount})`)
 
   const delta = calculateDelta(currentCount, targetCount)
@@ -215,7 +215,7 @@ async function seedUsers(client, targetCount) {
       users.push(generateUser(userIndex))
     }
 
-    const result = await client.mutation(api.seed.insertUsers, { users })
+    const result = await client.mutation(internal.seed.insertUsers, { users })
     allUserIds.push(...result.userIds)
 
     console.log(`  ✓ Inserted ${i + batchSize}/${delta} users`)
@@ -238,7 +238,7 @@ async function seedVisits(client, allUserIds, topCities, visitsPerUser) {
   console.log('━'.repeat(30))
 
   const targetVisitCount = allUserIds.length * visitsPerUser
-  const currentCount = await client.query(api.seed.getVisitCount, {})
+  const currentCount = await client.query(internal.seed.getVisitCount, {})
   console.log(`✓ Already have ${currentCount} visits (target: ${targetVisitCount})`)
 
   const delta = calculateDelta(currentCount, targetVisitCount)
@@ -253,7 +253,6 @@ async function seedVisits(client, allUserIds, topCities, visitsPerUser) {
   let totalCitiesUpdated = 0
 
   // Calculate which users need visits and how many
-  const currentVisitsPerUser = Math.floor(currentCount / allUserIds.length)
   const startUserIndex = Math.floor(currentCount / visitsPerUser)
   const startVisitIndex = currentCount % visitsPerUser
 
@@ -277,7 +276,7 @@ async function seedVisits(client, allUserIds, topCities, visitsPerUser) {
 
       // Insert in batches
       if (visits.length >= BATCH_SIZE) {
-        const result = await client.mutation(api.seed.insertVisits, { visits: visits.splice(0, BATCH_SIZE) })
+        const result = await client.mutation(internal.seed.insertVisits, { visits: visits.splice(0, BATCH_SIZE) })
         totalCitiesUpdated += result.citiesUpdated
         console.log(`  ✓ Inserted ${insertedCount}/${delta} visits (${result.citiesUpdated} cities updated)`)
       }
@@ -286,7 +285,7 @@ async function seedVisits(client, allUserIds, topCities, visitsPerUser) {
 
   // Insert any remaining visits
   if (visits.length > 0) {
-    const result = await client.mutation(api.seed.insertVisits, { visits })
+    const result = await client.mutation(internal.seed.insertVisits, { visits })
     totalCitiesUpdated += result.citiesUpdated
     console.log(`  ✓ Inserted ${insertedCount}/${delta} visits (${result.citiesUpdated} cities updated)`)
   }
@@ -316,8 +315,17 @@ async function main() {
     process.exit(1)
   }
 
-  // Initialize Convex client
+  if (!process.env.CONVEX_DEPLOYMENT) {
+    console.error('❌ Error: CONVEX_DEPLOYMENT environment variable is not set')
+    console.error('   This is required to authenticate as admin for internal functions')
+    console.error('   Set it in .env.local or pass it when running the script:')
+    console.error('   CONVEX_DEPLOYMENT=dev:your-deployment node scripts/seed-database.mjs')
+    process.exit(1)
+  }
+
+  // Initialize Convex client with admin authentication
   const client = new ConvexHttpClient(process.env.VITE_CONVEX_URL)
+  client.setAdminAuth(process.env.CONVEX_DEPLOYMENT)
 
   try {
     // Pre-flight checks
@@ -326,7 +334,7 @@ async function main() {
     console.log(`✓ Connected to Convex: ${process.env.VITE_CONVEX_URL}`)
 
     // Check if we have enough cities
-    const topCities = await client.query(api.seed.getTopCities, { limit: TOP_CITIES_TO_USE })
+    const topCities = await client.query(internal.seed.getTopCities, { limit: TOP_CITIES_TO_USE })
 
     if (topCities.length < MIN_CITIES_REQUIRED) {
       console.error(`❌ Error: Insufficient cities in database`)
@@ -340,11 +348,11 @@ async function main() {
 
     // Seed users
     const startTime = Date.now()
-    const allUserIds = await seedUsers(client, targetUserCount)
+    await seedUsers(client, targetUserCount)
 
     // Get ALL user IDs (including previously seeded ones)
-    const allUsers = await client.query(api.seed.getAllUsers, {})
-    const allExistingUserIds = allUsers.map(u => u._id)
+    const allUsers = await client.query(internal.seed.getAllUsers, {})
+    const allExistingUserIds = allUsers.map((u) => u._id)
 
     // Seed visits (distribute across all users)
     await seedVisits(client, allExistingUserIds, topCities, visitsPerUser)

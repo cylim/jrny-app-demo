@@ -1,10 +1,10 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { api } from '~@/convex/_generated/api'
 import type { Id } from '~@/convex/_generated/dataModel'
-import { Button } from '@/components/ui/button'
 import { VisitCard } from './visit-card'
 
 interface UserVisitsListProps {

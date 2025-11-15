@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
-import { mutation, query } from './_generated/server'
+import { internalMutation, internalQuery } from './_generated/server'
 
 /**
  * Helper function to atomically calculate visitCount for a city
@@ -20,12 +20,12 @@ async function getVisitCountForCity(
 }
 
 /**
- * Public queries and mutations for database seeding
+ * Internal queries and mutations for database seeding
  * These functions are called from the seed script (scripts/seed-database.mjs)
- * WARNING: These are public functions for development use only
+ * using the Convex admin key for security
  */
 
-export const getUserCount = query({
+export const getUserCount = internalQuery({
   args: {},
   returns: v.number(),
   handler: async (ctx) => {
@@ -34,7 +34,7 @@ export const getUserCount = query({
   },
 })
 
-export const getVisitCount = query({
+export const getVisitCount = internalQuery({
   args: {},
   returns: v.number(),
   handler: async (ctx) => {
@@ -43,7 +43,7 @@ export const getVisitCount = query({
   },
 })
 
-export const getAllUsers = query({
+export const getAllUsers = internalQuery({
   args: {},
   returns: v.array(
     v.object({
@@ -60,7 +60,7 @@ export const getAllUsers = query({
   },
 })
 
-export const getTopCities = query({
+export const getTopCities = internalQuery({
   args: { limit: v.number() },
   returns: v.array(
     v.object({
@@ -84,7 +84,7 @@ export const getTopCities = query({
   },
 })
 
-export const insertUsers = mutation({
+export const insertUsers = internalMutation({
   args: {
     users: v.array(
       v.object({
@@ -131,7 +131,7 @@ export const insertUsers = mutation({
   },
 })
 
-export const insertVisits = mutation({
+export const insertVisits = internalMutation({
   args: {
     visits: v.array(
       v.object({

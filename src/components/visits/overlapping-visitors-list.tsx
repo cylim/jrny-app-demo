@@ -1,6 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { Id } from '~@/convex/_generated/dataModel'
 
 interface OverlappingVisitor {
@@ -49,37 +55,49 @@ export function OverlappingVisitorsList({
   const remainingCount = visitors.length - MAX_VISIBLE
 
   return (
-    <div className="flex flex-wrap gap-3">
-      {visibleVisitors.map((visitor) => (
-        <Link
-          key={visitor.user._id}
-          to="/u/$usernameOrId"
-          params={{
-            usernameOrId: visitor.user.username ?? visitor.user._id,
-          }}
-          className="group"
-        >
-          <Avatar className="h-12 w-12 ring-2 ring-transparent group-hover:ring-primary transition-all">
-            <AvatarImage
-              src={visitor.user.image || undefined}
-              alt={visitor.user.name}
-            />
-            <AvatarFallback className="bg-primary/10 text-sm font-medium">
-              {visitor.user.name[0] ?? '?'}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-      ))}
+    <TooltipProvider>
+      <div className="flex flex-wrap gap-3">
+        {visibleVisitors.map((visitor) => (
+          <Tooltip key={visitor.user._id}>
+            <TooltipTrigger asChild>
+              <Link
+                to="/u/$usernameOrId"
+                params={{
+                  usernameOrId: visitor.user.username ?? visitor.user._id,
+                }}
+                className="group"
+              >
+                <Avatar className="h-12 w-12 ring-2 ring-transparent group-hover:ring-primary transition-all">
+                  <AvatarImage
+                    src={visitor.user.image || undefined}
+                    alt={visitor.user.name}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-sm font-medium">
+                    {visitor.user.name[0] ?? '?'}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-medium">{visitor.user.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {visitor.overlapDays}{' '}
+                {visitor.overlapDays === 1 ? 'day' : 'days'} overlap
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        ))}
 
-      {remainingCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setIsExpanded(true)}
-          className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors cursor-pointer"
-        >
-          +{remainingCount}
-        </button>
-      )}
-    </div>
+        {remainingCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsExpanded(true)}
+            className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors cursor-pointer"
+          >
+            +{remainingCount}
+          </button>
+        )}
+      </div>
+    </TooltipProvider>
   )
 }

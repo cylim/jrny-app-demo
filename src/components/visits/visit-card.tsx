@@ -80,9 +80,7 @@ export function VisitCard({ visit }: VisitCardProps) {
 
         {/* Bottom Section - Overlapping Visitors */}
         {overlappingVisitors.length > 0 && (
-          <div
-            className="pt-4 border-t border-white/20"
-          >
+          <div className="pt-4 border-t border-white/20">
             <div className="flex items-center gap-2 text-sm font-medium mb-3">
               <Users className="w-4 h-4" />
               <span>

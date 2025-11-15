@@ -57,6 +57,8 @@ export default defineSchema({
     image: v.optional(v.string()),
     // Cached visit count for performance (updated by background job)
     visitCount: v.optional(v.number()),
+    // Cached current visitor count for performance (updated by background job)
+    currentVisitorCount: v.optional(v.number()),
   })
     .index('by_short_slug', ['shortSlug'])
     .index('by_slug', ['slug'])
@@ -82,5 +84,6 @@ export default defineSchema({
     .index('by_city_id', ['cityId'])
     .index('by_user_and_city', ['userId', 'cityId'])
     .index('by_start_date', ['startDate'])
-    .index('by_city_and_start', ['cityId', 'startDate']),
+    .index('by_city_and_start', ['cityId', 'startDate'])
+    .index('by_city_and_end_date', ['cityId', 'endDate']),
 })

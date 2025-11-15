@@ -94,17 +94,20 @@ export function CityCard({ city, onClick }: CityCardProps) {
             {formattedVisitCount} {city.visitCount === 1 ? 'visit' : 'visits'}
           </p>
 
-          {city.currentVisitorCount !== undefined && city.currentVisitorCount > 0 && (
-            <>
-              <span className="text-white/60">•</span>
-              <p
-                data-testid="current-visitor-count"
-                className="text-sm font-medium text-emerald-300 drop-shadow-md"
-              >
-                {city.currentVisitorCount} {city.currentVisitorCount === 1 ? 'person' : 'people'} here now
-              </p>
-            </>
-          )}
+          {city.currentVisitorCount !== undefined &&
+            city.currentVisitorCount > 0 && (
+              <>
+                <span className="text-white/60">•</span>
+                <p
+                  data-testid="current-visitor-count"
+                  className="text-sm font-medium text-emerald-300 drop-shadow-md"
+                >
+                  {city.currentVisitorCount}{' '}
+                  {city.currentVisitorCount === 1 ? 'person' : 'people'} here
+                  now
+                </p>
+              </>
+            )}
         </div>
       </div>
     </motion.button>
