@@ -39,11 +39,10 @@ export function CityCard({ city, onClick }: CityCardProps) {
       onKeyDown={handleKeyDown}
       aria-label={`View ${city.name} - ${formattedVisitCount} visits`}
       className={cn(
-        'kirby-rounded overflow-hidden bg-white shadow-lg',
-        'flex flex-col items-stretch',
-        'hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2',
+        'kirby-rounded relative overflow-hidden shadow-lg',
+        'aspect-video w-full',
+        'hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2',
         'transition-shadow duration-200',
-        'w-full',
       )}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
@@ -53,40 +52,44 @@ export function CityCard({ city, onClick }: CityCardProps) {
         damping: 17,
       }}
     >
-      {/* City Image */}
-      <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100">
-        {city.image ? (
-          <img
-            data-testid="city-image"
-            src={city.image}
-            alt={`${city.name} cityscape`}
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div
-            data-testid="city-image"
-            className="flex h-full w-full items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200"
-            role="img"
-            aria-label={`${city.name} placeholder`}
-          >
-            <span className="text-4xl font-bold text-white opacity-30">
-              {city.name.charAt(0)}
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Full-bleed City Image */}
+      {city.image ? (
+        <img
+          data-testid="city-image"
+          src={city.image}
+          alt={`${city.name} cityscape`}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <div
+          data-testid="city-image"
+          className="absolute inset-0 flex h-full w-full items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200"
+          role="img"
+          aria-label={`${city.name} placeholder`}
+        >
+          <span className="text-6xl font-bold text-white opacity-30">
+            {city.name.charAt(0)}
+          </span>
+        </div>
+      )}
 
-      {/* City Info */}
-      <div className="flex flex-col items-start gap-2 p-4">
+      {/* Gradient overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+      {/* City Info - Overlaid on image */}
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 p-4">
         <h3
           data-testid="city-name"
-          className="text-lg font-semibold text-gray-800"
+          className="text-xl font-bold text-white drop-shadow-lg"
         >
           {city.name}
         </h3>
 
-        <p data-testid="visit-count" className="text-sm text-gray-600">
+        <p
+          data-testid="visit-count"
+          className="text-sm font-medium text-white/90 drop-shadow-md"
+        >
           {formattedVisitCount} {city.visitCount === 1 ? 'visit' : 'visits'}
         </p>
       </div>
