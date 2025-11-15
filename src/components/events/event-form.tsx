@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '../ui/badge'
 
 /**
  * Event creation/editing form component
@@ -403,6 +404,9 @@ export function EventForm({
             className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
           >
             Hide participant list
+            <Badge variant="default" className="text-xs">
+              Pro
+            </Badge>
           </label>
         </div>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">

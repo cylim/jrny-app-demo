@@ -233,42 +233,44 @@ function CityPage() {
 
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
+          {/* Who's Here Now Section - Only for logged-in users */}
+          {session?.user ? (
+            <div className="bg-card/30 border rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
+              <Suspense fallback={<CurrentVisitorsListSkeleton />}>
+                <CurrentVisitorsSection
+                  cityId={city._id}
+                  cityName={city.name}
+                />
+              </Suspense>
+            </div>
+          ) : (
+            <div className="bg-muted/30 rounded-lg p-6 text-center mb-8">
+              <h2 className="text-xl font-semibold mb-2">
+                See Who's Traveling Here
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Log in to discover other travelers in {city.name} and connect
+                with people visiting this destination.
+              </p>
+            </div>
+          )}
 
-        {/* Who's Here Now Section - Only for logged-in users */}
-        {session?.user ? (
-          <div className="bg-card border rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
-            <Suspense fallback={<CurrentVisitorsListSkeleton />}>
-              <CurrentVisitorsSection cityId={city._id} cityName={city.name} />
+          {/* Upcoming Events Section */}
+          <div className="mb-8">
+            <Suspense
+              fallback={
+                <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+                  <LoadingDots />
+                </div>
+              }
+            >
+              <UpcomingEventsSection
+                cityId={city._id}
+                isAuthenticated={!!session?.user}
+              />
             </Suspense>
           </div>
-        ) : (
-          <div className="bg-muted/30 rounded-lg p-6 text-center mb-8">
-            <h2 className="text-xl font-semibold mb-2">
-              See Who's Traveling Here
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Log in to discover other travelers in {city.name} and connect with
-              people visiting this destination.
-            </p>
-          </div>
-        )}
-
-        {/* Upcoming Events Section */}
-        <div className="mb-8">
-          <Suspense
-            fallback={
-              <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-                <LoadingDots />
-              </div>
-            }
-          >
-            <UpcomingEventsSection
-              cityId={city._id}
-              isAuthenticated={!!session?.user}
-            />
-          </Suspense>
-        </div>
         </div>
       </div>
     </div>

@@ -17,11 +17,31 @@ export default defineSchema({
     username: v.optional(v.string()),
     // Profile customization
     bio: v.optional(v.string()),
-    // Settings object (defaults to false for both)
+    // Settings object - unified privacy features
     settings: v.optional(
       v.object({
-        globalPrivacy: v.boolean(), // Hide from overlap visits and city page (default: false)
-        hideVisitHistory: v.boolean(), // Hide visit history on profile (default: false)
+        // Privacy features (mapped from legacy names)
+        hideProfileVisits: v.optional(v.boolean()), // Hide visit list from profile page (Free + Pro) - was hideVisitHistory
+        hideProfileEvents: v.optional(v.boolean()), // Hide event participation from profile page (Free + Pro)
+        globalVisitPrivacy: v.optional(v.boolean()), // Hide ALL visits from discovery features (Pro only) - was globalPrivacy
+        // Legacy fields for backward compatibility during migration
+        hideVisitHistory: v.optional(v.boolean()), // DEPRECATED: Use hideProfileVisits
+        globalPrivacy: v.optional(v.boolean()), // DEPRECATED: Use globalVisitPrivacy
+      }),
+    ),
+    // Subscription metadata (cached from Autumn for quick checks)
+    subscription: v.optional(
+      v.object({
+        tier: v.union(v.literal('free'), v.literal('pro')),
+        status: v.union(
+          v.literal('active'), // Active Pro subscription
+          v.literal('cancelled'), // Cancelled but still has access until period end
+          v.literal('pending_cancellation'), // Cancelled mid-month, awaiting period end
+        ),
+        nextBillingDate: v.optional(v.number()), // Unix timestamp in milliseconds
+        periodEndDate: v.optional(v.number()), // For cancelled subscriptions
+        autumnCustomerId: v.optional(v.string()), // Autumn customer ID for API calls
+        lastSyncedAt: v.number(), // Last time we synced with Autumn
       }),
     ),
     // Social links
@@ -40,7 +60,8 @@ export default defineSchema({
     lastSeen: v.number(),
   })
     .index('by_auth_user_id', ['authUserId'])
-    .index('by_username', ['username']),
+    .index('by_username', ['username'])
+    .index('by_subscription_tier', ['subscription.tier']),
   cities: defineTable({
     // Basic city information
     name: v.string(),

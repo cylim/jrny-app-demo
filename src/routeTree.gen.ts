@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameOrIdRouteImport } from './routes/u/$usernameOrId'
+import { Route as SubscriptionSuccessRouteImport } from './routes/subscription/success'
 import { Route as EEventIdRouteImport } from './routes/e/$eventId'
 import { Route as CShortSlugRouteImport } from './routes/c/$shortSlug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -37,6 +38,11 @@ const UUsernameOrIdRoute = UUsernameOrIdRouteImport.update({
   path: '/u/$usernameOrId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
+  id: '/subscription/success',
+  path: '/subscription/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EEventIdRoute = EEventIdRouteImport.update({
   id: '/e/$eventId',
   path: '/e/$eventId',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/e/$eventId': typeof EEventIdRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/e/$eventId': typeof EEventIdRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/c/$shortSlug': typeof CShortSlugRoute
   '/e/$eventId': typeof EEventIdRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/u/$usernameOrId': typeof UUsernameOrIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/c/$shortSlug'
     | '/e/$eventId'
+    | '/subscription/success'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/c/$shortSlug'
     | '/e/$eventId'
+    | '/subscription/success'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/c/$shortSlug'
     | '/e/$eventId'
+    | '/subscription/success'
     | '/u/$usernameOrId'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   CShortSlugRoute: typeof CShortSlugRoute
   EEventIdRoute: typeof EEventIdRoute
+  SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
   UUsernameOrIdRoute: typeof UUsernameOrIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameOrIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subscription/success': {
+      id: '/subscription/success'
+      path: '/subscription/success'
+      fullPath: '/subscription/success'
+      preLoaderRoute: typeof SubscriptionSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/e/$eventId': {
       id: '/e/$eventId'
       path: '/e/$eventId'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   CShortSlugRoute: CShortSlugRoute,
   EEventIdRoute: EEventIdRoute,
+  SubscriptionSuccessRoute: SubscriptionSuccessRoute,
   UUsernameOrIdRoute: UUsernameOrIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

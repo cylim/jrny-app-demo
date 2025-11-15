@@ -95,8 +95,9 @@ export const insertUsers = internalMutation({
         username: v.optional(v.string()),
         bio: v.optional(v.string()),
         settings: v.object({
-          globalPrivacy: v.boolean(),
-          hideVisitHistory: v.boolean(),
+          hideProfileVisits: v.boolean(),
+          hideProfileEvents: v.boolean(),
+          globalVisitPrivacy: v.boolean(),
         }),
         socialLinks: v.optional(
           v.object({

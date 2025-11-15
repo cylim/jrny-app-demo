@@ -14,8 +14,12 @@ const userShape = v.object({
   bio: v.optional(v.string()),
   settings: v.optional(
     v.object({
-      globalPrivacy: v.boolean(),
-      hideVisitHistory: v.boolean(),
+      hideProfileVisits: v.optional(v.boolean()),
+      hideProfileEvents: v.optional(v.boolean()),
+      globalVisitPrivacy: v.optional(v.boolean()),
+      // Legacy fields during migration
+      hideVisitHistory: v.optional(v.boolean()),
+      globalPrivacy: v.optional(v.boolean()),
     }),
   ),
   socialLinks: v.optional(
@@ -346,6 +350,7 @@ export const updateProfile = mutation({
 
 /**
  * Update user privacy settings
+ * DEPRECATED: Use privacy.ts functions instead (updateProfilePrivacy, updateGlobalVisitPrivacy)
  */
 export const updatePrivacySettings = mutation({
   args: {
@@ -373,22 +378,20 @@ export const updatePrivacySettings = mutation({
     }
 
     // Get existing settings or create with defaults
-    const typedUser = currentUser as Doc<'users'> & {
-      settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
-    }
-    const currentSettings = typedUser.settings || {
-      globalPrivacy: false,
-      hideVisitHistory: false,
+    const currentSettings = currentUser.settings || {
+      hideProfileVisits: false,
+      hideProfileEvents: false,
+      globalVisitPrivacy: false,
     }
 
-    // Build new settings object
-    const newSettings: { globalPrivacy: boolean; hideVisitHistory: boolean } = {
+    // Map legacy field names to new names
+    const newSettings = {
       ...currentSettings,
+      // Map hideVisitHistory → hideProfileVisits
+      hideProfileVisits: hideVisitHistory ?? currentSettings.hideProfileVisits,
+      // Map globalPrivacy → globalVisitPrivacy
+      globalVisitPrivacy: globalPrivacy ?? currentSettings.globalVisitPrivacy,
     }
-
-    if (globalPrivacy !== undefined) newSettings.globalPrivacy = globalPrivacy
-    if (hideVisitHistory !== undefined)
-      newSettings.hideVisitHistory = hideVisitHistory
 
     await ctx.db.patch(currentUser._id, {
       settings: newSettings,

@@ -6,6 +6,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { PrivacySettingsPanel } from '@/components/privacy/privacy-settings-panel'
+import { CancelSubscription } from '@/components/subscription/cancel-subscription'
+import { SubscriptionStatus } from '@/components/subscription/subscription-status'
+import { UpgradeButton } from '@/components/subscription/upgrade-button'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -39,7 +42,6 @@ function SettingsPage() {
   )
 
   const updateProfile = useMutation(api.users.updateProfile)
-  const updatePrivacySettings = useMutation(api.users.updatePrivacySettings)
   const updateSocialLinks = useMutation(api.users.updateSocialLinks)
 
   // Type the current user
@@ -49,14 +51,6 @@ function SettingsPage() {
   const [name, setName] = useState(typedUser?.name || '')
   const [username, setUsername] = useState(typedUser?.username || '')
   const [bio, setBio] = useState(typedUser?.bio || '')
-
-  // Privacy fields
-  const [globalPrivacy, setGlobalPrivacy] = useState(
-    typedUser?.settings?.globalPrivacy || false,
-  )
-  const [hideVisitHistory, setHideVisitHistory] = useState(
-    typedUser?.settings?.hideVisitHistory || false,
-  )
 
   // Social links
   const [github, setGithub] = useState(typedUser?.socialLinks?.github || '')
@@ -98,29 +92,6 @@ function SettingsPage() {
       setSuccess('Profile updated successfully')
     } catch {
       setError('An error occurred while updating profile')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleSavePrivacy = async () => {
-    setIsSaving(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const result = await updatePrivacySettings({
-        globalPrivacy,
-        hideVisitHistory,
-      })
-
-      if (result && !result.success) {
-        setError(result.error || 'Failed to update privacy settings')
-      } else {
-        setSuccess('Privacy settings updated successfully')
-      }
-    } catch {
-      setError('An error occurred while updating privacy settings')
     } finally {
       setIsSaving(false)
     }
@@ -168,6 +139,29 @@ function SettingsPage() {
       )}
 
       <div className="space-y-6">
+        {/* Subscription Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription</CardTitle>
+            <CardDescription>
+              Manage your subscription tier and billing
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Current Plan</Label>
+              <div className="mt-2">
+                <SubscriptionStatus />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <UpgradeButton />
+              <CancelSubscription />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Profile Settings */}
         <Card>
           <CardHeader>
@@ -225,7 +219,7 @@ function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Privacy Settings */}
+        {/* Privacy Settings - Combined with new Autumn features */}
         <Card>
           <CardHeader>
             <CardTitle>Privacy Settings</CardTitle>
@@ -233,58 +227,8 @@ function SettingsPage() {
               Control who can see your travel information
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="globalPrivacy"
-                checked={globalPrivacy}
-                onCheckedChange={(checked) =>
-                  setGlobalPrivacy(checked as boolean)
-                }
-              />
-              <div className="space-y-1">
-                <Label
-                  htmlFor="globalPrivacy"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Hide from overlap visits and city pages
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  When enabled, others won't see you in their overlap visitors
-                  or on city pages
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="hideVisitHistory"
-                checked={hideVisitHistory}
-                onCheckedChange={(checked) =>
-                  setHideVisitHistory(checked as boolean)
-                }
-              />
-              <div className="space-y-1">
-                <Label
-                  htmlFor="hideVisitHistory"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Hide visit history on profile
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Your visit history will be hidden from your public profile
-                  (you can still see it)
-                </p>
-              </div>
-            </div>
-
-            <Button
-              variant="kirby"
-              onClick={handleSavePrivacy}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Privacy Settings'}
-            </Button>
+          <CardContent>
+            <PrivacySettingsPanel />
           </CardContent>
         </Card>
 

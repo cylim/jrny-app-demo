@@ -5,7 +5,7 @@
  * feature gates based on subscription tier.
  */
 
-import { v } from "convex/values";
+import { v } from 'convex/values'
 
 // ============================================================================
 // Type Definitions
@@ -16,20 +16,20 @@ import { v } from "convex/values";
  */
 export type PrivacySettings = {
   // Free + Pro tier features
-  hideProfileVisits: boolean;   // Hide visit list from profile page
-  hideProfileEvents: boolean;   // Hide event participation from profile page
+  hideProfileVisits: boolean // Hide visit list from profile page
+  hideProfileEvents: boolean // Hide event participation from profile page
 
   // Pro-only features
-  globalVisitPrivacy: boolean;  // Hide ALL visits from discovery features
-};
+  globalVisitPrivacy: boolean // Hide ALL visits from discovery features
+}
 
 /**
  * Privacy setting keys
  */
 export type PrivacySettingKey =
-  | "hideProfileVisits"
-  | "hideProfileEvents"
-  | "globalVisitPrivacy";
+  | 'hideProfileVisits'
+  | 'hideProfileEvents'
+  | 'globalVisitPrivacy'
 
 // ============================================================================
 // Convex Function Signatures
@@ -49,14 +49,14 @@ export const getMyPrivacySettings = {
       hideProfileEvents: v.boolean(),
       globalVisitPrivacy: v.boolean(),
     }),
-    tier: v.union(v.literal("free"), v.literal("pro")),
+    tier: v.union(v.literal('free'), v.literal('pro')),
     canModify: v.object({
-      hideProfileVisits: v.boolean(),   // Always true
-      hideProfileEvents: v.boolean(),   // Always true
-      globalVisitPrivacy: v.boolean(),  // True only for Pro
+      hideProfileVisits: v.boolean(), // Always true
+      hideProfileEvents: v.boolean(), // Always true
+      globalVisitPrivacy: v.boolean(), // True only for Pro
     }),
   }),
-};
+}
 
 /**
  * Update profile-level privacy setting (Free + Pro)
@@ -72,7 +72,10 @@ export const getMyPrivacySettings = {
  */
 export const updateProfilePrivacy = {
   args: {
-    setting: v.union(v.literal("hideProfileVisits"), v.literal("hideProfileEvents")),
+    setting: v.union(
+      v.literal('hideProfileVisits'),
+      v.literal('hideProfileEvents'),
+    ),
     enabled: v.boolean(),
   },
   returns: v.object({
@@ -81,9 +84,9 @@ export const updateProfilePrivacy = {
       hideProfileEvents: v.boolean(),
       globalVisitPrivacy: v.boolean(),
     }),
-    message: v.string(),  // Confirmation message
+    message: v.string(), // Confirmation message
   }),
-};
+}
 
 /**
  * Update global visit privacy setting (Pro only)
@@ -108,7 +111,7 @@ export const updateGlobalVisitPrivacy = {
     }),
     message: v.string(),
   }),
-};
+}
 
 /**
  * Update individual visit privacy flag (Pro only)
@@ -125,15 +128,15 @@ export const updateGlobalVisitPrivacy = {
  */
 export const updateVisitPrivacy = {
   args: {
-    visitId: v.id("visits"),
+    visitId: v.id('visits'),
     isPrivate: v.boolean(),
   },
   returns: v.object({
-    visitId: v.id("visits"),
+    visitId: v.id('visits'),
     isPrivate: v.boolean(),
     message: v.string(),
   }),
-};
+}
 
 /**
  * Get privacy-filtered visits for a city
@@ -150,22 +153,22 @@ export const updateVisitPrivacy = {
  */
 export const getCityVisits = {
   args: {
-    cityId: v.id("cities"),
-    viewerId: v.optional(v.id("users")),  // Authenticated viewer
+    cityId: v.id('cities'),
+    viewerId: v.optional(v.id('users')), // Authenticated viewer
   },
   returns: v.array(
     v.object({
-      visitId: v.id("visits"),
-      userId: v.id("users"),
+      visitId: v.id('visits'),
+      userId: v.id('users'),
       username: v.string(),
       userImage: v.optional(v.string()),
       startDate: v.number(),
       endDate: v.optional(v.number()),
-      isCurrentlyVisiting: v.boolean(),  // No end date or future end date
+      isCurrentlyVisiting: v.boolean(), // No end date or future end date
       // Note: isPrivate is NOT returned for privacy (only owner can see this flag)
-    })
+    }),
   ),
-};
+}
 
 /**
  * Get privacy-filtered visits for a user profile
@@ -181,27 +184,27 @@ export const getCityVisits = {
 export const getUserProfileVisits = {
   args: {
     username: v.string(),
-    viewerId: v.optional(v.id("users")),
+    viewerId: v.optional(v.id('users')),
   },
   returns: v.union(
     v.array(
       v.object({
-        visitId: v.id("visits"),
-        cityId: v.id("cities"),
+        visitId: v.id('visits'),
+        cityId: v.id('cities'),
         cityName: v.string(),
         citySlug: v.string(),
         startDate: v.number(),
         endDate: v.optional(v.number()),
         notes: v.optional(v.string()),
-        isPrivate: v.boolean(),  // Shown to owner only
-      })
+        isPrivate: v.boolean(), // Shown to owner only
+      }),
     ),
     v.object({
       hidden: v.literal(true),
-      message: v.string(),  // "This user's visit history is private"
-    })
+      message: v.string(), // "This user's visit history is private"
+    }),
   ),
-};
+}
 
 /**
  * Get privacy-filtered events for a user profile
@@ -217,26 +220,26 @@ export const getUserProfileVisits = {
 export const getUserProfileEvents = {
   args: {
     username: v.string(),
-    viewerId: v.optional(v.id("users")),
+    viewerId: v.optional(v.id('users')),
   },
   returns: v.union(
     v.array(
       v.object({
-        eventId: v.id("events"),
+        eventId: v.id('events'),
         title: v.string(),
-        cityId: v.id("cities"),
+        cityId: v.id('cities'),
         cityName: v.string(),
         startTime: v.number(),
         endTime: v.optional(v.number()),
         isOrganizer: v.boolean(),
-      })
+      }),
     ),
     v.object({
       hidden: v.literal(true),
-      message: v.string(),  // "This user's event participation is private"
-    })
+      message: v.string(), // "This user's event participation is private"
+    }),
   ),
-};
+}
 
 /**
  * Check if visit should be visible to viewer
@@ -250,11 +253,11 @@ export const getUserProfileEvents = {
  */
 export const isVisitVisible = {
   args: {
-    visitId: v.id("visits"),
-    viewerId: v.optional(v.id("users")),
+    visitId: v.id('visits'),
+    viewerId: v.optional(v.id('users')),
   },
   returns: v.boolean(),
-};
+}
 
 /**
  * Batch update privacy settings
@@ -280,10 +283,10 @@ export const batchUpdatePrivacySettings = {
       hideProfileEvents: v.boolean(),
       globalVisitPrivacy: v.boolean(),
     }),
-    skipped: v.array(v.string()),  // Settings not updated (e.g., "globalVisitPrivacy" for free users)
+    skipped: v.array(v.string()), // Settings not updated (e.g., "globalVisitPrivacy" for free users)
     message: v.string(),
   }),
-};
+}
 
 // ============================================================================
 // Usage Examples

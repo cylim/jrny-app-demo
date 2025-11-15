@@ -76,10 +76,14 @@
         "convex/_generated/**",
         "**/*.gen.ts",
         "**/*.gen.tsx",
+        "**/*.gen.js",
         "**/*.lock",
         "wrangler.jsonc",
         "data/**"
       ],
+      "assist": {
+        "enabled": false
+      },
       "linter": {
         "enabled": false
       },
