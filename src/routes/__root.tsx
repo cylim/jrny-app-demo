@@ -19,6 +19,8 @@ import { getCookie, getRequest } from '@tanstack/react-start/server'
 import type { ConvexReactClient } from 'convex/react'
 import * as React from 'react'
 import { AnimatedBackground } from '~/components/animated-background'
+import { AnimatedTrees } from '~/components/animated-trees'
+import { Footer } from '~/components/footer'
 import { Header } from '~/components/header'
 import { RouteLoadingBar } from '~/components/route-loading-bar'
 import { ThemeProvider } from '~/components/theme-provider'
@@ -121,7 +123,12 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'JRNY - Travel Tracker & City Explorer',
+      },
+      {
+        name: 'description',
+        content:
+          'Track your travel journey and explore the world\'s most amazing cities with JRNY.',
       },
     ],
     links: [
@@ -208,6 +215,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <div className="relative z-10 flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>
+          </div>
+          <div className="sticky -bottom-16 z-10">
+            <AnimatedTrees />
+            <Footer />
           </div>
           <Toaster />
           <Scripts />
