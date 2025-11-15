@@ -1,7 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import {
   CurrentVisitorsList,
   CurrentVisitorsListSkeleton,
@@ -9,6 +9,13 @@ import {
 import { authClient } from '@/lib/auth-client'
 import { api } from '~@/convex/_generated/api'
 import type { Id } from '~@/convex/_generated/dataModel'
+import { EventCard } from '~/components/events/event-card'
+import { EventForm } from '~/components/events/event-form'
+import { Button } from '@/components/ui/button'
+import { Plus, X } from 'lucide-react'
+import { LoadingDots } from '@/components/ui/loading-dots'
+import { useMutation } from 'convex/react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export const Route = createFileRoute('/c/$shortSlug')({
   component: CityPage,
@@ -29,6 +36,123 @@ function CurrentVisitorsSection({
   )
 
   return <CurrentVisitorsList visitors={visitors} cityName={cityName} />
+}
+
+/**
+ * Component that fetches and displays upcoming events for a city
+ */
+function UpcomingEventsSection({
+  cityId,
+  isAuthenticated,
+}: {
+  cityId: Id<'cities'>
+  isAuthenticated: boolean
+}) {
+  const { data: events } = useSuspenseQuery(
+    convexQuery(api.events.listUpcomingEvents, { cityId }),
+  )
+
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const createEvent = useMutation(api.events.createEvent)
+
+  const handleCreateEvent = async (values: {
+    title: string
+    description: string
+    startTime: number
+    endTime?: number
+    timezone: string
+    location: string
+    maxCapacity?: number
+    isParticipantListHidden: boolean
+  }) => {
+    setIsCreating(true)
+    try {
+      const eventId = await createEvent({
+        cityId,
+        ...values,
+      })
+      setShowCreateForm(false)
+      // Navigate to event detail page
+      window.location.href = `/e/${eventId}`
+    } catch (error) {
+      console.error('Failed to create event:', error)
+      throw error
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  return (
+    <div>
+      {/* Header with Create Button */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Upcoming Events</h2>
+        {isAuthenticated && !showCreateForm && (
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="rounded-full"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Event
+          </Button>
+        )}
+      </div>
+
+      {/* Create Event Form */}
+      <AnimatePresence>
+        {showCreateForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden rounded-3xl border-2 border-pink-200 bg-pink-50 p-6 dark:border-pink-900/50 dark:bg-pink-900/20"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Create New Event</h3>
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(false)}
+                className="rounded-full p-2 hover:bg-pink-100 dark:hover:bg-pink-900/30"
+                disabled={isCreating}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <EventForm
+              mode="create"
+              onSubmit={handleCreateEvent}
+              isLoading={isCreating}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Events List */}
+      {events.length === 0 ? (
+        <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+          <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+            No upcoming events in this city yet.
+          </p>
+          {isAuthenticated && !showCreateForm && (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="rounded-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create the First Event
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {events.map((event) => (
+            <EventCard key={event._id} event={event} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -105,6 +229,22 @@ function CityPage() {
               <p className="font-medium">{city.region}</p>
             </div>
           </div>
+        </div>
+
+        {/* Upcoming Events Section */}
+        <div className="mb-8">
+          <Suspense
+            fallback={
+              <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+                <LoadingDots />
+              </div>
+            }
+          >
+            <UpcomingEventsSection
+              cityId={city._id}
+              isAuthenticated={!!session?.user}
+            />
+          </Suspense>
         </div>
 
         {/* Who's Here Now Section - Only for logged-in users */}

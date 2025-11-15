@@ -128,3 +128,12 @@ export const staggerItem = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: bounceSpring },
 }
+
+/**
+ * Slide up animation variant
+ */
+export const slideUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: bounceSpring },
+  exit: { opacity: 0, y: 20 },
+}

@@ -6,8 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TestUserBadge } from '@/components/ui/test-user-badge'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
 import { UserVisitsList } from '@/components/visits/user-visits-list'
+import { EventCard } from '~/components/events/event-card'
 import type { User } from '@/types/user'
 import { api } from '~@/convex/_generated/api'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
@@ -57,6 +59,14 @@ function UserProfilePage() {
   const typedUser = user as User
   const showVisitHistory =
     isOwnProfile || typedUser.settings?.hideVisitHistory !== true
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'visits' | 'events'>('visits')
+
+  // Fetch user events (only when user exists, which is guaranteed here)
+  const { data: userEvents } = useSuspenseQuery(
+    convexQuery(api.events.getUserEvents, { userId: user._id }),
+  )
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -142,19 +152,97 @@ function UserProfilePage() {
           {isOwnProfile && <AddVisitButton />}
         </div>
 
-        {/* Visited Cities Section */}
-        {showVisitHistory ? (
-          <div className="bg-card/30 border rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6">
-              {isOwnProfile ? 'My Travels' : 'Travels'}
-            </h2>
-            <UserVisitsList userId={user._id} />
-          </div>
-        ) : (
-          <div className="bg-card border rounded-lg p-6">
-            <p className="text-center text-muted-foreground">
-              This user has chosen to keep their travel history private.
-            </p>
+        {/* Tab Navigation */}
+        <div className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={() => setActiveTab('visits')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'visits'
+                ? 'border-b-2 border-pink-500 text-zinc-900 dark:text-zinc-100'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            }`}
+          >
+            Visits
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('events')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'events'
+                ? 'border-b-2 border-pink-500 text-zinc-900 dark:text-zinc-100'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            }`}
+          >
+            Events
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'visits' && (
+          <>
+            {showVisitHistory ? (
+              <div className="bg-card/30 border rounded-lg p-6">
+                <h2 className="text-2xl font-semibold mb-6">
+                  {isOwnProfile ? 'My Travels' : 'Travels'}
+                </h2>
+                <UserVisitsList userId={user._id} />
+              </div>
+            ) : (
+              <div className="bg-card border rounded-lg p-6">
+                <p className="text-center text-muted-foreground">
+                  This user has chosen to keep their travel history private.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'events' && userEvents && (
+          <div className="space-y-8">
+            {/* Upcoming Events */}
+            <div>
+              <h2 className="mb-4 text-2xl font-semibold">
+                Upcoming Events ({userEvents.upcoming.length})
+              </h2>
+              {userEvents.upcoming.length === 0 ? (
+                <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+                  <p className="text-zinc-600 dark:text-zinc-400">
+                    {isOwnProfile
+                      ? "You haven't joined any upcoming events yet."
+                      : "This user hasn't joined any upcoming events yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {userEvents.upcoming.map((event) => (
+                    <EventCard key={event._id} event={{ ...event, participantCount: 0 }} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Past Events */}
+            <div>
+              <h2 className="mb-4 text-2xl font-semibold">
+                Past Events ({userEvents.past.length})
+              </h2>
+              {userEvents.past.length === 0 ? (
+                <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+                  <p className="text-zinc-600 dark:text-zinc-400">
+                    {isOwnProfile
+                      ? "You haven't attended any past events yet."
+                      : "This user hasn't attended any past events yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {userEvents.past.map((event) => (
+                    <EventCard key={event._id} event={{ ...event, participantCount: 0 }} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
