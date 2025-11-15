@@ -11,6 +11,7 @@ export const FeaturedCitySchema = z.object({
   image: z.string().nullable(),
   shortSlug: z.string(),
   visitCount: z.number().nullable(),
+  currentVisitorCount: z.number().optional(),
 })
 
 export type FeaturedCity = z.infer<typeof FeaturedCitySchema>
@@ -124,6 +125,7 @@ export const CityListItemSchema = z.object({
   region: z.string(),
   image: z.string().nullable(),
   visitCount: z.number().nullable(),
+  currentVisitorCount: z.number().optional(),
 })
 
 export type CityListItem = z.infer<typeof CityListItemSchema>

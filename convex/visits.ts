@@ -373,9 +373,18 @@ export const getCurrentVisitors = query({
       (visit) => !visit.isPrivate && visit.endDate >= now,
     )
 
+    // Deduplicate by userId (keep earliest visit if user has multiple current visits)
+    const uniqueVisitsByUser = new Map<Id<'users'>, typeof currentVisits[0]>()
+    for (const visit of currentVisits) {
+      const existing = uniqueVisitsByUser.get(visit.userId)
+      if (!existing || visit.startDate < existing.startDate) {
+        uniqueVisitsByUser.set(visit.userId, visit)
+      }
+    }
+
     // Join with user data and filter out users with globalPrivacy
     const results = await Promise.all(
-      currentVisits.map(async (visit) => {
+      Array.from(uniqueVisitsByUser.values()).map(async (visit) => {
         const user = await ctx.db.get(visit.userId)
         if (!user) {
           return null
@@ -407,6 +416,51 @@ export const getCurrentVisitors = query({
 
     // Filter out null values (users with globalPrivacy enabled or missing users)
     return results.filter((r): r is NonNullable<typeof r> => r !== null)
+  },
+})
+
+/**
+ * Get count of current visitors for a city (for displaying on city cards)
+ * More efficient than getCurrentVisitors when only count is needed
+ */
+export const getCurrentVisitorCount = query({
+  args: { cityId: v.id('cities') },
+  returns: v.number(),
+  handler: async (ctx, { cityId }) => {
+    const now = Date.now()
+
+    // Get all visits to this city
+    const cityVisits = await ctx.db
+      .query('visits')
+      .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+      .collect()
+
+    // Filter for current visits (not private, endDate >= now)
+    const currentVisits = cityVisits.filter(
+      (visit) => !visit.isPrivate && visit.endDate >= now,
+    )
+
+    // Deduplicate by userId (count unique users only)
+    const uniqueUserIds = new Set<Id<'users'>>()
+    for (const visit of currentVisits) {
+      uniqueUserIds.add(visit.userId)
+    }
+
+    // Filter out users with globalPrivacy enabled
+    let count = 0
+    for (const userId of uniqueUserIds) {
+      const user = await ctx.db.get(userId)
+      if (!user) continue
+
+      const typedUser = user as Doc<'users'> & {
+        settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+      }
+      if (typedUser.settings?.globalPrivacy !== true) {
+        count++
+      }
+    }
+
+    return count
   },
 })
 
@@ -504,12 +558,22 @@ export const getOverlappingVisitors = query({
         ),
       }))
 
-    // Sort by overlap days (descending)
-    overlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
+    // Deduplicate by userId (keep visit with most overlap days if user has multiple overlapping visits)
+    const uniqueVisitsByUser = new Map<Id<'users'>, { visit: Doc<'visits'>; overlapDays: number }>()
+    for (const { visit: overlappingVisit, overlapDays } of overlappingVisits) {
+      const existing = uniqueVisitsByUser.get(overlappingVisit.userId)
+      if (!existing || overlapDays > existing.overlapDays) {
+        uniqueVisitsByUser.set(overlappingVisit.userId, { visit: overlappingVisit, overlapDays })
+      }
+    }
+
+    // Convert to array and sort by overlap days (descending)
+    const uniqueOverlappingVisits = Array.from(uniqueVisitsByUser.values())
+    uniqueOverlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
 
     // Join with user data and filter out users with globalPrivacy enabled
     const results = await Promise.all(
-      overlappingVisits.map(
+      uniqueOverlappingVisits.map(
         async ({ visit: overlappingVisit, overlapDays }) => {
           const user = await ctx.db.get(overlappingVisit.userId)
           if (!user) {

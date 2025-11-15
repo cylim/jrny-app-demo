@@ -86,12 +86,26 @@ export function CityCard({ city, onClick }: CityCardProps) {
           {city.name}
         </h3>
 
-        <p
-          data-testid="visit-count"
-          className="text-sm font-medium text-white/90 drop-shadow-md"
-        >
-          {formattedVisitCount} {city.visitCount === 1 ? 'visit' : 'visits'}
-        </p>
+        <div className="flex items-center gap-3">
+          <p
+            data-testid="visit-count"
+            className="text-sm font-medium text-white/90 drop-shadow-md"
+          >
+            {formattedVisitCount} {city.visitCount === 1 ? 'visit' : 'visits'}
+          </p>
+
+          {city.currentVisitorCount !== undefined && city.currentVisitorCount > 0 && (
+            <>
+              <span className="text-white/60">•</span>
+              <p
+                data-testid="current-visitor-count"
+                className="text-sm font-medium text-emerald-300 drop-shadow-md"
+              >
+                {city.currentVisitorCount} {city.currentVisitorCount === 1 ? 'person' : 'people'} here now
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </motion.button>
   )

@@ -1,5 +1,51 @@
 import { v } from 'convex/values'
+import type { Doc, Id } from './_generated/dataModel'
+import type { QueryCtx } from './_generated/server'
 import { query } from './_generated/server'
+
+/**
+ * Helper function to count current unique visitors for a city
+ * Deduplicates by userId and filters out users with globalPrivacy
+ */
+async function getCurrentVisitorCount(
+  ctx: QueryCtx,
+  cityId: Id<'cities'>,
+): Promise<number> {
+  const now = Date.now()
+
+  // Get all visits to this city
+  const cityVisits = await ctx.db
+    .query('visits')
+    .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+    .collect()
+
+  // Filter for current visits (not private, endDate >= now)
+  const currentVisits = cityVisits.filter(
+    (visit) => !visit.isPrivate && visit.endDate >= now,
+  )
+
+  // Deduplicate by userId
+  const uniqueUserIds = new Set<Id<'users'>>()
+  for (const visit of currentVisits) {
+    uniqueUserIds.add(visit.userId)
+  }
+
+  // Filter out users with globalPrivacy enabled
+  let count = 0
+  for (const userId of uniqueUserIds) {
+    const user = await ctx.db.get(userId)
+    if (!user) continue
+
+    const typedUser = user as Doc<'users'> & {
+      settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+    }
+    if (typedUser.settings?.globalPrivacy !== true) {
+      count++
+    }
+  }
+
+  return count
+}
 
 /**
  * Get featured cities for the landing page
@@ -14,6 +60,7 @@ export const getFeaturedCities = query({
       shortSlug: v.string(),
       image: v.union(v.string(), v.null()),
       visitCount: v.union(v.number(), v.null()),
+      currentVisitorCount: v.optional(v.number()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -45,13 +92,22 @@ export const getFeaturedCities = query({
     // Return requested count (or fewer if not enough cities)
     const selected = shuffled.slice(0, Math.min(args.count, shuffled.length))
 
-    return selected.map((city) => ({
-      _id: city._id,
-      name: city.name,
-      shortSlug: city.shortSlug,
-      image: city.image ?? null,
-      visitCount: city.visitCount ?? 0,
-    }))
+    // Get current visitor count for each selected city
+    const citiesWithCurrentVisitors = await Promise.all(
+      selected.map(async (city) => {
+        const currentVisitorCount = await getCurrentVisitorCount(ctx, city._id)
+        return {
+          _id: city._id,
+          name: city.name,
+          shortSlug: city.shortSlug,
+          image: city.image ?? null,
+          visitCount: city.visitCount ?? 0,
+          currentVisitorCount,
+        }
+      }),
+    )
+
+    return citiesWithCurrentVisitors
   },
 })
 
@@ -121,6 +177,7 @@ export const getAllCities = query({
       region: v.string(),
       image: v.union(v.string(), v.null()),
       visitCount: v.union(v.number(), v.null()),
+      currentVisitorCount: v.optional(v.number()),
     }),
   ),
   handler: async (ctx) => {
@@ -131,16 +188,25 @@ export const getAllCities = query({
       .order('desc')
       .collect()
 
-    return cities.map((city) => ({
-      _id: city._id,
-      name: city.name,
-      slug: city.slug,
-      shortSlug: city.shortSlug,
-      country: city.country,
-      countryCode: city.countryCode,
-      region: city.region,
-      image: city.image ?? null,
-      visitCount: city.visitCount ?? null,
-    }))
+    // Get current visitor count for each city
+    const citiesWithCurrentVisitors = await Promise.all(
+      cities.map(async (city) => {
+        const currentVisitorCount = await getCurrentVisitorCount(ctx, city._id)
+        return {
+          _id: city._id,
+          name: city.name,
+          slug: city.slug,
+          shortSlug: city.shortSlug,
+          country: city.country,
+          countryCode: city.countryCode,
+          region: city.region,
+          image: city.image ?? null,
+          visitCount: city.visitCount ?? null,
+          currentVisitorCount,
+        }
+      }),
+    )
+
+    return citiesWithCurrentVisitors
   },
 })
