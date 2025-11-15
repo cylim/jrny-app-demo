@@ -1,11 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 import { Github, Linkedin, Twitter } from 'lucide-react'
-import { api } from '~@/convex/_generated/api'
-import { UserVisitsList } from '@/components/visits/user-visits-list'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AddVisitButton } from '@/components/visits/add-visit-button'
+import { UserVisitsList } from '@/components/visits/user-visits-list'
 import type { User } from '@/types/user'
+import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/u/$usernameOrId')({
   component: UserProfilePage,
@@ -53,24 +54,20 @@ function UserProfilePage() {
 
   const isOwnProfile = currentUser?._id === user._id
   const typedUser = user as User
-  const showVisitHistory = isOwnProfile || typedUser.settings?.hideVisitHistory !== true
+  const showVisitHistory =
+    isOwnProfile || typedUser.settings?.hideVisitHistory !== true
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         {/* User Header */}
         <div className="flex items-center gap-6 mb-8">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name}
-              className="w-24 h-24 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={user.image || undefined} alt={user.name} />
+            <AvatarFallback className="bg-primary/10 text-3xl font-bold">
               {user.name[0]}
-            </div>
-          )}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1">
             <h1 className="text-4xl font-bold mb-1">{user.name}</h1>
             {user.username && (
@@ -79,7 +76,9 @@ function UserProfilePage() {
 
             {/* Bio */}
             {typedUser.bio && (
-              <p className="mt-3 text-base text-foreground max-w-2xl">{typedUser.bio}</p>
+              <p className="mt-3 text-base text-foreground max-w-2xl">
+                {typedUser.bio}
+              </p>
             )}
 
             {/* Social Links */}

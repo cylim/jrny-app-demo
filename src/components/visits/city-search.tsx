@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from '~@/convex/_generated/api'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { api } from '~@/convex/_generated/api'
 import type { Id } from '~@/convex/_generated/dataModel'
 
 interface CitySearchProps {

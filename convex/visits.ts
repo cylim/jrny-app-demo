@@ -1,10 +1,61 @@
 import { v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import type { Doc, Id } from './_generated/dataModel'
+import { internalMutation, mutation, query } from './_generated/server'
 import { authComponent } from './auth'
-import type { Doc } from './_generated/dataModel'
 
 /**
- * Create a new visit
+ * Helper function to atomically calculate visitCount for a city
+ * This replaces the read-modify-write pattern with a source-of-truth calculation
+ */
+async function getVisitCountForCity(
+  ctx: any,
+  cityId: Id<'cities'>,
+): Promise<number> {
+  const visits = await ctx.db
+    .query('visits')
+    .withIndex('by_city_id', (q: any) => q.eq('cityId', cityId))
+    .collect()
+
+  return visits.length
+}
+
+/**
+ * Query to get the real-time visit count for a city
+ * This is the atomic, source-of-truth calculation
+ */
+export const getCityVisitCount = query({
+  args: { cityId: v.id('cities') },
+  returns: v.number(),
+  handler: async (ctx, { cityId }) => {
+    return await getVisitCountForCity(ctx, cityId)
+  },
+})
+
+/**
+ * Internal mutation to sync visitCount cache for a city
+ * Should be called from a scheduled function for eventual consistency
+ */
+export const syncCityVisitCount = internalMutation({
+  args: { cityId: v.id('cities') },
+  returns: v.null(),
+  handler: async (ctx, { cityId }) => {
+    const count = await getVisitCountForCity(ctx, cityId)
+    await ctx.db.patch(cityId, { visitCount: count })
+  },
+})
+
+/**
+ * Create a new visit for the authenticated user
+ *
+ * Validates the city exists, ensures start date is before end date,
+ * creates the visit record, and atomically updates the city's visitCount cache.
+ *
+ * @param cityId - The ID of the city being visited
+ * @param startDate - Visit start date as Unix timestamp in milliseconds
+ * @param endDate - Visit end date as Unix timestamp in milliseconds
+ * @param notes - Optional notes about the visit
+ * @param isPrivate - Whether the visit should be private (defaults to false)
+ * @returns Object with success status, visitId if successful, or error message
  */
 export const createVisit = mutation({
   args: {
@@ -60,12 +111,29 @@ export const createVisit = mutation({
       updatedAt: now,
     })
 
+    // Atomically update city visitCount cache by recalculating from source
+    const count = await getVisitCountForCity(ctx, cityId)
+    await ctx.db.patch(cityId, {
+      visitCount: count,
+    })
+
     return { success: true, visitId }
   },
 })
 
 /**
- * Update an existing visit
+ * Update an existing visit for the authenticated user
+ *
+ * Allows updating visit dates, notes, and privacy settings.
+ * Verifies the user owns the visit and validates date ranges.
+ * Note: Does not support changing the cityId.
+ *
+ * @param visitId - The ID of the visit to update
+ * @param startDate - Optional new start date as Unix timestamp
+ * @param endDate - Optional new end date as Unix timestamp
+ * @param notes - Optional updated notes
+ * @param isPrivate - Optional updated privacy setting
+ * @returns Object with success status or error message
  */
 export const updateVisit = mutation({
   args: {
@@ -127,7 +195,13 @@ export const updateVisit = mutation({
 })
 
 /**
- * Delete a visit
+ * Delete a visit for the authenticated user
+ *
+ * Verifies the user owns the visit, removes the visit record,
+ * and atomically updates the city's visitCount cache.
+ *
+ * @param visitId - The ID of the visit to delete
+ * @returns Object with success status or error message
  */
 export const deleteVisit = mutation({
   args: { visitId: v.id('visits') },
@@ -158,8 +232,17 @@ export const deleteVisit = mutation({
       return { success: false, error: 'Unauthorized' }
     }
 
+    // Store cityId before deletion
+    const cityId = visit.cityId
+
     // Delete visit
     await ctx.db.delete(visitId)
+
+    // Atomically update city visitCount cache by recalculating from source
+    const count = await getVisitCountForCity(ctx, cityId)
+    await ctx.db.patch(cityId, {
+      visitCount: count,
+    })
 
     return { success: true }
   },

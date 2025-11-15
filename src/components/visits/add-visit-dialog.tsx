@@ -1,22 +1,22 @@
 'use client'
 
-import { useState } from 'react'
 import { useMutation } from 'convex/react'
-import { api } from '~@/convex/_generated/api'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
-import { CitySearch } from './city-search'
-import type { Id } from '~@/convex/_generated/dataModel'
 import { dateStringToTimestamp, timestampToDateString } from '@/lib/date-utils'
+import { api } from '~@/convex/_generated/api'
+import type { Id } from '~@/convex/_generated/dataModel'
+import { CitySearch } from './city-search'
 
 interface AddVisitDialogProps {
   open: boolean

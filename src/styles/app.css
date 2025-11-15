@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -28,6 +30,13 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* Kirby Pastel Palette */
+    --color-kirby-pink: 253 164 175;
+    --color-kirby-blue: 147 197 253;
+    --color-kirby-purple: 196 181 253;
+    --color-kirby-peach: 253 186 140;
+    --color-kirby-mint: 167 243 208;
   }
 
   .dark {
@@ -55,6 +64,11 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Kirby colors (slightly desaturated for dark mode) */
+    --color-kirby-pink: 244 114 182;
+    --color-kirby-blue: 96 165 250;
+    --color-kirby-purple: 167 139 250;
   }
 }
 
@@ -100,5 +114,31 @@
 
   .using-mouse * {
     outline: none !important;
+  }
+}
+
+@layer components {
+  .kirby-rounded {
+    border-radius: 1.5rem; /* 24px - pronounced rounding */
+  }
+
+  .kirby-rounded-sm {
+    border-radius: 1rem; /* 16px - subtle rounding */
+  }
+
+  .kirby-bubble {
+    border-radius: 9999px; /* Fully circular */
+    box-shadow: 0 4px 6px -1px rgba(253, 164, 175, 0.3); /* Soft pink shadow */
+  }
+}
+
+@layer utilities {
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s infinite;
+  }
+
+  @keyframes bounce-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 }

@@ -6,9 +6,6 @@ import { v } from 'convex/values'
 // app will continue to work.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  numbers: defineTable({
-    value: v.number(),
-  }),
   users: defineTable({
     // Better-Auth user ID (from the auth system)
     authUserId: v.string(),
@@ -54,13 +51,16 @@ export default defineSchema({
     region: v.string(),
     latitude: v.string(),
     longitude: v.string(),
-    // Visual
+    // Visual (this image serves as the hero image for city showcase)
     image: v.optional(v.string()),
+    // Cached visit count for performance (updated by background job)
+    visitCount: v.optional(v.number()),
   })
     .index('by_short_slug', ['shortSlug'])
     .index('by_slug', ['slug'])
     .index('by_country', ['country'])
-    .index('by_region', ['region']),
+    .index('by_region', ['region'])
+    .index('by_visit_count', ['visitCount']),
   visits: defineTable({
     // Foreign keys
     userId: v.id('users'),

@@ -25,7 +25,8 @@ export function GoogleSignInButton() {
     } catch (error) {
       console.error('Sign in failed:', error)
       toast.error('Failed to sign in', {
-        description: 'Please try again or contact support if the issue persists.',
+        description:
+          'Please try again or contact support if the issue persists.',
       })
       setIsLoading(false)
     }

@@ -18,9 +18,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { authClient } from '@/lib/auth-client'
+import type { User } from '@/types/user'
 import { api } from '~@/convex/_generated/api'
 import { GoogleSignInButton } from './google-sign-in-button'
-import type { User } from '@/types/user'
 
 /**
  * Render the user navigation control: an avatar button with a dropdown for account actions and authentication handling.
@@ -93,7 +93,7 @@ export function UserNav() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align="center" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
@@ -105,7 +105,10 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {profileIdentifier && (
-            <Link to="/u/$usernameOrId" params={{ usernameOrId: profileIdentifier }}>
+            <Link
+              to="/u/$usernameOrId"
+              params={{ usernameOrId: profileIdentifier }}
+            >
               <DropdownMenuItem>
                 <UserIcon className="mr-2 h-4 w-4" />
                 <span>Profile</span>

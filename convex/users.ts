@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
+import type { Doc, Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import { authComponent } from './auth'
-import type { Doc, Id } from './_generated/dataModel'
 
 /**
  * Sync user data from Better-Auth to our users table
@@ -528,10 +528,7 @@ export const updateSocialLinks = mutation({
       }
     }
 
-    if (
-      linkedin?.trim() &&
-      !linkedin.startsWith('https://linkedin.com/in/')
-    ) {
+    if (linkedin?.trim() && !linkedin.startsWith('https://linkedin.com/in/')) {
       return {
         success: false,
         error: 'LinkedIn URL must start with https://linkedin.com/in/',

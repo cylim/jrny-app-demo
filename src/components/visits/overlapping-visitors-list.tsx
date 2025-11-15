@@ -1,5 +1,6 @@
-import { formatDateRange } from '@/lib/date-utils'
 import { Link } from '@tanstack/react-router'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { formatDateRange } from '@/lib/date-utils'
 import type { Id } from '~@/convex/_generated/dataModel'
 
 interface OverlappingVisitor {
@@ -37,23 +38,23 @@ export function OverlappingVisitorsList({
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
         >
           {/* User Avatar */}
-          {visitor.user.image ? (
-            <img
-              src={visitor.user.image}
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={visitor.user.image || undefined}
               alt={visitor.user.name}
-              className="w-10 h-10 rounded-full object-cover"
             />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+            <AvatarFallback className="bg-primary/10 text-sm font-medium">
               {visitor.user.name[0] ?? '?'}
-            </div>
-          )}
+            </AvatarFallback>
+          </Avatar>
 
           {/* User Info */}
           <div className="flex-1 min-w-0">
             <Link
               to="/u/$usernameOrId"
-              params={{ usernameOrId: visitor.user.username ?? visitor.user._id }}
+              params={{
+                usernameOrId: visitor.user.username ?? visitor.user._id,
+              }}
               className="font-medium hover:text-primary transition-colors"
             >
               {visitor.user.name}
