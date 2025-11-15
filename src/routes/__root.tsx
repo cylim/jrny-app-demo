@@ -121,7 +121,76 @@ export const Route = createRootRouteWithContext<{
       {
         name: 'description',
         content:
-          "Track your travel journey and explore the world's most amazing cities with JRNY.",
+          "Track your travel journey and explore the world's most amazing cities with JRNY. Discover who's traveling now and connect with fellow explorers.",
+      },
+      {
+        name: 'keywords',
+        content:
+          'travel tracker, city explorer, travel app, journey planner, travel community, city discovery, travel history',
+      },
+      {
+        name: 'author',
+        content: 'JRNY',
+      },
+      {
+        name: 'theme-color',
+        content: '#ec4899',
+      },
+      // Open Graph / Facebook
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:site_name',
+        content: 'JRNY',
+      },
+      {
+        property: 'og:title',
+        content: 'JRNY - Track Your Travels & Explore Cities',
+      },
+      {
+        property: 'og:description',
+        content:
+          "Track your travel journey and explore the world's most amazing cities. Discover who's traveling now and connect with fellow explorers.",
+      },
+      {
+        property: 'og:image',
+        content: '/android-chrome-512x512.png',
+      },
+      {
+        property: 'og:image:width',
+        content: '512',
+      },
+      {
+        property: 'og:image:height',
+        content: '512',
+      },
+      {
+        property: 'og:image:alt',
+        content: 'JRNY - Travel Tracker & City Explorer',
+      },
+      // Twitter
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'twitter:title',
+        content: 'JRNY - Track Your Travels & Explore Cities',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          "Track your travel journey and explore the world's most amazing cities. Discover who's traveling now and connect with fellow explorers.",
+      },
+      {
+        name: 'twitter:image',
+        content: '/android-chrome-512x512.png',
+      },
+      {
+        name: 'twitter:image:alt',
+        content: 'JRNY - Travel Tracker & City Explorer',
       },
     ],
     links: [
