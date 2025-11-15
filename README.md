@@ -141,6 +141,34 @@ JRNY is a location-based social application designed for travelers, digital noma
 6. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+### Database Seeding (Optional)
+
+For development and testing, you can populate the database with realistic test data:
+
+```bash
+# Seed database with 200 users and 4000 visits (default)
+bun run seed:db
+
+# Or with custom settings
+node scripts/seed-database.mjs --users 500 --visits-per-user 10
+```
+
+**What gets seeded**:
+- 200 users with realistic names, avatars, and social links
+- 4000 visits (20 per user) across top 100 cities
+- All visits have 1-month duration
+- ~20% of users have usernames
+- All seeded data marked with `isSeed: true`
+- Privacy settings randomized for realistic testing
+
+**Key Features**:
+- **Idempotent**: Running multiple times only adds delta to reach target
+- **Customizable**: Configure user count and visits per user via CLI
+- **Fast**: ~15 seconds for default 4000 visits
+- **Realistic**: Generated using [@faker-js/faker](https://fakerjs.dev)
+
+See [Database Seeding Guide](specs/003-db-seed/quickstart.md) for more details.
+
 ## Development
 
 ### Available Scripts
@@ -150,6 +178,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - `bun run dev:convex` - Start only the Convex backend
 - `bun run build` - Build for production
 - `bun run preview` - Preview production build locally with Cloudflare Workers
+- `bun run seed:db` - Populate database with test data (200 users, 4000 visits)
 - `bun run lint` - Run TypeScript and Biome checks
 - `bun run lint:fix` - Run linter with auto-fix
 - `bun run format` - Format code with Biome

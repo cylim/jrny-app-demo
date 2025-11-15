@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import type { Doc, Id } from './_generated/dataModel'
+import type { MutationCtx, QueryCtx } from './_generated/server'
 import { internalMutation, mutation, query } from './_generated/server'
 import { authComponent } from './auth'
 
@@ -8,12 +9,12 @@ import { authComponent } from './auth'
  * This replaces the read-modify-write pattern with a source-of-truth calculation
  */
 async function getVisitCountForCity(
-  ctx: any,
+  ctx: MutationCtx | QueryCtx,
   cityId: Id<'cities'>,
 ): Promise<number> {
   const visits = await ctx.db
     .query('visits')
-    .withIndex('by_city_id', (q: any) => q.eq('cityId', cityId))
+    .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
     .collect()
 
   return visits.length
@@ -179,7 +180,7 @@ export const updateVisit = mutation({
     }
 
     // Build update object
-    const updates: any = {
+    const updates: Partial<Doc<'visits'>> = {
       updatedAt: Date.now(),
     }
     if (startDate !== undefined) updates.startDate = startDate
@@ -265,6 +266,7 @@ export const getVisitsByUser = query({
       notes: v.optional(v.string()),
       isPrivate: v.boolean(),
       updatedAt: v.number(),
+      isSeed: v.optional(v.boolean()),
       // Joined city data
       city: v.object({
         _id: v.id('cities'),
@@ -330,6 +332,81 @@ export const getVisitsByUser = query({
     )
 
     return visitsWithCities
+  },
+})
+
+/**
+ * Get users currently visiting a city (for "Who's Here" section)
+ * Filters out private visits and users with globalPrivacy enabled
+ *
+ * @param cityId - The ID of the city
+ * @returns Array of current visitors with user and visit information
+ */
+export const getCurrentVisitors = query({
+  args: { cityId: v.id('cities') },
+  returns: v.array(
+    v.object({
+      user: v.object({
+        _id: v.id('users'),
+        name: v.string(),
+        username: v.optional(v.string()),
+        image: v.optional(v.string()),
+      }),
+      visit: v.object({
+        _id: v.id('visits'),
+        startDate: v.number(),
+        endDate: v.number(),
+      }),
+    }),
+  ),
+  handler: async (ctx, { cityId }) => {
+    const now = Date.now()
+
+    // Get all visits to this city
+    const cityVisits = await ctx.db
+      .query('visits')
+      .withIndex('by_city_id', (q) => q.eq('cityId', cityId))
+      .collect()
+
+    // Filter for current visits (not private, endDate >= now)
+    const currentVisits = cityVisits.filter(
+      (visit) => !visit.isPrivate && visit.endDate >= now,
+    )
+
+    // Join with user data and filter out users with globalPrivacy
+    const results = await Promise.all(
+      currentVisits.map(async (visit) => {
+        const user = await ctx.db.get(visit.userId)
+        if (!user) {
+          return null
+        }
+
+        // Filter out users who have globalPrivacy enabled
+        const typedUser = user as Doc<'users'> & {
+          settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+        }
+        if (typedUser.settings?.globalPrivacy === true) {
+          return null
+        }
+
+        return {
+          user: {
+            _id: user._id,
+            name: user.name,
+            username: user.username,
+            image: user.image,
+          },
+          visit: {
+            _id: visit._id,
+            startDate: visit.startDate,
+            endDate: visit.endDate,
+          },
+        }
+      }),
+    )
+
+    // Filter out null values (users with globalPrivacy enabled or missing users)
+    return results.filter((r): r is NonNullable<typeof r> => r !== null)
   },
 })
 

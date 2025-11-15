@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion'
 import { useRouterState } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'framer-motion'
 
 /**
  * RouteLoadingBar component shows a fancy full-screen overlay during route transitions.

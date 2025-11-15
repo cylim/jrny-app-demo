@@ -121,7 +121,7 @@ export const Route = createRootRouteWithContext<{
       {
         name: 'description',
         content:
-          'Track your travel journey and explore the world\'s most amazing cities with JRNY.',
+          "Track your travel journey and explore the world's most amazing cities with JRNY.",
       },
     ],
     links: [

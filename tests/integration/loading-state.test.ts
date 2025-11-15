@@ -1,6 +1,6 @@
-import { renderHook, waitFor, cleanup } from '@testing-library/react'
+import { cleanup, renderHook, waitFor } from '@testing-library/react'
 import { act } from 'react'
-import { describe, expect, it, afterEach } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { useLoadingState } from '~/hooks/useLoadingState'
 
 describe('Loading State Timing', () => {

@@ -19,6 +19,7 @@ export interface User {
     linkedin?: string
     telegram?: string
   }
+  isSeed?: boolean // true for faker-generated test users
   updatedAt: number
   lastSeen: number
 }

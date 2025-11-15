@@ -3,6 +3,34 @@ import type { Doc, Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import { authComponent } from './auth'
 
+const userShape = v.object({
+  _id: v.id('users'),
+  _creationTime: v.number(),
+  authUserId: v.string(),
+  name: v.string(),
+  email: v.string(),
+  image: v.optional(v.string()),
+  username: v.optional(v.string()),
+  bio: v.optional(v.string()),
+  settings: v.optional(
+    v.object({
+      globalPrivacy: v.boolean(),
+      hideVisitHistory: v.boolean(),
+    }),
+  ),
+  socialLinks: v.optional(
+    v.object({
+      github: v.optional(v.string()),
+      x: v.optional(v.string()),
+      linkedin: v.optional(v.string()),
+      telegram: v.optional(v.string()),
+    }),
+  ),
+  updatedAt: v.number(),
+  lastSeen: v.number(),
+  isSeed: v.optional(v.boolean()),
+})
+
 /**
  * Sync user data from Better-Auth to our users table
  * This should be called after successful Google OAuth sign-in
@@ -60,35 +88,7 @@ export const syncUser = mutation({
  */
 export const getCurrentUser = query({
   args: {},
-  returns: v.union(
-    v.object({
-      _id: v.id('users'),
-      _creationTime: v.number(),
-      authUserId: v.string(),
-      name: v.string(),
-      email: v.string(),
-      image: v.optional(v.string()),
-      username: v.optional(v.string()),
-      bio: v.optional(v.string()),
-      settings: v.optional(
-        v.object({
-          globalPrivacy: v.boolean(),
-          hideVisitHistory: v.boolean(),
-        }),
-      ),
-      socialLinks: v.optional(
-        v.object({
-          github: v.optional(v.string()),
-          x: v.optional(v.string()),
-          linkedin: v.optional(v.string()),
-          telegram: v.optional(v.string()),
-        }),
-      ),
-      updatedAt: v.number(),
-      lastSeen: v.number(),
-    }),
-    v.null(),
-  ),
+  returns: v.union(userShape, v.null()),
   handler: async (ctx) => {
     const authUser = await authComponent.getAuthUser(ctx)
 
@@ -110,35 +110,7 @@ export const getCurrentUser = query({
  */
 export const getUserByAuthId = query({
   args: { authUserId: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id('users'),
-      _creationTime: v.number(),
-      authUserId: v.string(),
-      name: v.string(),
-      email: v.string(),
-      image: v.optional(v.string()),
-      username: v.optional(v.string()),
-      bio: v.optional(v.string()),
-      settings: v.optional(
-        v.object({
-          globalPrivacy: v.boolean(),
-          hideVisitHistory: v.boolean(),
-        }),
-      ),
-      socialLinks: v.optional(
-        v.object({
-          github: v.optional(v.string()),
-          x: v.optional(v.string()),
-          linkedin: v.optional(v.string()),
-          telegram: v.optional(v.string()),
-        }),
-      ),
-      updatedAt: v.number(),
-      lastSeen: v.number(),
-    }),
-    v.null(),
-  ),
+  returns: v.union(userShape, v.null()),
   handler: async (ctx, { authUserId }) => {
     const user = await ctx.db
       .query('users')
@@ -154,35 +126,7 @@ export const getUserByAuthId = query({
  */
 export const getUserByUsername = query({
   args: { username: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id('users'),
-      _creationTime: v.number(),
-      authUserId: v.string(),
-      name: v.string(),
-      email: v.string(),
-      image: v.optional(v.string()),
-      username: v.optional(v.string()),
-      bio: v.optional(v.string()),
-      settings: v.optional(
-        v.object({
-          globalPrivacy: v.boolean(),
-          hideVisitHistory: v.boolean(),
-        }),
-      ),
-      socialLinks: v.optional(
-        v.object({
-          github: v.optional(v.string()),
-          x: v.optional(v.string()),
-          linkedin: v.optional(v.string()),
-          telegram: v.optional(v.string()),
-        }),
-      ),
-      updatedAt: v.number(),
-      lastSeen: v.number(),
-    }),
-    v.null(),
-  ),
+  returns: v.union(userShape, v.null()),
   handler: async (ctx, { username }) => {
     const user = await ctx.db
       .query('users')
@@ -289,35 +233,7 @@ export const setUsername = mutation({
  */
 export const getUserByUsernameOrId = query({
   args: { usernameOrId: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id('users'),
-      _creationTime: v.number(),
-      authUserId: v.string(),
-      name: v.string(),
-      email: v.string(),
-      image: v.optional(v.string()),
-      username: v.optional(v.string()),
-      bio: v.optional(v.string()),
-      settings: v.optional(
-        v.object({
-          globalPrivacy: v.boolean(),
-          hideVisitHistory: v.boolean(),
-        }),
-      ),
-      socialLinks: v.optional(
-        v.object({
-          github: v.optional(v.string()),
-          x: v.optional(v.string()),
-          linkedin: v.optional(v.string()),
-          telegram: v.optional(v.string()),
-        }),
-      ),
-      updatedAt: v.number(),
-      lastSeen: v.number(),
-    }),
-    v.null(),
-  ),
+  returns: v.union(userShape, v.null()),
   handler: async (ctx, { usernameOrId }) => {
     // Try username lookup first
     const userByUsername = await ctx.db

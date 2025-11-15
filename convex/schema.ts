@@ -33,6 +33,8 @@ export default defineSchema({
         telegram: v.optional(v.string()),
       }),
     ),
+    // Test data marker (true for faker-generated seed data)
+    isSeed: v.optional(v.boolean()),
     // Timestamps
     updatedAt: v.number(),
     lastSeen: v.number(),
@@ -71,6 +73,8 @@ export default defineSchema({
     // Optional metadata
     notes: v.optional(v.string()),
     isPrivate: v.boolean(),
+    // Test data marker (true for faker-generated seed data)
+    isSeed: v.optional(v.boolean()),
     // Timestamps
     updatedAt: v.number(),
   })

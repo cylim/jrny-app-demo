@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { LoadingDots } from '@/components/ui/loading-dots'
 import type { Id } from '~@/convex/_generated/dataModel'
 
-interface OverlappingVisitor {
+interface CurrentVisitor {
   user: {
     _id: Id<'users'>
     name: string
@@ -11,40 +12,45 @@ interface OverlappingVisitor {
     image?: string
   }
   visit: {
+    _id: Id<'visits'>
     startDate: number
     endDate: number
   }
-  overlapDays: number
 }
 
-interface OverlappingVisitorsListProps {
-  visitors: OverlappingVisitor[]
+interface CurrentVisitorsListProps {
+  visitors: CurrentVisitor[]
+  cityName?: string
 }
 
 /**
- * Renders a grid of user avatars who had overlapping visits
+ * Renders a grid of user avatars currently visiting a city (for "Who's Here" section)
  * Each avatar links to the user's profile
- * Shows up to 6 avatars, with a clickable "+X" indicator to expand and show all
+ * Shows up to 28 avatars, with a clickable "+X" indicator to expand and show all
+ * Includes loading and empty states
  *
- * @param visitors - Array of visitor entries containing user info, visit start/end timestamps, and overlapDays
- * @returns A React element containing the rendered grid of overlapping visitor avatars
+ * @param visitors - Array of current visitors with user and visit information
+ * @param cityName - Optional city name for empty state message
+ * @returns A React element containing the rendered grid of current visitor avatars
  */
-export function OverlappingVisitorsList({
+export function CurrentVisitorsList({
   visitors,
-}: OverlappingVisitorsListProps) {
+  cityName,
+}: CurrentVisitorsListProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
+  // Empty state
   if (visitors.length === 0) {
     return (
       <div className="text-sm text-muted-foreground py-4 text-center">
-        No overlapping visitors found
+        No one is currently in {cityName || 'this city'}
       </div>
     )
   }
 
-  const threshold = 6
+  const threshold = 28
   const shouldCollapse = visitors.length > threshold && !isExpanded
-  const MAX_VISIBLE = shouldCollapse ? 5 : visitors.length
+  const MAX_VISIBLE = shouldCollapse ? 27 : visitors.length
   const visibleVisitors = visitors.slice(0, MAX_VISIBLE)
   const remainingCount = visitors.length - MAX_VISIBLE
 
@@ -80,6 +86,18 @@ export function OverlappingVisitorsList({
           +{remainingCount}
         </button>
       )}
+    </div>
+  )
+}
+
+/**
+ * Loading wrapper component for CurrentVisitorsList
+ * Displays a loading state while data is being fetched
+ */
+export function CurrentVisitorsListSkeleton() {
+  return (
+    <div className="py-8 flex justify-center">
+      <LoadingDots />
     </div>
   )
 }

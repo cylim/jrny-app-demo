@@ -106,16 +106,8 @@ export function AnimatedBackground({
               scale: 0.8,
             }}
             animate={{
-              x: [
-                `${el.x}vw`,
-                `${(el.x + el.offsetX) % 100}vw`,
-                `${el.x}vw`,
-              ],
-              y: [
-                `${el.y}vh`,
-                `${(el.y + el.offsetY) % 100}vh`,
-                `${el.y}vh`,
-              ],
+              x: [`${el.x}vw`, `${(el.x + el.offsetX) % 100}vw`, `${el.x}vw`],
+              y: [`${el.y}vh`, `${(el.y + el.offsetY) % 100}vh`, `${el.y}vh`],
               scale: [0.8, 1.1, 0.9, 0.8],
               rotate: [0, 90, 180, 270, 360],
             }}
