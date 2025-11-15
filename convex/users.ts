@@ -22,6 +22,20 @@ const userShape = v.object({
       globalPrivacy: v.optional(v.boolean()),
     }),
   ),
+  subscription: v.optional(
+    v.object({
+      tier: v.union(v.literal('free'), v.literal('pro')),
+      status: v.union(
+        v.literal('active'),
+        v.literal('cancelled'),
+        v.literal('pending_cancellation'),
+      ),
+      nextBillingDate: v.optional(v.number()),
+      periodEndDate: v.optional(v.number()),
+      autumnCustomerId: v.optional(v.string()),
+      lastSyncedAt: v.number(),
+    }),
+  ),
   socialLinks: v.optional(
     v.object({
       github: v.optional(v.string()),

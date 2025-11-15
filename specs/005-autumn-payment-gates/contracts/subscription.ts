@@ -5,7 +5,7 @@
  * All functions enforce authentication and validate user tier access.
  */
 
-import { v } from "convex/values";
+import { v } from 'convex/values'
 
 // ============================================================================
 // Type Definitions
@@ -14,24 +14,24 @@ import { v } from "convex/values";
 /**
  * Subscription tier levels
  */
-export type SubscriptionTier = "free" | "pro";
+export type SubscriptionTier = 'free' | 'pro'
 
 /**
  * Subscription status states
  */
-export type SubscriptionStatus = "active" | "cancelled" | "pending_cancellation";
+export type SubscriptionStatus = 'active' | 'cancelled' | 'pending_cancellation'
 
 /**
  * Subscription metadata stored in user document
  */
 export type SubscriptionMetadata = {
-  tier: SubscriptionTier;
-  status: SubscriptionStatus;
-  nextBillingDate?: number;  // Unix timestamp in milliseconds
-  periodEndDate?: number;    // For cancelled subscriptions
-  autumnCustomerId?: string;
-  lastSyncedAt: number;      // Unix timestamp in milliseconds
-};
+  tier: SubscriptionTier
+  status: SubscriptionStatus
+  nextBillingDate?: number // Unix timestamp in milliseconds
+  periodEndDate?: number // For cancelled subscriptions
+  autumnCustomerId?: string
+  lastSyncedAt: number // Unix timestamp in milliseconds
+}
 
 // ============================================================================
 // Convex Function Signatures
@@ -47,21 +47,21 @@ export const getMySubscription = {
   args: {},
   returns: v.union(
     v.object({
-      tier: v.union(v.literal("free"), v.literal("pro")),
+      tier: v.union(v.literal('free'), v.literal('pro')),
       status: v.union(
-        v.literal("active"),
-        v.literal("cancelled"),
-        v.literal("pending_cancellation")
+        v.literal('active'),
+        v.literal('cancelled'),
+        v.literal('pending_cancellation'),
       ),
       nextBillingDate: v.optional(v.number()),
       periodEndDate: v.optional(v.number()),
-      canUpgrade: v.boolean(),         // True if free tier
-      canCancel: v.boolean(),          // True if active Pro
+      canUpgrade: v.boolean(), // True if free tier
+      canCancel: v.boolean(), // True if active Pro
       daysUntilPeriodEnd: v.optional(v.number()),
     }),
-    v.null()  // Null if no subscription data (new user)
+    v.null(), // Null if no subscription data (new user)
   ),
-};
+}
 
 /**
  * Initiate Pro tier upgrade checkout
@@ -75,14 +75,14 @@ export const getMySubscription = {
  */
 export const initiateUpgrade = {
   args: {
-    successUrl: v.string(),  // URL to redirect after successful payment
-    cancelUrl: v.string(),   // URL to redirect if user cancels
+    successUrl: v.string(), // URL to redirect after successful payment
+    cancelUrl: v.string(), // URL to redirect if user cancels
   },
   returns: v.object({
     checkoutUrl: v.string(),
     sessionId: v.string(),
   }),
-};
+}
 
 /**
  * Cancel Pro subscription
@@ -98,12 +98,12 @@ export const initiateUpgrade = {
 export const cancelSubscription = {
   args: {},
   returns: v.object({
-    tier: v.literal("pro"),
-    status: v.literal("pending_cancellation"),
-    periodEndDate: v.number(),  // When Pro access will end
-    message: v.string(),        // Confirmation message for user
+    tier: v.literal('pro'),
+    status: v.literal('pending_cancellation'),
+    periodEndDate: v.number(), // When Pro access will end
+    message: v.string(), // Confirmation message for user
   }),
-};
+}
 
 /**
  * Reactivate cancelled Pro subscription
@@ -118,12 +118,12 @@ export const cancelSubscription = {
 export const reactivateSubscription = {
   args: {},
   returns: v.object({
-    tier: v.literal("pro"),
-    status: v.literal("active"),
+    tier: v.literal('pro'),
+    status: v.literal('active'),
     nextBillingDate: v.number(),
     message: v.string(),
   }),
-};
+}
 
 /**
  * Sync subscription status with Autumn
@@ -138,16 +138,16 @@ export const reactivateSubscription = {
 export const syncSubscriptionStatus = {
   args: {},
   returns: v.object({
-    tier: v.union(v.literal("free"), v.literal("pro")),
+    tier: v.union(v.literal('free'), v.literal('pro')),
     status: v.union(
-      v.literal("active"),
-      v.literal("cancelled"),
-      v.literal("pending_cancellation")
+      v.literal('active'),
+      v.literal('cancelled'),
+      v.literal('pending_cancellation'),
     ),
     lastSyncedAt: v.number(),
-    changed: v.boolean(),  // True if tier or status changed during sync
+    changed: v.boolean(), // True if tier or status changed during sync
   }),
-};
+}
 
 /**
  * Check if user has access to specific feature
@@ -161,14 +161,14 @@ export const syncSubscriptionStatus = {
  */
 export const checkFeatureAccess = {
   args: {
-    featureId: v.string(),  // e.g., "global_visit_privacy", "individual_visit_privacy"
+    featureId: v.string(), // e.g., "global_visit_privacy", "individual_visit_privacy"
   },
   returns: v.object({
     hasAccess: v.boolean(),
-    tier: v.union(v.literal("free"), v.literal("pro")),
-    reason: v.optional(v.string()),  // Why access was denied (for free users)
+    tier: v.union(v.literal('free'), v.literal('pro')),
+    reason: v.optional(v.string()), // Why access was denied (for free users)
   }),
-};
+}
 
 /**
  * Handle Autumn webhook events
@@ -184,25 +184,29 @@ export const checkFeatureAccess = {
 export const handleSubscriptionWebhook = {
   args: {
     event: v.union(
-      v.literal("subscription.created"),
-      v.literal("subscription.updated"),
-      v.literal("subscription.cancelled"),
-      v.literal("payment.succeeded"),
-      v.literal("payment.failed")
+      v.literal('subscription.created'),
+      v.literal('subscription.updated'),
+      v.literal('subscription.cancelled'),
+      v.literal('payment.succeeded'),
+      v.literal('payment.failed'),
     ),
     customerId: v.string(),
     subscriptionData: v.object({
-      tier: v.union(v.literal("free"), v.literal("pro")),
-      status: v.union(v.literal("active"), v.literal("cancelled"), v.literal("pending_cancellation")),
+      tier: v.union(v.literal('free'), v.literal('pro')),
+      status: v.union(
+        v.literal('active'),
+        v.literal('cancelled'),
+        v.literal('pending_cancellation'),
+      ),
       nextBillingDate: v.optional(v.number()),
       periodEndDate: v.optional(v.number()),
     }),
   },
   returns: v.object({
     success: v.boolean(),
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.id('users')),
   }),
-};
+}
 
 // ============================================================================
 // Usage Examples
