@@ -7,6 +7,7 @@ import { useMutation } from 'convex/react'
 import { LogOut, Settings, User as UserIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -83,6 +84,9 @@ export function UserNav() {
   const typedUser = currentUser as User | null
   const profileIdentifier = typedUser?.username || typedUser?._id || ''
 
+  // Check if user has Pro subscription
+  const isPro = typedUser?.subscription?.tier === 'pro'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -91,6 +95,14 @@ export function UserNav() {
             <AvatarImage src={user.image || undefined} alt={user.name || ''} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
+          {isPro && (
+            <Badge
+              variant="default"
+              className="absolute -right-1 -top-1 h-4 scale-75 bg-gradient-to-r from-purple-500 to-pink-500 px-1 text-[9px] text-white"
+            >
+              PRO
+            </Badge>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="center" forceMount>

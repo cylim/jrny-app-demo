@@ -51,8 +51,8 @@ function UserEventsSection({
           <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
             <p className="text-zinc-600 dark:text-zinc-400">
               {isOwnProfile
-                ? "You haven't joined any upcoming events yet."
-                : "This user hasn't joined any upcoming events yet."}
+                ? "You haven't joined or created any upcoming events yet."
+                : "This user hasn't joined or created any upcoming events yet."}
             </p>
           </div>
         ) : (
@@ -61,6 +61,7 @@ function UserEventsSection({
               <EventCard
                 key={event._id}
                 event={{ ...event, participantCount: 0 }}
+                showOrganizerBadge={event.ownerId === userId}
               />
             ))}
           </div>
@@ -76,8 +77,8 @@ function UserEventsSection({
           <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
             <p className="text-zinc-600 dark:text-zinc-400">
               {isOwnProfile
-                ? "You haven't attended any past events yet."
-                : "This user hasn't attended any past events yet."}
+                ? "You haven't attended or created any past events yet."
+                : "This user hasn't attended or created any past events yet."}
             </p>
           </div>
         ) : (
@@ -86,6 +87,7 @@ function UserEventsSection({
               <EventCard
                 key={event._id}
                 event={{ ...event, participantCount: 0 }}
+                showOrganizerBadge={event.ownerId === userId}
               />
             ))}
           </div>
@@ -141,7 +143,9 @@ function UserProfilePage() {
   const isOwnProfile = currentUser?._id === user._id
   const typedUser = user as User
   const showVisitHistory =
-    isOwnProfile || typedUser.settings?.hideVisitHistory !== true
+    isOwnProfile || typedUser.settings?.hideProfileVisits !== true
+  const showEvents =
+    isOwnProfile || typedUser.settings?.hideProfileEvents !== true
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -266,34 +270,55 @@ function UserProfilePage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'visits' &&
-          (showVisitHistory ? (
-            <div
-              role="tabpanel"
-              id="visits-panel"
-              aria-labelledby="visits-tab"
-              className="bg-card/30 border rounded-lg p-6"
-            >
-              <h2 className="text-2xl font-semibold mb-6">
-                {isOwnProfile ? 'My Travels' : 'Travels'}
-              </h2>
-              <UserVisitsList userId={user._id} />
-            </div>
-          ) : (
-            <div
-              role="tabpanel"
-              id="visits-panel"
-              aria-labelledby="visits-tab"
-              className="bg-card border rounded-lg p-6"
-            >
-              <p className="text-center text-muted-foreground">
-                This user has chosen to keep their travel history private.
-              </p>
-            </div>
-          ))}
+        {showVisitHistory ? (
+          <div
+            role="tabpanel"
+            id="visits-panel"
+            aria-labelledby="visits-tab"
+            aria-hidden={activeTab !== 'visits'}
+            className={`bg-card/30 border rounded-lg p-6 ${activeTab !== 'visits' ? 'hidden' : ''}`}
+          >
+            <h2 className="text-2xl font-semibold mb-6">
+              {isOwnProfile ? 'My Travels' : 'Travels'}
+            </h2>
+            <UserVisitsList userId={user._id} isOwnProfile={isOwnProfile} />
+          </div>
+        ) : (
+          <div
+            role="tabpanel"
+            id="visits-panel"
+            aria-labelledby="visits-tab"
+            aria-hidden={activeTab !== 'visits'}
+            className={`bg-card border rounded-lg p-6 ${activeTab !== 'visits' ? 'hidden' : ''}`}
+          >
+            <p className="text-center text-muted-foreground">
+              This user has chosen to keep their travel history private.
+            </p>
+          </div>
+        )}
 
-        {activeTab === 'events' && (
-          <UserEventsSection userId={user._id} isOwnProfile={isOwnProfile} />
+        {showEvents ? (
+          <div
+            role="tabpanel"
+            id="events-panel"
+            aria-labelledby="events-tab"
+            aria-hidden={activeTab !== 'events'}
+            className={activeTab !== 'events' ? 'hidden' : ''}
+          >
+            <UserEventsSection userId={user._id} isOwnProfile={isOwnProfile} />
+          </div>
+        ) : (
+          <div
+            role="tabpanel"
+            id="events-panel"
+            aria-labelledby="events-tab"
+            aria-hidden={activeTab !== 'events'}
+            className={`bg-card border rounded-lg p-6 ${activeTab !== 'events' ? 'hidden' : ''}`}
+          >
+            <p className="text-center text-muted-foreground">
+              This user has chosen to keep their event participation private.
+            </p>
+          </div>
         )}
       </div>
     </div>

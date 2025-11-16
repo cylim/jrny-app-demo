@@ -1,5 +1,9 @@
-import { useState } from 'react'
+import { api } from 'convex/_generated/api'
+import { useAction } from 'convex/react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { UpgradeButton } from '../subscription/upgrade-button'
+import { Badge } from '../ui/badge'
 
 /**
  * Event creation/editing form component
@@ -51,6 +55,30 @@ export function EventForm({
   isLoading = false,
 }: EventFormProps) {
   const [title, setTitle] = useState(initialValues?.title ?? '')
+
+  // Check feature access for hiding participant list
+  const checkFeatureAccess = useAction(api.subscriptions.checkFeatureAccess)
+  const [featureAccess, setFeatureAccess] = useState<{
+    hasAccess: boolean
+    tier: 'free' | 'pro'
+    reason?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const result = await checkFeatureAccess({
+          featureId: 'event_participant_list_hide',
+        })
+        setFeatureAccess(result)
+      } catch (error) {
+        console.error('Failed to check feature access:', error)
+        // Default to no access on error
+        setFeatureAccess({ hasAccess: false, tier: 'free' })
+      }
+    }
+    checkAccess()
+  }, [checkFeatureAccess])
   const [description, setDescription] = useState(
     initialValues?.description ?? '',
   )
@@ -394,21 +422,38 @@ export function EventForm({
             id="isParticipantListHidden"
             type="checkbox"
             checked={isParticipantListHidden}
-            onChange={(e) => setIsParticipantListHidden(e.target.checked)}
+            onChange={(e) => {
+              if (featureAccess?.hasAccess) {
+                setIsParticipantListHidden(e.target.checked)
+              }
+            }}
             className="h-4 w-4 rounded border-zinc-300 text-pink-600 focus:ring-2 focus:ring-pink-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-pink-900/30"
-            disabled={isLoading}
+            disabled={isLoading || !featureAccess?.hasAccess}
           />
           <label
             htmlFor="isParticipantListHidden"
             className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
           >
             Hide participant list
+            <Badge variant="default" className="ml-1 text-xs">
+              Pro
+            </Badge>
           </label>
         </div>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           When enabled, only you (the organizer) can see the full list of
           participants. Participants will only see themselves.
         </p>
+        {!featureAccess?.hasAccess && (
+          <div className="mt-2">
+            <UpgradeButton
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              featureName="Hide Participant List"
+            />
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}

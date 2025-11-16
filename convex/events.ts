@@ -33,11 +33,24 @@ export const getEvent = query({
           userId: v.id('users'),
           userName: v.string(),
           userImage: v.optional(v.string()),
+          username: v.optional(v.string()),
         }),
       ),
       isOwner: v.boolean(),
       isParticipant: v.boolean(),
       isFull: v.boolean(),
+      owner: v.object({
+        _id: v.id('users'),
+        name: v.string(),
+        image: v.optional(v.string()),
+        username: v.optional(v.string()),
+      }),
+      city: v.object({
+        _id: v.id('cities'),
+        name: v.string(),
+        country: v.string(),
+        shortSlug: v.string(),
+      }),
     }),
     v.null(),
   ),
@@ -51,14 +64,23 @@ export const getEvent = query({
       .withIndex('by_event', (q) => q.eq('eventId', eventId))
       .collect()
 
-    // Get viewer identity
+    // Get viewer identity and fetch Convex user record
     const viewerIdentity = await ctx.auth.getUserIdentity()
-    const viewerId = viewerIdentity?.subject
+    let viewerUserId: string | null = null
+    if (viewerIdentity) {
+      const viewerUser = await ctx.db
+        .query('users')
+        .withIndex('by_auth_user_id', (q) =>
+          q.eq('authUserId', viewerIdentity.subject),
+        )
+        .unique()
+      viewerUserId = viewerUser?._id || null
+    }
 
-    // Check viewer roles
-    const isOwner = viewerId ? event.ownerId === viewerId : false
-    const isParticipant = viewerId
-      ? participantRecords.some((p) => p.userId === viewerId)
+    // Check viewer roles using Convex user _id
+    const isOwner = viewerUserId ? event.ownerId === viewerUserId : false
+    const isParticipant = viewerUserId
+      ? participantRecords.some((p) => p.userId === viewerUserId)
       : false
 
     // Determine which participants to show based on privacy settings
@@ -67,7 +89,7 @@ export const getEvent = query({
       if (isParticipant) {
         // Participant can only see themselves
         visibleParticipants = participantRecords.filter(
-          (p) => p.userId === viewerId,
+          (p) => p.userId === viewerUserId,
         )
       } else {
         // Anonymous or non-participant cannot see any participants
@@ -84,12 +106,37 @@ export const getEvent = query({
           userId: p.userId,
           userName: user?.name || 'Unknown',
           userImage: user?.image,
+          username: user?.username,
         }
       }),
     )
 
+    // Fetch owner details
+    const owner = await ctx.db.get(event.ownerId)
+    if (!owner) {
+      throw new Error('Event owner not found')
+    }
+
+    // Fetch city details
+    const city = await ctx.db.get(event.cityId)
+    if (!city) {
+      throw new Error('Event city not found')
+    }
+
     return {
-      ...event,
+      _id: event._id,
+      _creationTime: event._creationTime,
+      title: event.title,
+      description: event.description,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      timezone: event.timezone,
+      location: event.location,
+      cityId: event.cityId,
+      ownerId: event.ownerId,
+      maxCapacity: event.maxCapacity,
+      isParticipantListHidden: event.isParticipantListHidden,
+      isCancelled: event.isCancelled,
       participantCount: participantRecords.length,
       participants,
       isOwner,
@@ -97,6 +144,18 @@ export const getEvent = query({
       isFull: event.maxCapacity
         ? participantRecords.length >= event.maxCapacity
         : false,
+      owner: {
+        _id: owner._id,
+        name: owner.name,
+        image: owner.image,
+        username: owner.username,
+      },
+      city: {
+        _id: city._id,
+        name: city.name,
+        country: city.country,
+        shortSlug: city.shortSlug,
+      },
     }
   },
 })
@@ -202,18 +261,32 @@ export const getUserEvents = query({
     ),
   }),
   handler: async (ctx, { userId }) => {
+    // Get events where user is a participant
     const participations = await ctx.db
       .query('eventParticipants')
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .collect()
 
-    const eventIds = participations.map((p) => p.eventId)
-    const events = await Promise.all(eventIds.map((id) => ctx.db.get(id)))
-
-    // Filter out null events and cancelled events (type guard)
-    const validEvents = events.filter(
-      (e): e is NonNullable<typeof e> => e !== null && !e.isCancelled,
+    const participationEventIds = participations.map((p) => p.eventId)
+    const participationEvents = await Promise.all(
+      participationEventIds.map((id) => ctx.db.get(id)),
     )
+
+    // Get events where user is the owner/organizer
+    const ownedEvents = await ctx.db
+      .query('events')
+      .withIndex('by_owner', (q) => q.eq('ownerId', userId))
+      .collect()
+
+    // Combine both sets of events and deduplicate by ID
+    const allEventsMap = new Map()
+    for (const event of [...participationEvents, ...ownedEvents]) {
+      if (event && !event.isCancelled) {
+        allEventsMap.set(event._id, event)
+      }
+    }
+
+    const validEvents = Array.from(allEventsMap.values())
 
     const now = Date.now()
     return {

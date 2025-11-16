@@ -170,7 +170,7 @@ export function RouteLoadingBar() {
 
                   {/* Center logo/icon */}
                   <motion.div
-                    className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-400 text-2xl font-bold text-white shadow-xl"
+                    className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-400 shadow-xl p-2"
                     animate={{
                       scale: [1, 1.1, 1],
                     }}
@@ -180,7 +180,11 @@ export function RouteLoadingBar() {
                       ease: 'easeInOut',
                     }}
                   >
-                    J
+                    <img
+                      src="/favicon.png"
+                      alt="JRNY Logo"
+                      className="h-full w-full object-contain"
+                    />
                   </motion.div>
                 </div>
 

@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { AutumnProvider } from '@/components/providers/autumn-provider'
 import { clientEnv } from '~/env.client'
 import { routeTree } from './routeTree.gen'
 
@@ -39,7 +40,7 @@ export function getRouter() {
       context: { queryClient, convexClient: convex, convexQueryClient },
       Wrap: ({ children }) => (
         <ConvexProvider client={convexQueryClient.convexClient}>
-          {children}
+          <AutumnProvider>{children}</AutumnProvider>
         </ConvexProvider>
       ),
     }),

@@ -91,7 +91,11 @@ export function OverlappingVisitorsList({
         {remainingCount > 0 && (
           <button
             type="button"
-            onClick={() => setIsExpanded(true)}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsExpanded(true)
+            }}
             className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors cursor-pointer"
           >
             +{remainingCount}

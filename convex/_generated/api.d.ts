@@ -9,11 +9,15 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as autumn from "../autumn.js";
 import type * as cities from "../cities.js";
 import type * as crons from "../crons.js";
 import type * as events from "../events.js";
 import type * as http from "../http.js";
+import type * as migrations_001_add_privacy_settings from "../migrations/001_add_privacy_settings.js";
+import type * as privacy from "../privacy.js";
 import type * as seed from "../seed.js";
+import type * as subscriptions from "../subscriptions.js";
 import type * as users from "../users.js";
 import type * as visits from "../visits.js";
 
@@ -25,11 +29,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  autumn: typeof autumn;
   cities: typeof cities;
   crons: typeof crons;
   events: typeof events;
   http: typeof http;
+  "migrations/001_add_privacy_settings": typeof migrations_001_add_privacy_settings;
+  privacy: typeof privacy;
   seed: typeof seed;
+  subscriptions: typeof subscriptions;
   users: typeof users;
   visits: typeof visits;
 }>;
@@ -2160,4 +2168,5 @@ export declare const components: {
       updateMany: FunctionReference<"mutation", "internal", any, any>;
     };
   };
+  autumn: {};
 };

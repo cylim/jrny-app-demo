@@ -31,9 +31,13 @@ interface EventCardProps {
     participantCount: number
     isCancelled: boolean
   }
+  showOrganizerBadge?: boolean
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({
+  event,
+  showOrganizerBadge = false,
+}: EventCardProps) {
   const isPast = event.startTime < Date.now()
   const isFull = event.maxCapacity
     ? event.participantCount >= event.maxCapacity
@@ -75,7 +79,12 @@ export function EventCard({ event }: EventCardProps) {
           <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
             {event.title}
           </h3>
-          <div className="flex flex-shrink-0 gap-2">
+          <div className="flex flex-shrink-0 flex-wrap gap-2 justify-end">
+            {showOrganizerBadge && (
+              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                Organizer
+              </span>
+            )}
             {event.isCancelled && (
               <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
                 Cancelled

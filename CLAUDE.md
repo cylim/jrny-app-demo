@@ -703,15 +703,74 @@ This feature allows users to organize and discover social gatherings in cities t
 - **Non-participant** (when `isParticipantListHidden = true`): Sees "Participant list hidden by organizer"
 - **Anonymous users**: Can view event details but cannot see participants if hidden
 
+### Subscriptions & Payments (Autumn + Stripe)
+
+This app uses **Autumn** (a Stripe integration layer) for subscription management and payments.
+
+**Setup & Configuration**:
+1. **Autumn Account**: Sign up at [useautumn.com](https://useautumn.com)
+2. **Environment Variable**: Set `AUTUMN_SECRET_KEY` via `npx convex env set AUTUMN_SECRET_KEY "am_sk_test_..."`
+3. **Config File**: Define tiers/features in `autumn.config.ts` (root directory)
+4. **Sync Config**: Run `npx atmn push` to sync config to Autumn dashboard
+5. **Stripe Connection**: Connect Stripe account in Autumn dashboard
+
+**Subscription Tiers**:
+- **Free Tier** ($0): Basic privacy features (hide profile visits/events)
+- **Pro Tier** ($0.99/month): Enhanced privacy (global visit privacy, individual visit privacy, hide event participant lists)
+
+**Key Files**:
+- `convex/autumn.ts` - Autumn client initialization with Better-Auth integration
+- `convex/subscriptions.ts` - Subscription queries and mutations
+- `src/components/subscription/` - Subscription UI components
+- `autumn.config.ts` - Tier and feature definitions
+
+**Subscription Functions** (convex/subscriptions.ts):
+- `getMySubscription` - Returns user's current tier, status, billing dates
+- `initiateUpgrade` - Creates Stripe Checkout session, returns checkout URL
+- `syncSubscriptionStatus` - Syncs subscription status from Autumn API
+- `cancelSubscription` - Cancels recurring billing (Pro access continues until period end)
+- `handleSubscriptionWebhook` - Processes Autumn/Stripe webhook events
+- `checkFeatureAccess` - Server-side feature gate checking
+
+**Payment Flow**:
+1. User clicks "Upgrade to Pro" button (src/components/subscription/upgrade-button.tsx)
+2. `initiateUpgrade` mutation creates Stripe Checkout session via Autumn SDK
+3. User redirected to Stripe-hosted checkout page
+4. On success, redirected to `/subscription/success` which syncs subscription
+5. Webhooks automatically update subscription status in real-time
+
+**Feature Gating**:
+- Use `autumn.check(ctx, { featureId: 'feature_name' })` in Convex functions
+- Pro-only features: `global_visit_privacy`, `individual_visit_privacy`, `event_participant_list_hide`
+- Free features: `profile_visits_hide`, `profile_events_hide`
+
+**Testing Stripe Payments**:
+1. Navigate to `/settings` while signed in
+2. Click "Upgrade to Pro - $0.99/month"
+3. Use Stripe test cards:
+   - Success: `4242 4242 4242 4242`
+   - Decline: `4000 0000 0000 0002`
+   - 3D Secure: `4000 0025 0000 3155`
+4. Complete checkout with any future expiry (e.g., `12/25`), CVC (`123`), ZIP
+5. Verify Pro badge appears in header after redirect
+
+**Important Notes**:
+- Autumn SDK types may be incomplete - use `as any` with TODO comments where needed
+- Customer data includes `subscriptions` array (not in SDK types)
+- CheckoutResult may use `session_id` or `id` field (handle both)
+- Webhooks handled automatically via Autumn component
+- All prices in USD cents (e.g., $0.99 = 99 cents)
+
 ### Database Schema
 
 See `convex/schema.ts` for complete schema. Key tables:
 
 **users**:
 - `authUserId`, `name`, `email`, `image`, `username`
-- `settings` object with `globalPrivacy` and `hideVisitHistory` flags
+- `settings` object with privacy flags: `hideProfileVisits`, `hideProfileEvents`, `globalVisitPrivacy`, `globalPrivacy` (legacy), `hideVisitHistory` (legacy)
+- `subscription` object (optional): `tier` ('free' | 'pro'), `status` ('active' | 'pending_cancellation' | 'cancelled'), `nextBillingDate`, `periodEndDate`, `autumnCustomerId`, `lastSyncedAt`
 - `socialLinks` object (github, x, linkedin, telegram)
-- Indexed by: `by_auth_user_id`, `by_username`
+- Indexed by: `by_auth_user_id`, `by_username`, `by_subscription_tier`
 
 **cities**:
 - `name`, `slug`, `shortSlug`, `country`, `countryCode`, `region`
