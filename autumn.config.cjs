@@ -30,7 +30,8 @@ module.exports = {
         'profile_visits_hide',
         'profile_events_hide',
         'global_visit_privacy',
-        'individual_visit_privacy'
+        'individual_visit_privacy',
+        'event_participant_list_hide'
       ]
     }
   },
@@ -55,6 +56,12 @@ module.exports = {
       id: 'individual_visit_privacy',
       name: 'Individual Visit Privacy',
       description: 'Hide specific visits from discovery',
+      tier: 'pro'
+    },
+    event_participant_list_hide: {
+      id: 'event_participant_list_hide',
+      name: 'Hide Event Participant List',
+      description: 'Hide participant list from non-participants in your events',
       tier: 'pro'
     }
   }

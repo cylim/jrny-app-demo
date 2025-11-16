@@ -6,7 +6,7 @@
  */
 
 import { Autumn } from '@useautumn/convex'
-import autumnConfig from '../autumn.config.cjs'
+import autumnConfig from '../autumn.config'
 import { components } from './_generated/api'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 
@@ -15,7 +15,7 @@ import type { MutationCtx, QueryCtx } from './_generated/server'
  *
  * Configured with:
  * - Secret key from environment (AUTUMN_SECRET_KEY)
- * - Tier and feature definitions from autumn.config.cjs
+ * - Tier and feature definitions from autumn.config.ts
  * - Better-Auth user identification
  */
 export const autumn = new Autumn(components.autumn, {
