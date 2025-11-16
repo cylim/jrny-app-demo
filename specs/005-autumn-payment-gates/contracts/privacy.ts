@@ -177,14 +177,15 @@ export const getCityVisits = {
  * If profile owner has hideProfileVisits enabled and viewer is not the owner,
  * returns empty array.
  *
+ * Viewer identity is derived from ctx.auth.getUserIdentity() on the server side
+ * to prevent authorization bypass attacks.
+ *
  * @param username - Username of profile to view
- * @param viewerId - Optional user ID viewing the profile
  * @returns Filtered list of visits or empty if hidden
  */
 export const getUserProfileVisits = {
   args: {
     username: v.string(),
-    viewerId: v.optional(v.id('users')),
   },
   returns: v.union(
     v.array(
@@ -213,14 +214,15 @@ export const getUserProfileVisits = {
  * If profile owner has hideProfileEvents enabled and viewer is not the owner,
  * returns empty array.
  *
+ * Viewer identity is derived from ctx.auth.getUserIdentity() on the server side
+ * to prevent authorization bypass attacks.
+ *
  * @param username - Username of profile to view
- * @param viewerId - Optional user ID viewing the profile
  * @returns Filtered list of events or empty if hidden
  */
 export const getUserProfileEvents = {
   args: {
     username: v.string(),
-    viewerId: v.optional(v.id('users')),
   },
   returns: v.union(
     v.array(

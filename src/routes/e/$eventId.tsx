@@ -268,6 +268,7 @@ function EventDetailPage() {
         <div className="flex flex-wrap gap-3">
           {/* Join/Leave Button - All authenticated users */}
           {!isPast &&
+            !event.isCancelled &&
             isAuthenticated &&
             (event.isParticipant ? (
               <Button
@@ -292,10 +293,14 @@ function EventDetailPage() {
                     console.error('Failed to join event:', error)
                   }
                 }}
-                disabled={event.isFull}
+                disabled={event.isFull || event.isCancelled}
                 className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg transition-all hover:scale-105 hover:shadow-xl text-white"
               >
-                {event.isFull ? 'Event Full' : 'Join Event'}
+                {event.isFull
+                  ? 'Event Full'
+                  : event.isCancelled
+                    ? 'Event Cancelled'
+                    : 'Join Event'}
               </Button>
             ))}
 
@@ -311,7 +316,7 @@ function EventDetailPage() {
           </a>
 
           {/* Owner Actions */}
-          {event.isOwner && !isPast && (
+          {event.isOwner && !isPast && !event.isCancelled && (
             <>
               <Button
                 onClick={handleEdit}

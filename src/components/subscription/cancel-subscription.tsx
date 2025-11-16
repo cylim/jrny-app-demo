@@ -4,7 +4,7 @@
  * Allows Pro users to cancel their subscription with confirmation.
  */
 
-import { useMutation } from 'convex/react'
+import { useAction } from 'convex/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -23,7 +23,7 @@ import { api } from '~@/convex/_generated/api'
 
 export function CancelSubscription() {
   const [isLoading, setIsLoading] = useState(false)
-  const cancelSubscription = useMutation(api.subscriptions.cancelSubscription)
+  const cancelSubscription = useAction(api.subscriptions.cancelSubscription)
 
   const handleCancel = async () => {
     setIsLoading(true)

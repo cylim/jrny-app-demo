@@ -30,9 +30,9 @@ export const backfillPrivacyAndSubscription = internalMutation({
       const needsUpdate =
         !user.settings ||
         !user.subscription ||
-        !user.settings.hideProfileVisits ||
-        !user.settings.hideProfileEvents ||
-        !user.settings.globalVisitPrivacy
+        !user.settings.hideProfileVisits === undefined ||
+        !user.settings.hideProfileEvents === undefined ||
+        !user.settings.globalVisitPrivacy === undefined
 
       if (needsUpdate) {
         await ctx.db.patch(user._id, {

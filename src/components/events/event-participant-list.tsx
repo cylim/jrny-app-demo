@@ -92,9 +92,7 @@ export function EventParticipantList({
           {/* Show the participant (themselves) */}
           <div className="flex flex-wrap gap-3">
             {participants.map((participant) => {
-              const userLink = participant.username
-                ? `/u/${participant.username}`
-                : `/u/${participant.userId}`
+              const usernameOrId = participant.username ?? participant.userId
               const isCurrentUser = currentUserId === participant.userId
               const linkLabel = isCurrentUser
                 ? `${participant.userName} (You)`
@@ -103,7 +101,8 @@ export function EventParticipantList({
               return (
                 <Link
                   key={participant._id}
-                  to={userLink}
+                  to="/u/$usernameOrId"
+                  params={{ usernameOrId }}
                   className="group relative"
                   title={linkLabel}
                 >
@@ -136,9 +135,7 @@ export function EventParticipantList({
         ) : (
           <div className="flex flex-wrap gap-3">
             {participants.map((participant) => {
-              const userLink = participant.username
-                ? `/u/${participant.username}`
-                : `/u/${participant.userId}`
+              const usernameOrId = participant.username ?? participant.userId
               const isCurrentUser = currentUserId === participant.userId
               const linkLabel = isCurrentUser
                 ? `${participant.userName} (You)`
@@ -147,7 +144,8 @@ export function EventParticipantList({
               return (
                 <Link
                   key={participant._id}
-                  to={userLink}
+                  to="/u/$usernameOrId"
+                  params={{ usernameOrId }}
                   className="group relative"
                   title={linkLabel}
                 >

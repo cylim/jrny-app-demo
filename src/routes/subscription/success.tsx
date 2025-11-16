@@ -22,23 +22,32 @@ function SubscriptionSuccess() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
     const sync = async () => {
       try {
         await syncSubscription({})
         // Redirect to settings after 2 seconds
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           navigate({ to: '/settings' })
         }, 2000)
       } catch (error) {
         console.error('Failed to sync subscription:', error)
         // Redirect anyway after delay
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           navigate({ to: '/settings' })
         }, 3000)
       }
     }
 
     sync()
+
+    // Cleanup function to clear timeout if component unmounts
+    return () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
+      }
+    }
   }, [navigate, syncSubscription])
 
   return (

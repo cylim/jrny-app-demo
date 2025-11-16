@@ -1,5 +1,4 @@
 import { v } from 'convex/values'
-import type { Doc } from './_generated/dataModel'
 import { query } from './_generated/server'
 
 /**
@@ -155,6 +154,7 @@ export const getAllCities = query({
 /**
  * Get paginated cities with server-side filtering
  * Supports region, country filters and multiple sort options
+ * Uses .paginate() for efficient database-level pagination
  */
 export const getCitiesPaginated = query({
   args: {
@@ -168,7 +168,13 @@ export const getCitiesPaginated = query({
       v.literal('alphabetical-desc'),
     ),
     limit: v.number(),
-    cursor: v.optional(v.string()),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.union(v.string(), v.null()),
+        id: v.union(v.id('cities'), v.null()),
+      }),
+    ),
   },
   returns: v.object({
     cities: v.array(
@@ -185,100 +191,107 @@ export const getCitiesPaginated = query({
         currentVisitorCount: v.optional(v.number()),
       }),
     ),
-    nextCursor: v.union(v.string(), v.null()),
-    hasMore: v.boolean(),
-    total: v.number(),
+    continueCursor: v.union(v.string(), v.null()),
+    isDone: v.boolean(),
   }),
   handler: async (ctx, args) => {
-    // Collect results based on filters
-    let cities: Array<Doc<'cities'>>
+    // Build query based on filters - use indexes when possible
+    // biome-ignore lint/suspicious/noImplicitAnyLet: queryBuilder is assigned in all branches below
+    let queryBuilder
 
-    // Apply filters using indexes when possible
+    // Priority: Use most specific index first
     if (args.region) {
-      cities = await ctx.db
+      queryBuilder = ctx.db
         .query('cities')
         .withIndex('by_region', (q) => q.eq('region', args.region!))
-        .collect()
     } else if (args.country) {
-      cities = await ctx.db
+      queryBuilder = ctx.db
         .query('cities')
         .withIndex('by_country', (q) => q.eq('country', args.country!))
-        .collect()
+    } else if (
+      args.sortBy === 'most-visited' ||
+      args.sortBy === 'least-visited'
+    ) {
+      // Use visit count index for visit-based sorting
+      queryBuilder = ctx.db
+        .query('cities')
+        .withIndex('by_visit_count')
+        .order(args.sortBy === 'most-visited' ? 'desc' : 'asc')
     } else {
-      // Default: use visit count index for sorting
-      if (args.sortBy === 'most-visited') {
-        cities = await ctx.db
-          .query('cities')
-          .withIndex('by_visit_count')
-          .order('desc')
-          .collect()
-      } else if (args.sortBy === 'least-visited') {
-        cities = await ctx.db
-          .query('cities')
-          .withIndex('by_visit_count')
-          .collect()
-      } else {
-        // For alphabetical sorts, we'll collect all and sort in memory
-        cities = await ctx.db
-          .query('cities')
-          .withIndex('by_visit_count')
-          .order('desc')
-          .collect()
+      // For alphabetical sorting without filters, we need to collect all
+      // This is a limitation - alphabetical sorting requires in-memory sort
+      // because Convex doesn't support ordering by non-indexed fields with .paginate()
+      // We'll handle this case separately below
+      queryBuilder = ctx.db.query('cities')
+    }
+
+    // For alphabetical sorting or when we have search/complex filters,
+    // we unfortunately need to collect and sort in memory
+    // This is a tradeoff - we can optimize later with a search index
+    const needsInMemoryProcessing =
+      args.sortBy === 'alphabetical-asc' ||
+      args.sortBy === 'alphabetical-desc' ||
+      (args.searchQuery && args.searchQuery.trim() !== '') ||
+      (args.region && args.country) // Combined region+country filter
+
+    if (needsInMemoryProcessing) {
+      // Fall back to collect() for these cases
+      let cities = await queryBuilder.collect()
+
+      // Apply combined region+country filter
+      if (args.region && args.country) {
+        cities = cities.filter((city) => city.country === args.country)
       }
-    }
 
-    // Apply country filter if region is also specified
-    if (args.region && args.country) {
-      cities = cities.filter((city) => city.country === args.country)
-    }
+      // Apply search filter
+      if (args.searchQuery && args.searchQuery.trim() !== '') {
+        const query = args.searchQuery.toLowerCase()
+        cities = cities.filter((city) =>
+          city.name.toLowerCase().includes(query),
+        )
+      }
 
-    // Apply search filter
-    if (args.searchQuery && args.searchQuery.trim() !== '') {
-      const query = args.searchQuery.toLowerCase()
-      cities = cities.filter((city) => city.name.toLowerCase().includes(query))
-    }
-
-    // Apply sorting for non-index-based sorts
-    if (!args.region && !args.country) {
+      // Apply sorting
       if (args.sortBy === 'alphabetical-asc') {
         cities.sort((a, b) => a.name.localeCompare(b.name))
       } else if (args.sortBy === 'alphabetical-desc') {
         cities.sort((a, b) => b.name.localeCompare(a.name))
-      }
-    } else {
-      // For filtered results, apply sorting
-      if (args.sortBy === 'most-visited') {
+      } else if (args.sortBy === 'most-visited') {
         cities.sort((a, b) => (b.visitCount ?? 0) - (a.visitCount ?? 0))
       } else if (args.sortBy === 'least-visited') {
         cities.sort((a, b) => (a.visitCount ?? 0) - (b.visitCount ?? 0))
-      } else if (args.sortBy === 'alphabetical-asc') {
-        cities.sort((a, b) => a.name.localeCompare(b.name))
-      } else if (args.sortBy === 'alphabetical-desc') {
-        cities.sort((a, b) => b.name.localeCompare(a.name))
+      }
+
+      // Manual pagination
+      const startIndex = args.paginationOpts?.numItems ?? 0
+      const paginatedCities = cities.slice(startIndex, startIndex + args.limit)
+      const isDone = startIndex + args.limit >= cities.length
+
+      return {
+        cities: paginatedCities.map((city) => ({
+          _id: city._id,
+          name: city.name,
+          slug: city.slug,
+          shortSlug: city.shortSlug,
+          country: city.country,
+          countryCode: city.countryCode,
+          region: city.region,
+          image: city.image ?? null,
+          visitCount: city.visitCount ?? null,
+          currentVisitorCount: city.currentVisitorCount ?? 0,
+        })),
+        continueCursor: isDone ? null : `${startIndex + args.limit}`,
+        isDone,
       }
     }
 
-    // Pagination logic
-    const total = cities.length
-    let startIndex = 0
+    // Use efficient .paginate() for simple cases (region, country, or visit-based sorting)
+    const result = await queryBuilder.paginate(
+      args.paginationOpts ?? { numItems: args.limit, cursor: null },
+    )
 
-    if (args.cursor) {
-      // Find the index of the cursor
-      const cursorIndex = cities.findIndex((city) => city._id === args.cursor)
-      if (cursorIndex !== -1) {
-        startIndex = cursorIndex + 1
-      }
-    }
-
-    const paginatedCities = cities.slice(startIndex, startIndex + args.limit)
-    const hasMore = startIndex + args.limit < total
-    const nextCursor = hasMore
-      ? paginatedCities[paginatedCities.length - 1]._id
-      : null
-
-    // Map to response format
     return {
-      cities: paginatedCities.map((city) => ({
+      cities: result.page.map((city) => ({
         _id: city._id,
         name: city.name,
         slug: city.slug,
@@ -290,9 +303,8 @@ export const getCitiesPaginated = query({
         visitCount: city.visitCount ?? null,
         currentVisitorCount: city.currentVisitorCount ?? 0,
       })),
-      nextCursor,
-      hasMore,
-      total,
+      continueCursor: result.continueCursor,
+      isDone: result.isDone,
     }
   },
 })

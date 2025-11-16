@@ -10,6 +10,13 @@ import { LoadingDots } from '~/components/ui/loading-dots'
 import { LoadingState } from '~/components/ui/loading-state'
 import type { CityListItem } from '~/types/city'
 import { api } from '~@/convex/_generated/api'
+import type { Id } from '~@/convex/_generated/dataModel'
+
+type CityPaginationOpts = {
+  numItems: number
+  cursor: string | null
+  id: Id<'cities'> | null
+}
 
 export const Route = createFileRoute('/discover')({
   component: Discover,
@@ -43,7 +50,7 @@ function Discover() {
   // Get convex client from router context
   const { convexClient } = Route.useRouteContext()
 
-  // Infinite query for paginated cities with dynamic cursor
+  // Infinite query for paginated cities using Convex .paginate()
   const {
     data,
     error,
@@ -67,12 +74,18 @@ function Discover() {
         searchQuery: searchQuery.trim() !== '' ? searchQuery : undefined,
         sortBy: sortOption,
         limit: CITIES_PER_PAGE,
-        cursor: pageParam,
+        paginationOpts: pageParam,
       })
     },
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: undefined as CityPaginationOpts | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? lastPage.nextCursor : undefined,
+      lastPage.isDone
+        ? undefined
+        : ({
+            numItems: CITIES_PER_PAGE,
+            cursor: lastPage.continueCursor,
+            id: null,
+          } as CityPaginationOpts),
   })
 
   // Flatten all pages into single array
@@ -80,8 +93,6 @@ function Discover() {
     if (!data?.pages) return []
     return data.pages.flatMap((page) => page.cities)
   }, [data])
-
-  const totalCount = data?.pages[0]?.total ?? 0
 
   // Intersection observer for infinite scroll
   const observerTarget = useRef<HTMLDivElement>(null)
@@ -150,7 +161,6 @@ function Discover() {
           regions={regions}
           countries={countries}
           resultsCount={allCities.length}
-          totalCount={totalCount}
           onClearFilters={handleClearFilters}
         />
       </div>
@@ -191,7 +201,7 @@ function Discover() {
               )}
               {!hasNextPage && allCities.length > CITIES_PER_PAGE && (
                 <p className="text-sm text-muted-foreground">
-                  You've reached the end! {totalCount} cities total.
+                  You've reached the end! {allCities.length} cities shown.
                 </p>
               )}
             </div>
