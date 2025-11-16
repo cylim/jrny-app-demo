@@ -7,9 +7,9 @@
 
 import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
-import { mutation, query } from './_generated/server'
+import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
+import { internal } from './_generated/api'
 import { autumn } from './autumn'
-import { hasFeatureAccess } from './autumn-types'
 
 /**
  * Get current user's privacy settings
@@ -143,12 +143,131 @@ export const updateProfilePrivacy = mutation({
 })
 
 /**
+ * Internal query to get user with subscription data
+ */
+export const _getUser = internalQuery({
+  args: {
+    authUserId: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      _id: v.id('users'),
+      subscription: v.optional(
+        v.object({
+          tier: v.union(v.literal('free'), v.literal('pro')),
+          status: v.union(
+            v.literal('active'),
+            v.literal('cancelled'),
+            v.literal('pending_cancellation'),
+          ),
+          nextBillingDate: v.optional(v.number()),
+          periodEndDate: v.optional(v.number()),
+          autumnCustomerId: v.optional(v.string()),
+          lastSyncedAt: v.optional(v.number()),
+        }),
+      ),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', args.authUserId))
+      .unique()
+
+    if (!user) {
+      return null
+    }
+
+    return {
+      _id: user._id,
+      subscription: user.subscription,
+    }
+  },
+})
+
+/**
+ * Internal query to get visit with user ownership info
+ */
+export const _getVisit = internalQuery({
+  args: {
+    visitId: v.id('visits'),
+  },
+  returns: v.union(
+    v.object({
+      userId: v.id('users'),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    const visit = await ctx.db.get(args.visitId)
+    if (!visit) {
+      return null
+    }
+
+    return {
+      userId: visit.userId,
+    }
+  },
+})
+
+/**
+ * Internal mutation to update global visit privacy setting
+ */
+export const _updateGlobalVisitPrivacySetting = internalMutation({
+  args: {
+    userId: v.id('users'),
+    enabled: v.boolean(),
+  },
+  returns: v.object({
+    settings: v.object({
+      hideProfileVisits: v.optional(v.boolean()),
+      hideProfileEvents: v.optional(v.boolean()),
+      globalVisitPrivacy: v.optional(v.boolean()),
+    }),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    // Get current settings
+    const currentSettings = user.settings ?? {
+      hideProfileVisits: false,
+      hideProfileEvents: false,
+      globalVisitPrivacy: false,
+    }
+
+    const updatedSettings = {
+      ...currentSettings,
+      globalVisitPrivacy: args.enabled,
+    }
+
+    await ctx.db.patch(args.userId, {
+      settings: updatedSettings,
+    })
+
+    return {
+      settings: {
+        hideProfileVisits: updatedSettings.hideProfileVisits,
+        hideProfileEvents: updatedSettings.hideProfileEvents,
+        globalVisitPrivacy: updatedSettings.globalVisitPrivacy,
+      },
+      message: `Global visit privacy ${args.enabled ? 'enabled' : 'disabled'}`,
+    }
+  },
+})
+
+/**
  * Update global visit privacy setting (Pro only)
  *
  * Toggle globalVisitPrivacy to hide ALL visits from discovery features.
  * Requires Pro subscription - throws error for free users.
+ * Uses Autumn API to verify feature access in real-time.
  */
-export const updateGlobalVisitPrivacy = mutation({
+export const updateGlobalVisitPrivacy = action({
   args: {
     enabled: v.boolean(),
   },
@@ -166,46 +285,53 @@ export const updateGlobalVisitPrivacy = mutation({
       throw new Error('Not authenticated')
     }
 
-    // Check Pro tier access via Autumn customer.features
-    const result = await autumn.customers.get(ctx)
-    const hasAccess = hasFeatureAccess(result.data, 'global_visit_privacy')
+    // Check Pro tier access via Autumn API
+    const featureCheck = await autumn.check(ctx, { featureId: 'global_visit_privacy' })
+    const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
       throw new Error('Pro subscription required for global visit privacy')
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
+    // Get user
+    const user = await ctx.runQuery((internal as any).privacy._getUser, {
+      authUserId: identity.subject,
+    })
 
     if (!user) {
       throw new Error('User not found')
     }
 
-    // Get current settings
-    const currentSettings = user.settings ?? {
-      hideProfileVisits: false,
-      hideProfileEvents: false,
-      globalVisitPrivacy: false,
-    }
+    // Update database via internal mutation
+    return await ctx.runMutation((internal as any).privacy._updateGlobalVisitPrivacySetting, {
+      userId: user._id,
+      enabled: args.enabled,
+    })
+  },
+})
 
-    const updatedSettings = {
-      ...currentSettings,
-      globalVisitPrivacy: args.enabled,
-    }
-
-    await ctx.db.patch(user._id, {
-      settings: updatedSettings,
+/**
+ * Internal mutation to update individual visit privacy
+ */
+export const _updateVisitPrivacyFlag = internalMutation({
+  args: {
+    visitId: v.id('visits'),
+    isPrivate: v.boolean(),
+  },
+  returns: v.object({
+    visitId: v.id('visits'),
+    isPrivate: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.visitId, {
+      isPrivate: args.isPrivate,
     })
 
     return {
-      settings: {
-        hideProfileVisits: updatedSettings.hideProfileVisits,
-        hideProfileEvents: updatedSettings.hideProfileEvents,
-        globalVisitPrivacy: updatedSettings.globalVisitPrivacy,
-      },
-      message: `Global visit privacy ${args.enabled ? 'enabled' : 'disabled'}`,
+      visitId: args.visitId,
+      isPrivate: args.isPrivate,
+      message: `Visit ${args.isPrivate ? 'hidden' : 'visible'}`,
     }
   },
 })
@@ -215,8 +341,9 @@ export const updateGlobalVisitPrivacy = mutation({
  *
  * Mark specific visit as private/public using the existing `isPrivate` field.
  * Requires Pro subscription - throws error for free users.
+ * Uses Autumn API to verify feature access in real-time.
  */
-export const updateVisitPrivacy = mutation({
+export const updateVisitPrivacy = action({
   args: {
     visitId: v.id('visits'),
     isPrivate: v.boolean(),
@@ -232,38 +359,41 @@ export const updateVisitPrivacy = mutation({
       throw new Error('Not authenticated')
     }
 
-    // Check Pro tier access via Autumn customer.features
-    const result = await autumn.customers.get(ctx)
-    const hasAccess = hasFeatureAccess(result.data, 'individual_visit_privacy')
+    // Check Pro tier access via Autumn API
+    const featureCheck = await autumn.check(ctx, { featureId: 'individual_visit_privacy' })
+    const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
       throw new Error('Pro subscription required for individual visit privacy')
     }
 
-    const visit = await ctx.db.get(args.visitId)
+    // Get user
+    const user = await ctx.runQuery((internal as any).privacy._getUser, {
+      authUserId: identity.subject,
+    })
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    // Get visit and verify ownership
+    const visit = await ctx.runQuery((internal as any).privacy._getVisit, {
+      visitId: args.visitId,
+    })
+
     if (!visit) {
       throw new Error('Visit not found')
     }
 
-    // Verify ownership
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
-
-    if (!user || visit.userId !== user._id) {
+    if (visit.userId !== user._id) {
       throw new Error('You can only update privacy for your own visits')
     }
 
-    await ctx.db.patch(args.visitId, {
-      isPrivate: args.isPrivate,
-    })
-
-    return {
+    // Update database via internal mutation
+    return await ctx.runMutation((internal as any).privacy._updateVisitPrivacyFlag, {
       visitId: args.visitId,
       isPrivate: args.isPrivate,
-      message: `Visit ${args.isPrivate ? 'hidden' : 'visible'}`,
-    }
+    })
   },
 })
 

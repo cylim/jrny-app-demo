@@ -28,7 +28,7 @@ export function CancelSubscription() {
   const handleCancel = async () => {
     setIsLoading(true)
     try {
-      const result = await cancelSubscription()
+      const result = await cancelSubscription({})
       toast.success(result.message)
     } catch (error) {
       console.error('Failed to cancel subscription:', error)

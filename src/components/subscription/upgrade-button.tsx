@@ -6,8 +6,10 @@
  */
 
 import { CheckoutDialog, useCustomer } from 'autumn-js/react'
+import { useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingDots } from '@/components/ui/loading-dots'
 
 interface UpgradeButtonProps {
   variant?: ComponentPropsWithoutRef<typeof Button>['variant']
@@ -23,12 +25,21 @@ export function UpgradeButton({
   featureName,
 }: UpgradeButtonProps) {
   const { checkout } = useCustomer()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleUpgrade = () => {
-    checkout({
-      productId: 'pro',
-      dialog: CheckoutDialog,
-    })
+  const handleUpgrade = async () => {
+    setIsLoading(true)
+    try {
+      const currentOrigin = window.location.origin
+      await checkout({
+        productId: 'pro',
+        dialog: CheckoutDialog,
+        successUrl: `${currentOrigin}/subscription/success`,
+      })
+    } catch (error) {
+      console.error('Checkout failed:', error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -37,8 +48,15 @@ export function UpgradeButton({
       size={size}
       onClick={handleUpgrade}
       className={className}
+      disabled={isLoading}
     >
-      {featureName ? 'Upgrade to Pro' : 'Upgrade to Pro - $0.99/month'}
+      {isLoading ? (
+        <LoadingDots />
+      ) : featureName ? (
+        'Upgrade to Pro'
+      ) : (
+        'Upgrade to Pro - $0.99/month'
+      )}
     </Button>
   )
 }

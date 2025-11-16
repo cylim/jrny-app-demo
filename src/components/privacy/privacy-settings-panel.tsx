@@ -8,7 +8,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from 'convex/_generated/api'
-import { useMutation } from 'convex/react'
+import { useAction, useMutation } from 'convex/react'
 import { useState } from 'react'
 import { PrivacyToggle } from './privacy-toggle'
 import { UpgradePrompt } from './upgrade-prompt'
@@ -22,9 +22,9 @@ export function PrivacySettingsPanel() {
     convexQuery(api.privacy.getMyPrivacySettings, {}),
   )
 
-  // Mutations
+  // Mutations and actions
   const updateProfilePrivacy = useMutation(api.privacy.updateProfilePrivacy)
-  const updateGlobalPrivacy = useMutation(api.privacy.updateGlobalVisitPrivacy)
+  const updateGlobalPrivacy = useAction(api.privacy.updateGlobalVisitPrivacy)
 
   if (!privacySettings) {
     return null

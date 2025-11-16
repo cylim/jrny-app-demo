@@ -8,7 +8,7 @@
 'use client'
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
+import { useAction } from 'convex/react'
 import { useEffect } from 'react'
 import { LoadingDots } from '@/components/ui/loading-dots'
 import { api } from '~@/convex/_generated/api'
@@ -18,13 +18,13 @@ export const Route = createFileRoute('/subscription/success')({
 })
 
 function SubscriptionSuccess() {
-  const syncSubscription = useMutation(api.subscriptions.syncSubscriptionStatus)
+  const syncSubscription = useAction(api.subscriptions.syncSubscriptionStatus)
   const navigate = useNavigate()
 
   useEffect(() => {
     const sync = async () => {
       try {
-        await syncSubscription()
+        await syncSubscription({})
         // Redirect to settings after 2 seconds
         setTimeout(() => {
           navigate({ to: '/settings' })

@@ -1,7 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
+import { useAction } from 'convex/react'
 import { Calendar, Lock, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -43,7 +43,7 @@ export function VisitCard({ visit, isOwnVisit = false }: VisitCardProps) {
   const [optimisticIsPrivate, setOptimisticIsPrivate] = useState(
     visit.isPrivate,
   )
-  const updateVisitPrivacy = useMutation(api.privacy.updateVisitPrivacy)
+  const updateVisitPrivacy = useAction(api.privacy.updateVisitPrivacy)
 
   // Fetch overlapping visitors
   const { data: overlappingVisitors } = useSuspenseQuery(

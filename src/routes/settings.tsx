@@ -3,7 +3,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
+import { useAction, useMutation } from 'convex/react'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PrivacySettingsPanel } from '@/components/privacy/privacy-settings-panel'
@@ -48,7 +48,7 @@ function SettingsPage() {
 
   const updateProfile = useMutation(api.users.updateProfile)
   const updateSocialLinks = useMutation(api.users.updateSocialLinks)
-  const syncSubscriptionStatus = useMutation(
+  const syncSubscriptionStatus = useAction(
     api.subscriptions.syncSubscriptionStatus,
   )
 
@@ -84,7 +84,7 @@ function SettingsPage() {
   useEffect(() => {
     const sync = async () => {
       try {
-        await syncSubscriptionStatus()
+        await syncSubscriptionStatus({})
       } catch (error) {
         console.error('Failed to sync subscription on settings load:', error)
       }

@@ -1,7 +1,6 @@
-import { convexQuery } from '@convex-dev/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from 'convex/_generated/api'
-import { useState } from 'react'
+import { useAction } from 'convex/react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { UpgradeButton } from '../subscription/upgrade-button'
 import { Badge } from '../ui/badge'
@@ -55,14 +54,31 @@ export function EventForm({
   onSubmit,
   isLoading = false,
 }: EventFormProps) {
-  // Check feature access for hiding participant list
-  const { data: featureAccess } = useSuspenseQuery(
-    convexQuery(api.subscriptions.checkFeatureAccess, {
-      featureId: 'event_participant_list_hide',
-    }),
-  )
-
   const [title, setTitle] = useState(initialValues?.title ?? '')
+
+  // Check feature access for hiding participant list
+  const checkFeatureAccess = useAction(api.subscriptions.checkFeatureAccess)
+  const [featureAccess, setFeatureAccess] = useState<{
+    hasAccess: boolean
+    tier: 'free' | 'pro'
+    reason?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const result = await checkFeatureAccess({
+          featureId: 'event_participant_list_hide',
+        })
+        setFeatureAccess(result)
+      } catch (error) {
+        console.error('Failed to check feature access:', error)
+        // Default to no access on error
+        setFeatureAccess({ hasAccess: false, tier: 'free' })
+      }
+    }
+    checkAccess()
+  }, [checkFeatureAccess])
   const [description, setDescription] = useState(
     initialValues?.description ?? '',
   )

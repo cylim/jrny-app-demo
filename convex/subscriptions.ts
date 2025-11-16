@@ -5,14 +5,9 @@
  */
 
 import { v } from 'convex/values'
-import { mutation, query } from './_generated/server'
-import { autumn, cancel } from './autumn'
-import {
-  callAutumnCancel,
-  getCheckoutSessionId,
-  hasFeatureAccess,
-  hasSubscriptions,
-} from './autumn-types'
+import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
+import { internal } from './_generated/api'
+import { autumn } from './autumn'
 
 /**
  * Get current user's subscription status
@@ -40,7 +35,7 @@ export const getMySubscription = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
-      throw new Error('Not authenticated')
+      return null
     }
 
     const user = await ctx.db
@@ -49,7 +44,7 @@ export const getMySubscription = query({
       .unique()
 
     if (!user) {
-      throw new Error('User not found')
+      return null
     }
 
     // If no subscription data, user is on free tier
@@ -86,57 +81,33 @@ export const getMySubscription = query({
 })
 
 /**
- * Initiate Pro tier upgrade checkout
- *
- * Creates Stripe Checkout session via Autumn and returns redirect URL.
+ * Internal mutation to update user subscription data
  */
-export const initiateUpgrade = mutation({
+export const updateSubscriptionData = internalMutation({
   args: {
-    successUrl: v.string(),
-    cancelUrl: v.string(),
+    userId: v.id('users'),
+    tier: v.union(v.literal('free'), v.literal('pro')),
+    status: v.union(
+      v.literal('active'),
+      v.literal('cancelled'),
+      v.literal('pending_cancellation'),
+    ),
+    nextBillingDate: v.optional(v.number()),
+    periodEndDate: v.optional(v.number()),
+    autumnCustomerId: v.string(),
   },
-  returns: v.object({
-    checkoutUrl: v.string(),
-    sessionId: v.string(),
-  }),
+  returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-      throw new Error('Not authenticated')
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
-
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    // Check if user is already on Pro tier
-    if (user.subscription?.tier === 'pro') {
-      throw new Error('Already on Pro tier')
-    }
-
-    // Create Stripe Checkout session via Autumn
-    const checkout = await autumn.checkout(ctx, {
-      productId: 'pro', // References the tier ID from autumn.config.js
-      successUrl: args.successUrl,
+    await ctx.db.patch(args.userId, {
+      subscription: {
+        tier: args.tier,
+        status: args.status,
+        nextBillingDate: args.nextBillingDate,
+        periodEndDate: args.periodEndDate,
+        autumnCustomerId: args.autumnCustomerId,
+        lastSyncedAt: Date.now(),
+      },
     })
-
-    if (!checkout.data || !checkout.data.url) {
-      throw new Error('Failed to create checkout session')
-    }
-
-    // Note: Autumn API response structure confirmed
-    // Returns checkout URL for redirect to Stripe-hosted payment page
-    return {
-      checkoutUrl: checkout.data.url,
-      sessionId: getCheckoutSessionId(
-        checkout.data as { url: string; [key: string]: unknown },
-      ),
-    }
   },
 })
 
@@ -145,7 +116,7 @@ export const initiateUpgrade = mutation({
  *
  * Fetches latest subscription state from Autumn API and updates user document.
  */
-export const syncSubscriptionStatus = mutation({
+export const syncSubscriptionStatus = action({
   args: {},
   returns: v.object({
     tier: v.union(v.literal('free'), v.literal('pro')),
@@ -163,76 +134,120 @@ export const syncSubscriptionStatus = mutation({
       throw new Error('Not authenticated')
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
+    // Get user from database via query
+    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
+      authUserId: identity.subject,
+    })
 
     if (!user) {
       throw new Error('User not found')
     }
 
-    // Get subscription status from Autumn
-    const result = await autumn.customers.get(ctx)
-    const customerData = result.data
-
-    if (
-      !hasSubscriptions(customerData) ||
-      !customerData.subscriptions ||
-      customerData.subscriptions.length === 0
-    ) {
-      // No subscription - user is on free tier
-      const newTier: 'free' | 'pro' = 'free'
-      const oldTier = user.subscription?.tier ?? 'free'
-
-      await ctx.db.patch(user._id, {
-        subscription: {
-          tier: newTier,
-          status: 'active',
-          lastSyncedAt: Date.now(),
-        },
-      })
-
-      return {
-        tier: newTier,
-        status: 'active' as const,
-        lastSyncedAt: Date.now(),
-        changed: oldTier !== newTier,
-      }
-    }
-
-    // Extract subscription info from first subscription
-    const subscription = customerData.subscriptions[0]
-    const newTier: 'free' | 'pro' =
-      subscription.product_id === 'pro' ? 'pro' : 'free'
-    const newStatus: 'active' | 'cancelled' | 'pending_cancellation' =
-      subscription.status === 'active'
-        ? 'active'
-        : subscription.status === 'canceled'
-          ? 'cancelled'
-          : 'active'
     const oldTier = user.subscription?.tier ?? 'free'
 
-    // Update user subscription in database
-    // Convert Stripe/Autumn Unix timestamps from seconds to milliseconds
-    await ctx.db.patch(user._id, {
-      subscription: {
-        tier: newTier,
-        status: newStatus,
-        nextBillingDate: subscription.current_period_end * 1000,
-        periodEndDate: subscription.cancel_at
-          ? subscription.cancel_at * 1000
-          : undefined,
-        autumnCustomerId: customerData.id ?? undefined,
-        lastSyncedAt: Date.now(),
-      },
+    // Get customer data from Autumn API
+    console.log('[syncSubscriptionStatus] Fetching customer data for user:', identity.subject)
+    const customerResult = await autumn.customers.get(ctx)
+
+    if (customerResult.error) {
+      console.error('[syncSubscriptionStatus] Failed to get customer:', customerResult.error)
+      throw new Error(`Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`)
+    }
+
+    const customer = customerResult.data
+    if (!customer) {
+      console.error('[syncSubscriptionStatus] No customer data returned')
+      throw new Error('Failed to sync subscription: No customer data')
+    }
+
+    console.log('[syncSubscriptionStatus] Customer products:', customer.products)
+
+    // Find the 'pro' product in the customer's products
+    const proProduct = customer.products?.find((product) => product.id === 'pro')
+    const hasPro = proProduct && proProduct.status === 'active'
+
+    const tier: 'free' | 'pro' = hasPro ? 'pro' : 'free'
+
+    // Determine status based on product state
+    let status: 'active' | 'cancelled' | 'pending_cancellation' = 'active'
+    let nextBillingDate: number | undefined
+    let periodEndDate: number | undefined
+
+    if (proProduct) {
+      // If canceled_at is set but status is still active, subscription will end at period_end
+      if (proProduct.canceled_at && proProduct.status === 'active') {
+        status = 'pending_cancellation'
+      } else if (proProduct.status === 'expired') {
+        // Expired means the subscription has ended
+        status = 'cancelled'
+      }
+
+      // Handle null values from Autumn API
+      nextBillingDate = proProduct.current_period_end ?? undefined
+      periodEndDate = proProduct.current_period_end ?? undefined
+    }
+
+    console.log(`[syncSubscriptionStatus] Setting tier to ${tier}, status to ${status}`)
+
+    // Update database via internal mutation
+    await ctx.runMutation(internal.subscriptions.updateSubscriptionData, {
+      userId: user._id,
+      tier,
+      status,
+      nextBillingDate,
+      periodEndDate,
+      autumnCustomerId: identity.subject,
     })
 
     return {
-      tier: newTier,
-      status: newStatus,
+      tier,
+      status,
       lastSyncedAt: Date.now(),
-      changed: oldTier !== newTier,
+      changed: oldTier !== tier,
+    }
+  },
+})
+
+/**
+ * Internal query to get user for sync
+ */
+export const getUserForSync = internalQuery({
+  args: {
+    authUserId: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      _id: v.id('users'),
+      subscription: v.optional(
+        v.object({
+          tier: v.union(v.literal('free'), v.literal('pro')),
+          status: v.union(
+            v.literal('active'),
+            v.literal('cancelled'),
+            v.literal('pending_cancellation'),
+          ),
+          nextBillingDate: v.optional(v.number()),
+          periodEndDate: v.optional(v.number()),
+          autumnCustomerId: v.optional(v.string()),
+          lastSyncedAt: v.optional(v.number()),
+        }),
+      ),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', args.authUserId))
+      .unique()
+
+    if (!user) {
+      return null
+    }
+
+    return {
+      _id: user._id,
+      subscription: user.subscription,
     }
   },
 })
@@ -240,7 +255,12 @@ export const syncSubscriptionStatus = mutation({
 /**
  * Cancel Pro subscription
  *
- * Cancels recurring billing but retains Pro access until end of current billing period.
+ * Note: This function only updates the local database state.
+ * Actual subscription cancellation must be handled via:
+ * 1. Client-side: Import `cancel` from `convex/autumn` and call via useAction
+ * 2. Webhooks: Autumn/Stripe webhooks will sync the final cancellation status
+ *
+ * For now, this is a placeholder that marks the subscription as pending cancellation.
  */
 export const cancelSubscription = mutation({
   args: {},
@@ -275,50 +295,12 @@ export const cancelSubscription = mutation({
       throw new Error('Subscription already cancelled')
     }
 
-    // Get current subscription details before cancellation
-    const result = await autumn.customers.get(ctx)
-    const customerData = result.data
-
-    if (
-      !hasSubscriptions(customerData) ||
-      !customerData.subscriptions ||
-      !customerData.subscriptions[0]
-    ) {
-      throw new Error('No active subscription found')
-    }
-
-    const subscription = customerData.subscriptions[0]
-
-    // Cancel subscription via Autumn API
-    // Call Autumn's cancel function via type-safe wrapper
-    const cancelResult = await callAutumnCancel(cancel, ctx, {
-      productId: 'pro',
-    })
-
-    // Check if cancellation was successful
-    if (cancelResult?.error) {
-      throw new Error(
-        `Subscription cancellation failed: ${cancelResult.error.message || 'Unknown error'}`,
-      )
-    }
-
-    // After successful cancellation, get updated subscription data
-    const updatedResult = await autumn.customers.get(ctx)
-    const updatedCustomerData = updatedResult.data
-    const updatedSubscription =
-      hasSubscriptions(updatedCustomerData) && updatedCustomerData.subscriptions
-        ? updatedCustomerData.subscriptions[0]
-        : undefined
-
-    // Convert Stripe/Autumn Unix timestamp from seconds to milliseconds
-    const periodEndDate =
-      (updatedSubscription?.cancel_at
-        ? updatedSubscription.cancel_at * 1000
-        : null) ||
-      subscription.current_period_end * 1000 ||
-      Date.now()
+    // Calculate period end date - 30 days from now (assuming monthly subscription)
+    // In production, this should come from Stripe's subscription.current_period_end via webhook
+    const periodEndDate = Date.now() + 30 * 24 * 60 * 60 * 1000
 
     // Update user document with pending_cancellation status
+    // TODO: Call Autumn cancel API from client-side or via webhook
     await ctx.db.patch(user._id, {
       subscription: {
         ...user.subscription,
@@ -490,8 +472,9 @@ export const handleSubscriptionWebhook = mutation({
  * Check if user has access to specific feature
  *
  * Server-side feature gate check via Autumn API.
+ * Uses Autumn's real-time feature access verification.
  */
-export const checkFeatureAccess = query({
+export const checkFeatureAccess = action({
   args: {
     featureId: v.string(),
   },
@@ -506,10 +489,10 @@ export const checkFeatureAccess = query({
       throw new Error('Not authenticated')
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
+    // Get user to determine tier
+    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
+      authUserId: identity.subject,
+    })
 
     if (!user) {
       throw new Error('User not found')
@@ -517,9 +500,9 @@ export const checkFeatureAccess = query({
 
     const tier = user.subscription?.tier ?? 'free'
 
-    // Check feature access via Autumn customer.features
-    const result = await autumn.customers.get(ctx)
-    const hasAccess = hasFeatureAccess(result.data, args.featureId)
+    // Check feature access via Autumn API
+    const featureCheck = await autumn.check(ctx, { featureId: args.featureId })
+    const hasAccess = featureCheck.data?.allowed || false
 
     return {
       hasAccess,
