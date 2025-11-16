@@ -10,11 +10,6 @@ import FirecrawlApp from '@mendable/firecrawl-js'
  */
 export const ENRICHMENT_CONSTANTS = {
   FIRECRAWL_TIMEOUT_MS: 30 * 1000, // 30 seconds
-  MAX_DESCRIPTION_LENGTH: 5000,
-  MAX_HISTORY_LENGTH: 3000,
-  MAX_GEOGRAPHY_LENGTH: 2000,
-  MAX_CLIMATE_LENGTH: 2000,
-  MAX_TRANSPORT_LENGTH: 2000,
 }
 
 /**

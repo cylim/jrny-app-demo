@@ -254,8 +254,6 @@
 - [ ] T110 [P] Add caching header to Firecrawl API request in src/lib/firecrawl.ts to leverage Wikipedia's CDN
 - [ ] T111 [P] Add timeout configuration to FirecrawlApp initialization: 30 seconds per ENRICHMENT_CONSTANTS.FIRECRAWL_TIMEOUT_MS
 - [ ] T112 Add response size limit to Firecrawl scrape request to prevent oversized Wikipedia pages from bloating storage
-- [ ] T113 Add text truncation helper in src/lib/firecrawl.ts to enforce max length constraints per ENRICHMENT_CONSTANTS
-- [ ] T114 Update updateCityData to truncate text fields before patching: description (5000), history (3000), geography/climate/transport (2000)
 
 ### Data Quality Improvements
 

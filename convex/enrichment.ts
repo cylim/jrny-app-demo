@@ -432,7 +432,6 @@ export const updateCityData = internalMutation({
         })
       }
 
-      // T041: Update city metadata
       await ctx.db.patch(args.cityId, {
         isEnriched: true,
         lastEnrichedAt: Date.now(),

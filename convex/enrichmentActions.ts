@@ -126,6 +126,7 @@ export const enrichCity = action({
           constructWikipediaUrl,
           getFirecrawlClient,
           countPopulatedFields,
+          ENRICHMENT_CONSTANTS,
         } = await import('../src/lib/firecrawl.js')
         const { cityEnrichmentSchema } = await import(
           '../src/lib/firecrawl-schema.js'
@@ -136,13 +137,13 @@ export const enrichCity = action({
         let extractResult: unknown
         try {
           const firecrawl = getFirecrawlClient()
-          // Use extract() method with JSON schema for structured data
+          // T111: Use extract() method with JSON schema and timeout configuration
           extractResult = await firecrawl.extract({
             urls: [wikipediaUrl],
             schema: cityEnrichmentSchema,
-            // Optionally add system prompt to guide extraction
             prompt:
               'Extract comprehensive city information from this Wikipedia page. Focus on providing detailed, accurate information for all sections.',
+            timeout: ENRICHMENT_CONSTANTS.FIRECRAWL_TIMEOUT_MS,
           })
         } catch (firecrawlError) {
           const errorCode = getFirecrawlErrorCode(firecrawlError)
