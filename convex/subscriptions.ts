@@ -156,17 +156,8 @@ export const syncSubscriptionStatus = action({
     const oldTier = user.subscription?.tier ?? 'free'
 
     // Get customer data from Autumn API
-    console.log(
-      '[syncSubscriptionStatus] Fetching customer data for user:',
-      identity.subject,
-    )
     const customerResult = await autumn.customers.get(ctx)
-
     if (customerResult.error) {
-      console.error(
-        '[syncSubscriptionStatus] Failed to get customer:',
-        customerResult.error,
-      )
       throw new Error(
         `Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`,
       )
@@ -177,11 +168,6 @@ export const syncSubscriptionStatus = action({
       console.error('[syncSubscriptionStatus] No customer data returned')
       throw new Error('Failed to sync subscription: No customer data')
     }
-
-    console.log(
-      '[syncSubscriptionStatus] Customer products:',
-      customer.products,
-    )
 
     // Find the 'pro' product in the customer's products
     const proProduct = customer.products?.find(
@@ -209,10 +195,6 @@ export const syncSubscriptionStatus = action({
       nextBillingDate = proProduct.current_period_end ?? undefined
       periodEndDate = proProduct.current_period_end ?? undefined
     }
-
-    console.log(
-      `[syncSubscriptionStatus] Setting tier to ${tier}, status to ${status}`,
-    )
 
     // Update database via internal mutation
     await ctx.runMutation(internal.subscriptions.updateSubscriptionData, {
