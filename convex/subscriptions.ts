@@ -5,8 +5,14 @@
  */
 
 import { v } from 'convex/values'
-import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { autumn } from './autumn'
 
 /**
@@ -135,9 +141,13 @@ export const syncSubscriptionStatus = action({
     }
 
     // Get user from database via query
-    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
-      authUserId: identity.subject,
-    })
+    const user = await ctx.runQuery(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions.getUserForSync,
+      {
+        authUserId: identity.subject,
+      },
+    )
 
     if (!user) {
       throw new Error('User not found')
@@ -146,12 +156,20 @@ export const syncSubscriptionStatus = action({
     const oldTier = user.subscription?.tier ?? 'free'
 
     // Get customer data from Autumn API
-    console.log('[syncSubscriptionStatus] Fetching customer data for user:', identity.subject)
+    console.log(
+      '[syncSubscriptionStatus] Fetching customer data for user:',
+      identity.subject,
+    )
     const customerResult = await autumn.customers.get(ctx)
 
     if (customerResult.error) {
-      console.error('[syncSubscriptionStatus] Failed to get customer:', customerResult.error)
-      throw new Error(`Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`)
+      console.error(
+        '[syncSubscriptionStatus] Failed to get customer:',
+        customerResult.error,
+      )
+      throw new Error(
+        `Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`,
+      )
     }
 
     const customer = customerResult.data
@@ -160,10 +178,15 @@ export const syncSubscriptionStatus = action({
       throw new Error('Failed to sync subscription: No customer data')
     }
 
-    console.log('[syncSubscriptionStatus] Customer products:', customer.products)
+    console.log(
+      '[syncSubscriptionStatus] Customer products:',
+      customer.products,
+    )
 
     // Find the 'pro' product in the customer's products
-    const proProduct = customer.products?.find((product) => product.id === 'pro')
+    const proProduct = customer.products?.find(
+      (product) => product.id === 'pro',
+    )
     const hasPro = proProduct && proProduct.status === 'active'
 
     const tier: 'free' | 'pro' = hasPro ? 'pro' : 'free'
@@ -187,7 +210,9 @@ export const syncSubscriptionStatus = action({
       periodEndDate = proProduct.current_period_end ?? undefined
     }
 
-    console.log(`[syncSubscriptionStatus] Setting tier to ${tier}, status to ${status}`)
+    console.log(
+      `[syncSubscriptionStatus] Setting tier to ${tier}, status to ${status}`,
+    )
 
     // Update database via internal mutation
     await ctx.runMutation(internal.subscriptions.updateSubscriptionData, {
@@ -490,9 +515,13 @@ export const checkFeatureAccess = action({
     }
 
     // Get user to determine tier
-    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
-      authUserId: identity.subject,
-    })
+    const user = await ctx.runQuery(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions.getUserForSync,
+      {
+        authUserId: identity.subject,
+      },
+    )
 
     if (!user) {
       throw new Error('User not found')

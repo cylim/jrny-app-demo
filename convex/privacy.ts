@@ -6,9 +6,15 @@
  */
 
 import { v } from 'convex/values'
-import type { Id } from './_generated/dataModel'
-import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
+import type { Id } from './_generated/dataModel'
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { autumn } from './autumn'
 
 /**
@@ -286,7 +292,9 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Check Pro tier access via Autumn API
-    const featureCheck = await autumn.check(ctx, { featureId: 'global_visit_privacy' })
+    const featureCheck = await autumn.check(ctx, {
+      featureId: 'global_visit_privacy',
+    })
     const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
@@ -294,6 +302,7 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Get user
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const user = await ctx.runQuery((internal as any).privacy._getUser, {
       authUserId: identity.subject,
     })
@@ -303,10 +312,14 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Update database via internal mutation
-    return await ctx.runMutation((internal as any).privacy._updateGlobalVisitPrivacySetting, {
-      userId: user._id,
-      enabled: args.enabled,
-    })
+    return await ctx.runMutation(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).privacy._updateGlobalVisitPrivacySetting,
+      {
+        userId: user._id,
+        enabled: args.enabled,
+      },
+    )
   },
 })
 
@@ -360,7 +373,9 @@ export const updateVisitPrivacy = action({
     }
 
     // Check Pro tier access via Autumn API
-    const featureCheck = await autumn.check(ctx, { featureId: 'individual_visit_privacy' })
+    const featureCheck = await autumn.check(ctx, {
+      featureId: 'individual_visit_privacy',
+    })
     const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
@@ -368,6 +383,7 @@ export const updateVisitPrivacy = action({
     }
 
     // Get user
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const user = await ctx.runQuery((internal as any).privacy._getUser, {
       authUserId: identity.subject,
     })
@@ -377,6 +393,7 @@ export const updateVisitPrivacy = action({
     }
 
     // Get visit and verify ownership
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const visit = await ctx.runQuery((internal as any).privacy._getVisit, {
       visitId: args.visitId,
     })
@@ -390,10 +407,14 @@ export const updateVisitPrivacy = action({
     }
 
     // Update database via internal mutation
-    return await ctx.runMutation((internal as any).privacy._updateVisitPrivacyFlag, {
-      visitId: args.visitId,
-      isPrivate: args.isPrivate,
-    })
+    return await ctx.runMutation(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).privacy._updateVisitPrivacyFlag,
+      {
+        visitId: args.visitId,
+        isPrivate: args.isPrivate,
+      },
+    )
   },
 })
 

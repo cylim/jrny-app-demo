@@ -1,4 +1,5 @@
 import { v } from 'convex/values'
+import type { Doc } from './_generated/dataModel'
 import { query } from './_generated/server'
 
 /**
@@ -148,5 +149,185 @@ export const getAllCities = query({
       visitCount: city.visitCount ?? null,
       currentVisitorCount: city.currentVisitorCount ?? 0,
     }))
+  },
+})
+
+/**
+ * Get paginated cities with server-side filtering
+ * Supports region, country filters and multiple sort options
+ */
+export const getCitiesPaginated = query({
+  args: {
+    region: v.optional(v.string()),
+    country: v.optional(v.string()),
+    searchQuery: v.optional(v.string()),
+    sortBy: v.union(
+      v.literal('most-visited'),
+      v.literal('least-visited'),
+      v.literal('alphabetical-asc'),
+      v.literal('alphabetical-desc'),
+    ),
+    limit: v.number(),
+    cursor: v.optional(v.string()),
+  },
+  returns: v.object({
+    cities: v.array(
+      v.object({
+        _id: v.id('cities'),
+        name: v.string(),
+        slug: v.string(),
+        shortSlug: v.string(),
+        country: v.string(),
+        countryCode: v.string(),
+        region: v.string(),
+        image: v.union(v.string(), v.null()),
+        visitCount: v.union(v.number(), v.null()),
+        currentVisitorCount: v.optional(v.number()),
+      }),
+    ),
+    nextCursor: v.union(v.string(), v.null()),
+    hasMore: v.boolean(),
+    total: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    // Collect results based on filters
+    let cities: Array<Doc<'cities'>>
+
+    // Apply filters using indexes when possible
+    if (args.region) {
+      cities = await ctx.db
+        .query('cities')
+        .withIndex('by_region', (q) => q.eq('region', args.region!))
+        .collect()
+    } else if (args.country) {
+      cities = await ctx.db
+        .query('cities')
+        .withIndex('by_country', (q) => q.eq('country', args.country!))
+        .collect()
+    } else {
+      // Default: use visit count index for sorting
+      if (args.sortBy === 'most-visited') {
+        cities = await ctx.db
+          .query('cities')
+          .withIndex('by_visit_count')
+          .order('desc')
+          .collect()
+      } else if (args.sortBy === 'least-visited') {
+        cities = await ctx.db
+          .query('cities')
+          .withIndex('by_visit_count')
+          .collect()
+      } else {
+        // For alphabetical sorts, we'll collect all and sort in memory
+        cities = await ctx.db
+          .query('cities')
+          .withIndex('by_visit_count')
+          .order('desc')
+          .collect()
+      }
+    }
+
+    // Apply country filter if region is also specified
+    if (args.region && args.country) {
+      cities = cities.filter((city) => city.country === args.country)
+    }
+
+    // Apply search filter
+    if (args.searchQuery && args.searchQuery.trim() !== '') {
+      const query = args.searchQuery.toLowerCase()
+      cities = cities.filter((city) => city.name.toLowerCase().includes(query))
+    }
+
+    // Apply sorting for non-index-based sorts
+    if (!args.region && !args.country) {
+      if (args.sortBy === 'alphabetical-asc') {
+        cities.sort((a, b) => a.name.localeCompare(b.name))
+      } else if (args.sortBy === 'alphabetical-desc') {
+        cities.sort((a, b) => b.name.localeCompare(a.name))
+      }
+    } else {
+      // For filtered results, apply sorting
+      if (args.sortBy === 'most-visited') {
+        cities.sort((a, b) => (b.visitCount ?? 0) - (a.visitCount ?? 0))
+      } else if (args.sortBy === 'least-visited') {
+        cities.sort((a, b) => (a.visitCount ?? 0) - (b.visitCount ?? 0))
+      } else if (args.sortBy === 'alphabetical-asc') {
+        cities.sort((a, b) => a.name.localeCompare(b.name))
+      } else if (args.sortBy === 'alphabetical-desc') {
+        cities.sort((a, b) => b.name.localeCompare(a.name))
+      }
+    }
+
+    // Pagination logic
+    const total = cities.length
+    let startIndex = 0
+
+    if (args.cursor) {
+      // Find the index of the cursor
+      const cursorIndex = cities.findIndex((city) => city._id === args.cursor)
+      if (cursorIndex !== -1) {
+        startIndex = cursorIndex + 1
+      }
+    }
+
+    const paginatedCities = cities.slice(startIndex, startIndex + args.limit)
+    const hasMore = startIndex + args.limit < total
+    const nextCursor = hasMore
+      ? paginatedCities[paginatedCities.length - 1]._id
+      : null
+
+    // Map to response format
+    return {
+      cities: paginatedCities.map((city) => ({
+        _id: city._id,
+        name: city.name,
+        slug: city.slug,
+        shortSlug: city.shortSlug,
+        country: city.country,
+        countryCode: city.countryCode,
+        region: city.region,
+        image: city.image ?? null,
+        visitCount: city.visitCount ?? null,
+        currentVisitorCount: city.currentVisitorCount ?? 0,
+      })),
+      nextCursor,
+      hasMore,
+      total,
+    }
+  },
+})
+
+/**
+ * Get unique regions from all cities
+ * Returns sorted list of regions for filter dropdown
+ */
+export const getRegions = query({
+  args: {},
+  returns: v.array(v.string()),
+  handler: async (ctx) => {
+    const cities = await ctx.db.query('cities').collect()
+    const regions = new Set(cities.map((city) => city.region))
+    return Array.from(regions).sort()
+  },
+})
+
+/**
+ * Get unique countries from cities, optionally filtered by region
+ * Returns sorted list of countries for filter dropdown
+ */
+export const getCountries = query({
+  args: {
+    region: v.optional(v.string()),
+  },
+  returns: v.array(v.string()),
+  handler: async (ctx, args) => {
+    let cities = await ctx.db.query('cities').collect()
+
+    if (args.region) {
+      cities = cities.filter((city) => city.region === args.region)
+    }
+
+    const countries = new Set(cities.map((city) => city.country))
+    return Array.from(countries).sort()
   },
 })

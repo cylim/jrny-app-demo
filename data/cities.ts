@@ -253,6 +253,8 @@ export default [
     latitude: '30.267153',
     longitude: '-97.7430608',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -534,6 +536,8 @@ export default [
     latitude: '32.7766642',
     longitude: '-96.7969879',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -594,6 +598,8 @@ export default [
     latitude: '40.7127837',
     longitude: '-74.0059413',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -797,6 +803,8 @@ export default [
     latitude: '41.223',
     longitude: '-111.9738304',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -948,6 +956,8 @@ export default [
     latitude: '39.9611755',
     longitude: '-82.9987942',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -1021,6 +1031,8 @@ export default [
     latitude: '39.7392358',
     longitude: '-104.990251',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -1354,6 +1366,8 @@ export default [
     latitude: '35.1495343',
     longitude: '-90.0489801',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -1375,6 +1389,8 @@ export default [
     latitude: '29.4241219',
     longitude: '-98.4936282',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -1396,6 +1412,8 @@ export default [
     latitude: '42.3027307',
     longitude: '-85.2850275',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -1521,6 +1539,8 @@ export default [
     latitude: '41.5852092',
     longitude: '-93.6285892',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -1529,6 +1549,8 @@ export default [
     latitude: '40.4406248',
     longitude: '-79.9958864',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -1602,6 +1624,8 @@ export default [
     latitude: '21.3069444',
     longitude: '-157.8583333',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -1753,6 +1777,8 @@ export default [
     latitude: '42.9633599',
     longitude: '-85.6680863',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -1787,6 +1813,8 @@ export default [
     latitude: '39.1362562',
     longitude: '-84.6804857',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -1808,6 +1836,8 @@ export default [
     latitude: '36.1699412',
     longitude: '-115.1398296',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -1907,6 +1937,8 @@ export default [
     latitude: '40.4233',
     longitude: '-104.7091',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -1980,6 +2012,8 @@ export default [
     latitude: '27.950575',
     longitude: '-82.4571776',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2027,6 +2061,8 @@ export default [
     latitude: '42.1291',
     longitude: '-80.0852',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2035,6 +2071,8 @@ export default [
     latitude: '42.8864468',
     longitude: '-78.8783689',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -2056,6 +2094,8 @@ export default [
     latitude: '36.7468422',
     longitude: '-119.7725868',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -2116,6 +2156,8 @@ export default [
     latitude: '47.6062095',
     longitude: '-122.3320708',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -2150,6 +2192,8 @@ export default [
     latitude: '35.0456297',
     longitude: '-85.3096801',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -2236,6 +2280,8 @@ export default [
     latitude: '38.4405',
     longitude: '-122.7144',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2244,6 +2290,8 @@ export default [
     latitude: '34.197673',
     longitude: '-119.177379',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2252,6 +2300,8 @@ export default [
     latitude: '43.6187102',
     longitude: '-116.2146068',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2286,6 +2336,8 @@ export default [
     latitude: '35.4675602',
     longitude: '-97.5164276',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -2346,6 +2398,8 @@ export default [
     latitude: '41.8169712',
     longitude: '-71.4912203',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -2484,6 +2538,8 @@ export default [
     latitude: '41.8781136',
     longitude: '-87.6297982',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -2505,6 +2561,8 @@ export default [
     latitude: '48.74908',
     longitude: '-122.4781473',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2513,6 +2571,8 @@ export default [
     latitude: '44.0582',
     longitude: '-121.3153',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -2599,6 +2659,8 @@ export default [
     latitude: '37.11',
     longitude: '-113.56',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -2620,6 +2682,8 @@ export default [
     latitude: '29.9510658',
     longitude: '-90.0715323',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -2745,6 +2809,8 @@ export default [
     latitude: '36.8551323',
     longitude: '-75.9814073',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2753,6 +2819,8 @@ export default [
     latitude: '38.8338816',
     longitude: '-104.8213634',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -2761,6 +2829,8 @@ export default [
     latitude: '38.2526647',
     longitude: '-85.7584557',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -2977,6 +3047,8 @@ export default [
     latitude: '37.8043637',
     longitude: '-122.2711137',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -2998,6 +3070,8 @@ export default [
     latitude: '35.5950581',
     longitude: '-82.5514869',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -3006,6 +3080,8 @@ export default [
     latitude: '40.0149856',
     longitude: '-105.2705456',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3027,6 +3103,8 @@ export default [
     latitude: '39.7589478',
     longitude: '-84.1916069',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3048,6 +3126,8 @@ export default [
     latitude: '39.5296329',
     longitude: '-119.8138027',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -3147,6 +3227,8 @@ export default [
     latitude: '32.367',
     longitude: '-86.3006',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -3181,6 +3263,8 @@ export default [
     latitude: '32.2217429',
     longitude: '-110.926479',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3202,6 +3286,8 @@ export default [
     latitude: '36.1626638',
     longitude: '-86.7816016',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -3340,6 +3426,8 @@ export default [
     latitude: '37.42565',
     longitude: '-122.13535',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -3348,6 +3436,8 @@ export default [
     latitude: '40.5864',
     longitude: '-122.3917',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3369,6 +3459,8 @@ export default [
     latitude: '40.5509',
     longitude: '-105.0668',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -3377,6 +3469,8 @@ export default [
     latitude: '41.6787',
     longitude: '-83.5127',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3762,6 +3856,8 @@ export default [
     latitude: '34.4281738',
     longitude: '-119.7721072',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3874,6 +3970,8 @@ export default [
     latitude: '37.7749295',
     longitude: '-122.4194155',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -3934,6 +4032,8 @@ export default [
     latitude: '33.617',
     longitude: '-117.9294',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -4020,6 +4120,8 @@ export default [
     latitude: '45.5230622',
     longitude: '-122.6764816',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -4080,6 +4182,8 @@ export default [
     latitude: '47.6777',
     longitude: '-116.7805',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4101,6 +4205,8 @@ export default [
     latitude: '38.2971',
     longitude: '-122.2855',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -4109,6 +4215,8 @@ export default [
     latitude: '41.7637111',
     longitude: '-72.6850932',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4208,6 +4316,8 @@ export default [
     latitude: '35.6824123',
     longitude: '-106.1231207',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -4242,6 +4352,8 @@ export default [
     latitude: '44.977753',
     longitude: '-93.2650108',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4328,6 +4440,8 @@ export default [
     latitude: '35.2072',
     longitude: '-101.8338',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -4427,6 +4541,8 @@ export default [
     latitude: '42.9956',
     longitude: '-71.4548',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4539,6 +4655,8 @@ export default [
     latitude: '39.0927182',
     longitude: '-120.1850529',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4560,6 +4678,8 @@ export default [
     latitude: '61.2180556',
     longitude: '-149.9002778',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -4568,6 +4688,8 @@ export default [
     latitude: '33.7489954',
     longitude: '-84.3879824',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4792,6 +4914,8 @@ export default [
     latitude: '43.661',
     longitude: '-70.2549',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -4826,6 +4950,8 @@ export default [
     latitude: '25.7616798',
     longitude: '-80.1917902',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -4912,6 +5038,8 @@ export default [
     latitude: '42.2626',
     longitude: '-71.8023',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -4959,6 +5087,8 @@ export default [
     latitude: '29.2108',
     longitude: '-81.0228',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -5019,6 +5149,8 @@ export default [
     latitude: '32.715738',
     longitude: '-117.1610838',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -5066,6 +5198,8 @@ export default [
     latitude: '34.0522342',
     longitude: '-118.2436849',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -5243,6 +5377,8 @@ export default [
     latitude: '33.4483771',
     longitude: '-112.0740373',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -5485,6 +5621,8 @@ export default [
     latitude: '40.7607793',
     longitude: '-111.8910474',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6104,6 +6242,8 @@ export default [
     latitude: '38.6270025',
     longitude: '-90.1994042',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6138,6 +6278,8 @@ export default [
     latitude: '38.9071923',
     longitude: '-77.0368707',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6172,6 +6314,8 @@ export default [
     latitude: '26.1224386',
     longitude: '-80.1373174',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6323,6 +6467,8 @@ export default [
     latitude: '35.8429',
     longitude: '-90.7035',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -6370,6 +6516,8 @@ export default [
     latitude: '36.1519752',
     longitude: '-96.1581975',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -6443,6 +6591,8 @@ export default [
     latitude: '32.3513',
     longitude: '-95.3011',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6464,6 +6614,8 @@ export default [
     latitude: '27.5061',
     longitude: '-99.5089',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6654,6 +6806,8 @@ export default [
     latitude: '37.9748',
     longitude: '-87.5558',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6714,6 +6868,8 @@ export default [
     latitude: '39.768403',
     longitude: '-86.158068',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -6774,6 +6930,8 @@ export default [
     latitude: '26.2044',
     longitude: '-98.2301',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -6782,6 +6940,8 @@ export default [
     latitude: '31.1171',
     longitude: '-97.7278',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -6803,6 +6963,8 @@ export default [
     latitude: '25.914',
     longitude: '-97.4891',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -6915,6 +7077,8 @@ export default [
     latitude: '32.7253',
     longitude: '-114.6244',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -6975,6 +7139,8 @@ export default [
     latitude: '39.0997265',
     longitude: '-94.5785667',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -6983,6 +7149,8 @@ export default [
     latitude: '32.8449302',
     longitude: '-97.1691775',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -7004,6 +7172,8 @@ export default [
     latitude: '34.7695',
     longitude: '-92.2671',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7012,6 +7182,8 @@ export default [
     latitude: '41.4087',
     longitude: '-75.6621',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7020,6 +7192,8 @@ export default [
     latitude: '32.8407',
     longitude: '-83.6324',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7041,6 +7215,8 @@ export default [
     latitude: '43.0730517',
     longitude: '-89.4012302',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7075,6 +7251,8 @@ export default [
     latitude: '35.7795897',
     longitude: '-78.6381787',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7109,6 +7287,8 @@ export default [
     latitude: '29.7604267',
     longitude: '-95.3698028',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7169,6 +7349,8 @@ export default [
     latitude: '37.271',
     longitude: '-79.9414',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7177,6 +7359,8 @@ export default [
     latitude: '42.0372',
     longitude: '-88.2812',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7198,6 +7382,8 @@ export default [
     latitude: '43.0352126',
     longitude: '-76.2093199',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -7258,6 +7444,8 @@ export default [
     latitude: '28.5383355',
     longitude: '-81.3792365',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -7396,6 +7584,8 @@ export default [
     latitude: '45.3573',
     longitude: '-122.6068',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7404,6 +7594,8 @@ export default [
     latitude: '40.9243',
     longitude: '-98.3387',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7412,6 +7604,8 @@ export default [
     latitude: '30.3119',
     longitude: '-95.4561',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -7433,6 +7627,8 @@ export default [
     latitude: '32.314',
     longitude: '-106.7798',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Middle East',
@@ -7454,6 +7650,8 @@ export default [
     latitude: '34.6981',
     longitude: '-118.1366',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7462,6 +7660,8 @@ export default [
     latitude: '44.9392',
     longitude: '-123.0331',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7470,6 +7670,8 @@ export default [
     latitude: '35.9606384',
     longitude: '-83.9207392',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7478,6 +7680,8 @@ export default [
     latitude: '36.8507689',
     longitude: '-76.2858726',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -7499,6 +7703,8 @@ export default [
     latitude: '41.49932',
     longitude: '-81.6943605',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -7663,6 +7869,8 @@ export default [
     latitude: '36.3968',
     longitude: '-97.8791',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7671,6 +7879,8 @@ export default [
     latitude: '29.884852',
     longitude: '-93.938935',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7679,6 +7889,8 @@ export default [
     latitude: '37.7742',
     longitude: '-87.1133',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7687,6 +7899,8 @@ export default [
     latitude: '26.1906',
     longitude: '-97.6961',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7695,6 +7909,8 @@ export default [
     latitude: '32.516',
     longitude: '-93.7321',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7703,6 +7919,8 @@ export default [
     latitude: '35.1811269',
     longitude: '-111.7480437',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7711,6 +7929,8 @@ export default [
     latitude: '32.621',
     longitude: '-83.5999',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7719,6 +7939,8 @@ export default [
     latitude: '32.5007',
     longitude: '-94.7405',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7727,6 +7949,8 @@ export default [
     latitude: '35.3872',
     longitude: '-94.4249',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7735,6 +7959,8 @@ export default [
     latitude: '32.5222',
     longitude: '-93.7652',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -7756,6 +7982,8 @@ export default [
     latitude: '27.8003',
     longitude: '-97.3956',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -7777,6 +8005,8 @@ export default [
     latitude: '38.5815719',
     longitude: '-121.4943996',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -7798,6 +8028,8 @@ export default [
     latitude: '35.110703',
     longitude: '-106.609991',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7819,6 +8051,8 @@ export default [
     latitude: '30.3321838',
     longitude: '-81.655651',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -7918,6 +8152,8 @@ export default [
     latitude: '36.0957',
     longitude: '-79.4378',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7926,6 +8162,8 @@ export default [
     latitude: '36.5484',
     longitude: '-82.5618',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7934,6 +8172,8 @@ export default [
     latitude: '42.8666',
     longitude: '-106.3131',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7942,6 +8182,8 @@ export default [
     latitude: '36.9903',
     longitude: '-86.4436',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7950,6 +8192,8 @@ export default [
     latitude: '45.5616',
     longitude: '-94.1642',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7958,6 +8202,8 @@ export default [
     latitude: '26.2159',
     longitude: '-98.3253',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7966,6 +8212,8 @@ export default [
     latitude: '39.7284944',
     longitude: '-121.8374777',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7974,6 +8222,8 @@ export default [
     latitude: '40.6022',
     longitude: '-75.4713',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -7982,6 +8232,8 @@ export default [
     latitude: '34.5361',
     longitude: '-117.2912',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -8029,6 +8281,8 @@ export default [
     latitude: '35.053',
     longitude: '-78.8787',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -8050,6 +8304,8 @@ export default [
     latitude: '40.8001',
     longitude: '-96.6674',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -8162,6 +8418,8 @@ export default [
     latitude: '41.682',
     longitude: '-85.9767',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8170,6 +8428,8 @@ export default [
     latitude: '30.8327',
     longitude: '-83.2785',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8178,6 +8438,8 @@ export default [
     latitude: '42.4983',
     longitude: '-92.3369',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8186,6 +8448,8 @@ export default [
     latitude: '44.8113',
     longitude: '-91.4985',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8194,6 +8458,8 @@ export default [
     latitude: '31.2232',
     longitude: '-85.3905',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8202,6 +8468,8 @@ export default [
     latitude: '39.8454',
     longitude: '-88.9524',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8210,6 +8478,8 @@ export default [
     latitude: '36.1867',
     longitude: '-94.1288',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8218,6 +8488,8 @@ export default [
     latitude: '40.2338438',
     longitude: '-111.6585337',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -8252,6 +8524,8 @@ export default [
     latitude: '43.55',
     longitude: '-96.7003',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -8273,6 +8547,8 @@ export default [
     latitude: '32.461',
     longitude: '-84.9877',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8281,6 +8557,8 @@ export default [
     latitude: '35.120196',
     longitude: '-78.223586',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -8341,6 +8619,8 @@ export default [
     latitude: '43.0389025',
     longitude: '-87.9064736',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -8479,6 +8759,8 @@ export default [
     latitude: '43.4931',
     longitude: '-112.0443',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8487,6 +8769,8 @@ export default [
     latitude: '40.1937',
     longitude: '-85.3865',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -8508,6 +8792,8 @@ export default [
     latitude: '26.1948',
     longitude: '-98.1836',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8516,6 +8802,8 @@ export default [
     latitude: '37.303',
     longitude: '-120.4843',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8524,6 +8812,8 @@ export default [
     latitude: '42.4967',
     longitude: '-96.4059',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8532,6 +8822,8 @@ export default [
     latitude: '26.3014',
     longitude: '-98.1625',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8540,6 +8832,8 @@ export default [
     latitude: '34.4264',
     longitude: '-117.3009',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8548,6 +8842,8 @@ export default [
     latitude: '38.9719',
     longitude: '-95.2359',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8556,6 +8852,8 @@ export default [
     latitude: '36.0467',
     longitude: '-115.2246',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -8577,6 +8875,8 @@ export default [
     latitude: '46.8771863',
     longitude: '-96.7898034',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -8611,6 +8911,8 @@ export default [
     latitude: '41.7606',
     longitude: '-88.3201',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8619,6 +8921,8 @@ export default [
     latitude: '33.9459362',
     longitude: '-117.5396128',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8627,6 +8931,8 @@ export default [
     latitude: '39.2903848',
     longitude: '-76.6121893',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -8791,6 +9097,8 @@ export default [
     latitude: '36.0652',
     longitude: '-119.0168',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8799,6 +9107,8 @@ export default [
     latitude: '40.4864',
     longitude: '-86.1336',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8807,6 +9117,8 @@ export default [
     latitude: '39.064',
     longitude: '-108.5507',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8815,6 +9127,8 @@ export default [
     latitude: '30.3674',
     longitude: '-89.0928',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8823,6 +9137,8 @@ export default [
     latitude: '30.2266',
     longitude: '-93.2174',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -8831,6 +9147,8 @@ export default [
     latitude: '39.7686',
     longitude: '-94.8466',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -8865,6 +9183,8 @@ export default [
     latitude: '34.7465',
     longitude: '-92.2896',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -9016,6 +9336,8 @@ export default [
     latitude: '44.5263',
     longitude: '-109.0564',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -9037,6 +9359,8 @@ export default [
     latitude: '31.0982',
     longitude: '-97.3428',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9045,6 +9369,8 @@ export default [
     latitude: '37.7986',
     longitude: '-121.2117',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9053,6 +9379,8 @@ export default [
     latitude: '42.3264',
     longitude: '-122.8719',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9061,6 +9389,8 @@ export default [
     latitude: '40.1164',
     longitude: '-88.2434',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9069,6 +9399,8 @@ export default [
     latitude: '37.7397',
     longitude: '-121.4252',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9077,6 +9409,8 @@ export default [
     latitude: '47.6732',
     longitude: '-117.2394',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9085,6 +9419,8 @@ export default [
     latitude: '41.5236',
     longitude: '-90.5776',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9093,6 +9429,8 @@ export default [
     latitude: '28.0332',
     longitude: '-80.643',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9101,6 +9439,8 @@ export default [
     latitude: '44.0233',
     longitude: '-92.463',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9109,6 +9449,8 @@ export default [
     latitude: '36.3302',
     longitude: '-119.2921',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9117,6 +9459,8 @@ export default [
     latitude: '41.9759',
     longitude: '-91.6704',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -9346,6 +9690,8 @@ export default [
     latitude: '37.0625',
     longitude: '-95.677068',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9354,6 +9700,8 @@ export default [
     latitude: '41.7313',
     longitude: '-111.8349',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9362,6 +9710,8 @@ export default [
     latitude: '39.4667',
     longitude: '-87.4139',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9370,6 +9720,8 @@ export default [
     latitude: '38.1302',
     longitude: '-121.2724',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9378,6 +9730,8 @@ export default [
     latitude: '28.8053',
     longitude: '-97.0036',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9386,6 +9740,8 @@ export default [
     latitude: '37.4947',
     longitude: '-120.8466',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9394,6 +9750,8 @@ export default [
     latitude: '34.5008',
     longitude: '-117.1859',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9402,6 +9760,8 @@ export default [
     latitude: '30.6744',
     longitude: '-96.37',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9410,6 +9770,8 @@ export default [
     latitude: '29.5541',
     longitude: '-81.2208',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9418,6 +9780,8 @@ export default [
     latitude: '34.6087',
     longitude: '-98.3903',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9426,6 +9790,8 @@ export default [
     latitude: '30.6263',
     longitude: '-96.3347',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9447,6 +9813,8 @@ export default [
     latitude: '30.2241',
     longitude: '-92.0198',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -9468,6 +9836,8 @@ export default [
     latitude: '34.5793',
     longitude: '-118.1171',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9476,6 +9846,8 @@ export default [
     latitude: '37.6391',
     longitude: '-120.9969',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9484,6 +9856,8 @@ export default [
     latitude: '37.6986795',
     longitude: '-97.6241447',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -9648,6 +10022,8 @@ export default [
     latitude: '40.6995',
     longitude: '-99.0819',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9656,6 +10032,8 @@ export default [
     latitude: '47.9078',
     longitude: '-97.0592',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9664,6 +10042,8 @@ export default [
     latitude: '44.5646',
     longitude: '-123.262',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9672,6 +10052,8 @@ export default [
     latitude: '36.2077',
     longitude: '-119.3473',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9680,6 +10062,8 @@ export default [
     latitude: '42.7152',
     longitude: '-88.9908',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9688,6 +10072,8 @@ export default [
     latitude: '40.6179',
     longitude: '-75.3787',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9696,6 +10082,8 @@ export default [
     latitude: '33.7475',
     longitude: '-116.972',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9704,6 +10092,8 @@ export default [
     latitude: '33.3849',
     longitude: '-86.807',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9712,6 +10102,8 @@ export default [
     latitude: '43.0172',
     longitude: '-83.7236',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9720,6 +10112,8 @@ export default [
     latitude: '39.799',
     longitude: '-89.6444',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -9754,6 +10148,8 @@ export default [
     latitude: '31.5493',
     longitude: '-97.1467',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9762,6 +10158,8 @@ export default [
     latitude: '42.2714',
     longitude: '-89.094',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9770,6 +10168,8 @@ export default [
     latitude: '30.6488',
     longitude: '-88.1946',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -9791,6 +10191,8 @@ export default [
     latitude: '33.471',
     longitude: '-81.9748',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9799,6 +10201,8 @@ export default [
     latitude: '43.16103',
     longitude: '-77.6109219',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -9833,6 +10237,8 @@ export default [
     latitude: '41.08',
     longitude: '-85.1386',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -9919,6 +10325,8 @@ export default [
     latitude: '39.9525839',
     longitude: '-75.1652215',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -9953,6 +10361,8 @@ export default [
     latitude: '39.4290253',
     longitude: '-75.263456',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -9974,6 +10384,8 @@ export default [
     latitude: '35.7688',
     longitude: '-119.2471',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9982,6 +10394,8 @@ export default [
     latitude: '47.5049',
     longitude: '-111.2919',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9990,6 +10404,8 @@ export default [
     latitude: '41.0998',
     longitude: '-80.6495',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -9998,6 +10414,8 @@ export default [
     latitude: '28.788006',
     longitude: '-81.35877',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10032,6 +10450,8 @@ export default [
     latitude: '32.0835',
     longitude: '-81.0998',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10040,6 +10460,8 @@ export default [
     latitude: '36.5286',
     longitude: '-87.3099',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10048,6 +10470,8 @@ export default [
     latitude: '34.7303688',
     longitude: '-86.5861037',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -10082,6 +10506,8 @@ export default [
     latitude: '33.5207',
     longitude: '-86.8024',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10090,6 +10516,8 @@ export default [
     latitude: '38.0464',
     longitude: '-84.497',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -10124,6 +10552,8 @@ export default [
     latitude: '42.3600825',
     longitude: '-71.0588801',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -10249,6 +10679,8 @@ export default [
     latitude: '41.5048158',
     longitude: '-73.9695832',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10257,6 +10689,8 @@ export default [
     latitude: '48.2325',
     longitude: '-101.2963',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10265,6 +10699,8 @@ export default [
     latitude: '42.8689',
     longitude: '-112.4401',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10273,6 +10709,8 @@ export default [
     latitude: '36.3134',
     longitude: '-82.3535',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10281,6 +10719,8 @@ export default [
     latitude: '44.0207',
     longitude: '-88.5409',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10289,6 +10729,8 @@ export default [
     latitude: '34.7541',
     longitude: '-77.4302',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10297,6 +10739,8 @@ export default [
     latitude: '44.0812',
     longitude: '-103.228',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10305,6 +10749,8 @@ export default [
     latitude: '26.6406',
     longitude: '-81.8723',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10313,6 +10759,8 @@ export default [
     latitude: '28.0836',
     longitude: '-80.6081',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10321,6 +10769,8 @@ export default [
     latitude: '40.3353',
     longitude: '-75.9279',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10329,6 +10779,8 @@ export default [
     latitude: '30.086',
     longitude: '-94.1018',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -10454,6 +10906,8 @@ export default [
     latitude: '40.1053',
     longitude: '-85.6803',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -10475,6 +10929,8 @@ export default [
     latitude: '42.5006',
     longitude: '-90.6648',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -10496,6 +10952,8 @@ export default [
     latitude: '43.1009',
     longitude: '-75.2327',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10504,6 +10962,8 @@ export default [
     latitude: '46.8083',
     longitude: '-100.7837',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -10538,6 +10998,8 @@ export default [
     latitude: '45.7875',
     longitude: '-108.4961',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10546,6 +11008,8 @@ export default [
     latitude: '38.2494',
     longitude: '-122.04',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10554,6 +11018,8 @@ export default [
     latitude: '38.9519',
     longitude: '-92.3337',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10562,6 +11028,8 @@ export default [
     latitude: '41.1366',
     longitude: '-95.8907',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -10583,6 +11051,8 @@ export default [
     latitude: '37.9577',
     longitude: '-121.2908',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -10838,6 +11308,8 @@ export default [
     latitude: '43.8014',
     longitude: '-91.2396',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10846,6 +11318,8 @@ export default [
     latitude: '35.0887',
     longitude: '-92.4421',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10854,6 +11328,8 @@ export default [
     latitude: '40.6939',
     longitude: '-89.5891',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10862,6 +11338,8 @@ export default [
     latitude: '34.2257',
     longitude: '-77.9447',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10870,6 +11348,8 @@ export default [
     latitude: '31.8457',
     longitude: '-102.3677',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -10904,6 +11384,8 @@ export default [
     latitude: '41.525',
     longitude: '-88.0817',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -10938,6 +11420,8 @@ export default [
     latitude: '37.5407246',
     longitude: '-77.4360481',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -11102,6 +11586,8 @@ export default [
     latitude: '24.555099',
     longitude: '-81.779966',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -11136,6 +11622,8 @@ export default [
     latitude: '32.8794',
     longitude: '-111.7576',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11144,6 +11632,8 @@ export default [
     latitude: '34.4839',
     longitude: '-114.3225',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -11165,6 +11655,8 @@ export default [
     latitude: '39.1404',
     longitude: '-121.6169',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11173,6 +11665,8 @@ export default [
     latitude: '46.2112',
     longitude: '-119.1372',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11181,6 +11675,8 @@ export default [
     latitude: '42.7338',
     longitude: '-84.5554',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -11215,6 +11711,8 @@ export default [
     latitude: '33.6738949',
     longitude: '-112.1386422',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -11379,6 +11877,8 @@ export default [
     latitude: '36.5943679',
     longitude: '-121.867499',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11387,6 +11887,8 @@ export default [
     latitude: '26.3398',
     longitude: '-81.7787',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11395,6 +11897,8 @@ export default [
     latitude: '39.4862',
     longitude: '-75.0257',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -11416,6 +11920,8 @@ export default [
     latitude: '35.6145',
     longitude: '-88.8139',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11424,6 +11930,8 @@ export default [
     latitude: '39.4144',
     longitude: '-77.4106',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11432,6 +11940,8 @@ export default [
     latitude: '42.3636',
     longitude: '-87.8448',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -11453,6 +11963,8 @@ export default [
     latitude: '42.2808256',
     longitude: '-83.7430378',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11461,6 +11973,8 @@ export default [
     latitude: '29.651634',
     longitude: '-82.324829',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11495,6 +12009,8 @@ export default [
     latitude: '30.4381',
     longitude: '-84.2809',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -11516,6 +12032,8 @@ export default [
     latitude: '30.4413992',
     longitude: '-91.2487482',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -11615,6 +12133,8 @@ export default [
     latitude: '37.3382082',
     longitude: '-121.8863286',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -11740,6 +12260,8 @@ export default [
     latitude: '48.2766',
     longitude: '-116.5532',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11748,6 +12270,8 @@ export default [
     latitude: '30.4213',
     longitude: '-87.2169',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11756,6 +12280,8 @@ export default [
     latitude: '27.4989',
     longitude: '-82.5748',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11764,6 +12290,8 @@ export default [
     latitude: '35.9424',
     longitude: '-77.7957',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11785,6 +12313,8 @@ export default [
     latitude: '37.4138',
     longitude: '-79.1422',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -11806,6 +12336,8 @@ export default [
     latitude: '33.9137',
     longitude: '-98.4934',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -11853,6 +12385,8 @@ export default [
     latitude: '41.2523634',
     longitude: '-95.9979883',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -12004,6 +12538,8 @@ export default [
     latitude: '39.1836',
     longitude: '-96.5717',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -12025,6 +12561,8 @@ export default [
     latitude: '29.1872',
     longitude: '-82.1401',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12033,6 +12571,8 @@ export default [
     latitude: '39.5348',
     longitude: '-119.7528',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12041,6 +12581,8 @@ export default [
     latitude: '46.6016',
     longitude: '-120.5108',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12049,6 +12591,8 @@ export default [
     latitude: '45.4872',
     longitude: '-122.8038',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12057,6 +12601,8 @@ export default [
     latitude: '35.9557',
     longitude: '-80.0053',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12065,6 +12611,8 @@ export default [
     latitude: '33.5608',
     longitude: '-117.2107',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -12099,6 +12647,8 @@ export default [
     latitude: '47.6589',
     longitude: '-117.4247',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -12159,6 +12709,8 @@ export default [
     latitude: '35.3739',
     longitude: '-119.0195',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -12232,6 +12784,8 @@ export default [
     latitude: '38.8462236',
     longitude: '-77.3063733',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -12305,6 +12859,8 @@ export default [
     latitude: '46.2396',
     longitude: '-119.1006',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12313,6 +12869,8 @@ export default [
     latitude: '46.8701',
     longitude: '-113.9953',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12321,6 +12879,8 @@ export default [
     latitude: '44.2611',
     longitude: '-88.4068',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12329,6 +12889,8 @@ export default [
     latitude: '39.192776',
     longitude: '-106.80982',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12337,6 +12899,8 @@ export default [
     latitude: '39.049',
     longitude: '-95.6776',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -12475,6 +13039,8 @@ export default [
     latitude: '40.3439888',
     longitude: '-74.6536368',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12483,6 +13049,8 @@ export default [
     latitude: '37.9318',
     longitude: '-121.696',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12491,6 +13059,8 @@ export default [
     latitude: '32.6099',
     longitude: '-85.4808',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Oceania',
@@ -12499,6 +13069,8 @@ export default [
     latitude: '22.0518381',
     longitude: '-159.5401414',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12507,6 +13079,8 @@ export default [
     latitude: '37.4133028',
     longitude: '-122.151307',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12515,6 +13089,8 @@ export default [
     latitude: '46.7729',
     longitude: '-92.1251',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12536,6 +13112,8 @@ export default [
     latitude: '33.4946',
     longitude: '-117.1474',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12544,6 +13122,8 @@ export default [
     latitude: '41.0534302',
     longitude: '-73.5387341',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12552,6 +13132,8 @@ export default [
     latitude: '36.0391',
     longitude: '-114.9819',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -12755,6 +13337,8 @@ export default [
     latitude: '44.6365',
     longitude: '-123.1059',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -12932,6 +13516,8 @@ export default [
     latitude: '46.5927',
     longitude: '-112.0361',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -12966,6 +13552,8 @@ export default [
     latitude: '40.5118',
     longitude: '-88.9945',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -12974,6 +13562,8 @@ export default [
     latitude: '37.5565308',
     longitude: '-122.3506495',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -12995,6 +13585,8 @@ export default [
     latitude: '27.2939',
     longitude: '-80.3503',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13094,6 +13686,8 @@ export default [
     latitude: '37.4629101',
     longitude: '-122.2449095',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13102,6 +13696,8 @@ export default [
     latitude: '46.2778',
     longitude: '-119.2769',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13110,6 +13706,8 @@ export default [
     latitude: '38.2326',
     longitude: '-122.6365',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13118,6 +13716,8 @@ export default [
     latitude: '36.332',
     longitude: '-94.1185',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13126,6 +13726,8 @@ export default [
     latitude: '34.8514',
     longitude: '-82.3985',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13134,6 +13736,8 @@ export default [
     latitude: '42.8142',
     longitude: '-73.9396',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13142,6 +13746,8 @@ export default [
     latitude: '41.6613',
     longitude: '-91.5299',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13150,6 +13756,8 @@ export default [
     latitude: '33.1581',
     longitude: '-117.3506',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13158,6 +13766,8 @@ export default [
     latitude: '32.4465',
     longitude: '-99.7333',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13166,6 +13776,8 @@ export default [
     latitude: '32.7764749',
     longitude: '-79.9310512',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -13278,6 +13890,8 @@ export default [
     latitude: '39.5182',
     longitude: '-119.9888',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13299,6 +13913,8 @@ export default [
     latitude: '19.7297222',
     longitude: '-155.09',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13307,6 +13923,8 @@ export default [
     latitude: '41.14',
     longitude: '-104.8202',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13315,6 +13933,8 @@ export default [
     latitude: '31.4648',
     longitude: '-100.4398',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13349,6 +13969,8 @@ export default [
     latitude: '35.2030728',
     longitude: '-80.9796106',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13435,6 +14057,8 @@ export default [
     latitude: '33.1959',
     longitude: '-117.3795',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13443,6 +14067,8 @@ export default [
     latitude: '26.6059',
     longitude: '-81.9807',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13516,6 +14142,8 @@ export default [
     latitude: '40.6460622',
     longitude: '-111.4979729',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13537,6 +14165,8 @@ export default [
     latitude: '42.4422877',
     longitude: '-76.498375',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13545,6 +14175,8 @@ export default [
     latitude: '45.68',
     longitude: '-111.0447',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13566,6 +14198,8 @@ export default [
     latitude: '42.5847',
     longitude: '-87.8212',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13574,6 +14208,8 @@ export default [
     latitude: '26.7153424',
     longitude: '-80.0533746',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13595,6 +14231,8 @@ export default [
     latitude: '41.2982978',
     longitude: '-72.9991358',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13603,6 +14241,8 @@ export default [
     latitude: '41.1858607',
     longitude: '-73.1990064',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13650,6 +14290,8 @@ export default [
     latitude: '36.0726',
     longitude: '-79.792',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13723,6 +14365,8 @@ export default [
     latitude: '37.0842',
     longitude: '-94.5133',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13731,6 +14375,8 @@ export default [
     latitude: '33.427',
     longitude: '-117.6124',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13739,6 +14385,8 @@ export default [
     latitude: '39.165325',
     longitude: '-86.5263857',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13747,6 +14395,8 @@ export default [
     latitude: '33.2',
     longitude: '-117.2425',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13768,6 +14418,8 @@ export default [
     latitude: '42.5151532',
     longitude: '-70.9426827',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -13841,6 +14493,8 @@ export default [
     latitude: '38.4493',
     longitude: '-78.8689',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13849,6 +14503,8 @@ export default [
     latitude: '48.0627',
     longitude: '-122.1633',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13857,6 +14513,8 @@ export default [
     latitude: '40.799',
     longitude: '-81.3784',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13865,6 +14523,8 @@ export default [
     latitude: '40.4731',
     longitude: '-88.9941',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -13899,6 +14559,8 @@ export default [
     latitude: '34.9531',
     longitude: '-120.4359',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13907,6 +14569,8 @@ export default [
     latitude: '33.5779',
     longitude: '-101.8552',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -13941,6 +14605,8 @@ export default [
     latitude: '29.2993',
     longitude: '-94.7946',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -13949,6 +14615,8 @@ export default [
     latitude: '47.045',
     longitude: '-122.8949',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -14100,6 +14768,8 @@ export default [
     latitude: '38.2544',
     longitude: '-104.6091',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14108,6 +14778,8 @@ export default [
     latitude: '44.0505',
     longitude: '-123.0951',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',
@@ -14129,6 +14801,8 @@ export default [
     latitude: '42.331427',
     longitude: '-83.0457538',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -14163,6 +14837,8 @@ export default [
     latitude: '39.1638',
     longitude: '-119.7674',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14171,6 +14847,8 @@ export default [
     latitude: '27.3364',
     longitude: '-82.5307',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -14205,6 +14883,8 @@ export default [
     latitude: '42.7654',
     longitude: '-71.4676',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14213,6 +14893,8 @@ export default [
     latitude: '24.9762',
     longitude: '-80.5523',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14221,6 +14903,8 @@ export default [
     latitude: '44.5299',
     longitude: '-88.0248',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Latin America',
@@ -14359,6 +15043,8 @@ export default [
     latitude: '33.7288',
     longitude: '-116.3826',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14367,6 +15053,8 @@ export default [
     latitude: '33.781',
     longitude: '-116.4641',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14375,6 +15063,8 @@ export default [
     latitude: '29.1383',
     longitude: '-80.9956',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14383,6 +15073,8 @@ export default [
     latitude: '33.7193',
     longitude: '-116.2188',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'North America',
@@ -14391,6 +15083,8 @@ export default [
     latitude: '33.2668',
     longitude: '-87.4862',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -14412,6 +15106,8 @@ export default [
     latitude: '31.8369',
     longitude: '-102.0104',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Europe',
@@ -14576,6 +15272,8 @@ export default [
     latitude: '36.4072',
     longitude: '-105.5731',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Asia',
@@ -14610,6 +15308,8 @@ export default [
     latitude: '39.233418',
     longitude: '-119.93642',
     country_code: 'US',
+    country: 'United States',
+    country_slug: 'us',
   },
   {
     region: 'Africa',

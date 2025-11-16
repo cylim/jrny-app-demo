@@ -6,8 +6,8 @@
  */
 
 import { CheckoutDialog, useCustomer } from 'autumn-js/react'
-import { useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/ui/loading-dots'
 
