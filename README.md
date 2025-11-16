@@ -52,6 +52,15 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Subscription Management**: Upgrade, cancel, and reactivate subscriptions
 - **Secure Checkout**: Stripe-hosted payment pages with test mode support
 
+### 🌐 AI-Powered City Enrichment 
+- **Automatic Enrichment**: City information automatically enriched when users visit city pages
+- **Wikipedia Integration**: Fetches comprehensive city data including history, geography, climate, and tourism information using Firecrawl
+- **Smart Caching**: Enriched data cached for 1 week to minimize API calls and ensure fresh content
+- **Concurrency Protection**: Lock mechanism prevents duplicate enrichment when multiple users visit simultaneously
+- **Graceful Degradation**: City pages display basic info if enrichment fails or is in progress
+- **Background Processing**: Enrichment runs asynchronously without blocking page display
+- **Enrichment Monitoring**: Comprehensive logging and statistics for tracking success rates and performance
+
 ### 🎨 Kirby-Style UI Design
 - Playful, welcoming interface with soft pastel colors (pinks, blues, purples)
 - Pronounced rounded corners (16-24px) and bubble-like elements
@@ -75,6 +84,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 - **Backend**: [Convex](https://convex.dev) - Real-time backend-as-a-service
 - **Authentication**: [Better-Auth](https://better-auth.com) with Google OAuth - Modern authentication solution
 - **Payments**: [Autumn](https://useautumn.com) - Stripe-based subscription management
+- **AI/Web Scraping**: [Firecrawl](https://firecrawl.dev) - Wikipedia data extraction for city enrichment
 - **Database**: Convex built-in transactional database with real-time sync
 
 ### Infrastructure
@@ -128,12 +138,15 @@ JRNY is a location-based social application designed for travelers, digital noma
    GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
    GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-   # Sentry (optional for development)
+   # Sentry
    VITE_SENTRY_DSN=your-sentry-dsn
    SENTRY_DSN=your-sentry-dsn
 
-   # Autumn Payments (optional - for subscription features)
+   # Autumn Payments 
    AUTUMN_SECRET_KEY=am_sk_test_your_key
+
+   # Firecrawl 
+   FIRECRAWL_API_KEY=fc-your-api-key
    ```
 
    **Google OAuth Setup**:
@@ -150,7 +163,7 @@ JRNY is a location-based social application designed for travelers, digital noma
       npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"
       ```
 
-   **Autumn Payments Setup** (Optional):
+   **Autumn Payments Setup** :
    1. Sign up at [Autumn](https://useautumn.com)
    2. Get your `AUTUMN_SECRET_KEY` from the dashboard
    3. Deploy to Convex:
@@ -164,6 +177,17 @@ JRNY is a location-based social application designed for travelers, digital noma
       ```
    5. Connect your Stripe account in the Autumn dashboard
    6. See [Testing Stripe Payments](#testing-stripe-payments) below for testing instructions
+
+   **Firecrawl Setup** (for AI-powered city enrichment):
+   1. Sign up at [Firecrawl](https://firecrawl.dev)
+   2. Get your API key from the dashboard
+   3. Deploy to Convex:
+      ```bash
+      npx convex env set FIRECRAWL_API_KEY "fc-your-api-key"
+      ```
+   4. City enrichment will automatically trigger when users visit city pages
+   5. Enriched data is cached for 1 week to minimize API calls
+   6. Monitor enrichment logs in Convex dashboard or via enrichment statistics queries
 
 4. **Initialize Convex**:
    ```bash
@@ -279,11 +303,14 @@ jrny-app-demo/
 │   ├── auth.ts                # Better-Auth with Google OAuth configuration
 │   ├── auth.config.ts         # Auth provider configuration
 │   ├── http.ts                # HTTP router for auth endpoints
-│   ├── schema.ts              # Database schema (users, cities, visits, events)
+│   ├── schema.ts              # Database schema (users, cities, visits, events, enrichment)
 │   ├── cities.ts              # City-related queries and mutations
 │   ├── users.ts               # User profile queries and mutations
 │   ├── visits.ts              # Visit tracking queries and mutations
-│   └── events.ts              # Event management queries and mutations
+│   ├── events.ts              # Event management queries and mutations
+│   ├── enrichment.ts          # City enrichment queries and mutations
+│   ├── enrichmentActions.ts   # Firecrawl integration and enrichment actions
+│   └── subscriptions.ts       # Autumn subscription management
 ├── src/
 │   ├── components/
 │   │   ├── auth/              # Authentication components
@@ -328,7 +355,9 @@ jrny-app-demo/
 │   ├── 001-travel-tracking/   # Travel tracking feature spec
 │   ├── 002-kirby-ui-refactor/ # UI refactor feature spec
 │   ├── 003-db-seed/           # Database seeding feature spec
-│   └── 004-city-events/       # City events & meetups feature spec
+│   ├── 004-city-events/       # City events & meetups feature spec
+│   ├── 005-autumn-payment-gates/ # Subscription & payments feature spec
+│   └── 007-firecrawl-city-enrichment/ # AI-powered city enrichment feature spec
 ├── public/                    # Static assets
 ├── components.json            # shadcn/ui configuration
 ├── biome.json                 # Biome linting & formatting config
@@ -445,6 +474,8 @@ Pre-populated cities for consistent data:
 - Backend powered by [Convex](https://convex.dev)
 - Deployed on [Cloudflare Workers](https://workers.cloudflare.com)
 - Authenticated with [Better-Auth](https://better-auth.com)
+- Payments via [Autumn](https://useautumn.com) and [Stripe](https://stripe.com)
+- City enrichment by [Firecrawl](https://firecrawl.dev)
 - Monitored by [Sentry](https://sentry.io)
 - Animated with [Framer Motion](https://www.framer.com/motion/)
 - UI components from [shadcn/ui](https://ui.shadcn.com)

@@ -472,6 +472,16 @@ The `convex/` directory runs in Convex's managed runtime (not your Node.js serve
   - Example: `GOCSPX-...`
   - Used in: `convex/auth.ts` for Google OAuth configuration
   - Deploy: `npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"`
+- `FIRECRAWL_API_KEY`: Firecrawl API key for city enrichment
+  - Example: `fc-xxx...`
+  - Used in: `convex/enrichmentActions.ts` for Wikipedia data scraping
+  - Deploy: `npx convex env set FIRECRAWL_API_KEY "fc-your-api-key"`
+  - Sign up at [Firecrawl](https://firecrawl.dev)
+- `AUTUMN_SECRET_KEY`: Autumn API key for subscription management
+  - Example: `am_sk_test_xxx...`
+  - Used in: `convex/autumn.ts` for Stripe subscription integration
+  - Deploy: `npx convex env set AUTUMN_SECRET_KEY "am_sk_test_your_key"`
+  - Sign up at [Autumn](https://useautumn.com)
 
 **Google OAuth Setup**:
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/dashboard)
@@ -703,6 +713,109 @@ This feature allows users to organize and discover social gatherings in cities t
 - **Non-participant** (when `isParticipantListHidden = true`): Sees "Participant list hidden by organizer"
 - **Anonymous users**: Can view event details but cannot see participants if hidden
 
+### City Enrichment (Firecrawl + Wikipedia)
+
+This app uses **Firecrawl** to automatically enrich city pages with comprehensive information from Wikipedia.
+
+**How It Works**:
+- When a user visits a city page, the system checks if enrichment is needed
+- Enrichment triggers automatically if the city has never been enriched OR if the last enrichment was over 1 week ago
+- Firecrawl fetches and parses Wikipedia content for the city
+- Enriched data includes: description, history, geography, climate, transportation, tourism info, landmarks, museums, and attractions
+- Data is stored in the `cityEnrichmentContent` table and cached for 1 week
+- A lock mechanism (`enrichmentInProgress` flag) prevents duplicate enrichment when multiple users visit simultaneously
+- Stale locks (>5 minutes old) are automatically cleared by a cron job
+
+**Key Files**:
+- `convex/enrichment.ts` - Enrichment queries, mutations, and lock management
+- `convex/enrichmentActions.ts` - Firecrawl integration (requires Node.js runtime)
+- `src/lib/firecrawl.ts` - Firecrawl client wrapper
+- `convex/schema.ts` - Database schema for `cities`, `cityEnrichmentContent`, and `enrichmentLogs` tables
+
+**Enrichment Flow**:
+1. User visits city page (`/c/:shortSlug`)
+2. `checkEnrichmentStatus` query determines if enrichment is needed
+3. If needed, city page triggers `enrichCity` action asynchronously
+4. `enrichCity` acquires lock, calls Firecrawl API, parses Wikipedia data
+5. Enriched data is stored via `updateCityData` mutation with intelligent merge
+6. Lock is released, enrichment is logged to `enrichmentLogs` table
+7. User manually refreshes page to see enriched content (no auto-refresh)
+
+**Environment Variables** (Convex runtime):
+- `FIRECRAWL_API_KEY` (required): Your Firecrawl API key
+  - Example: `fc-xxx...`
+  - Deploy: `npx convex env set FIRECRAWL_API_KEY "fc-your-api-key"`
+  - Sign up at [Firecrawl](https://firecrawl.dev)
+
+**Enrichment Functions** (convex/enrichment.ts):
+- `checkEnrichmentStatus` - Returns whether enrichment is needed and why (query)
+- `getCityEnrichmentContent` - Returns enriched content for a city (query)
+- `getEnrichmentHistory` - Returns latest 10 enrichment attempts for a city (query)
+- `getEnrichmentStats` - Returns aggregated stats (success rate, avg duration) (query)
+- `acquireLock` - Attempts to acquire enrichment lock for a city (internal mutation)
+- `releaseLock` - Releases enrichment lock (internal mutation)
+- `cleanStaleLocks` - Clears stale locks >5 minutes old (internal mutation, cron job)
+- `updateCityData` - Upserts enrichment content with intelligent merge (internal mutation)
+- `logEnrichment` - Records enrichment attempt with status and errors (internal mutation)
+
+**Enrichment Actions** (convex/enrichmentActions.ts):
+- `enrichCity` - Main action that orchestrates Firecrawl fetch and data processing
+  - Uses `"use node"` directive for Firecrawl SDK compatibility
+  - Handles errors gracefully and logs failures
+  - Supports intelligent merge for re-enrichment
+
+**Database Schema Changes**:
+- `cities` table extended with:
+  - `isEnriched` (boolean) - Whether city has been enriched
+  - `lastEnrichedAt` (number) - Unix timestamp of last enrichment
+  - `enrichmentInProgress` (boolean) - Lock flag to prevent concurrent enrichment
+  - `lockAcquiredAt` (number) - When lock was acquired (for stale lock detection)
+
+- `cityEnrichmentContent` table (new):
+  - `cityId` (Id<'cities'>) - Foreign key to cities table
+  - `description` (string) - City overview
+  - `history` (string) - Historical information
+  - `geography` (string) - Geographic details
+  - `climate` (string) - Climate and weather info
+  - `transportation` (string) - Transportation options
+  - `tourism` (object) - Tourism information with overview, landmarks, museums, attractions
+  - `imageUrl` (string) - Primary city image URL
+  - `images` (array) - Additional image URLs
+  - `sourceUrl` (string) - Wikipedia source URL
+  - `scrapedAt` (number) - When data was scraped
+  - Indexed by: `by_city_id`
+
+- `enrichmentLogs` table (new):
+  - `cityId` (Id<'cities'>) - City that was enriched
+  - `success` (boolean) - Whether enrichment succeeded
+  - `status` ('completed' | 'failed') - Enrichment status
+  - `startedAt` (number) - When enrichment started
+  - `completedAt` (number) - When enrichment finished
+  - `duration` (number) - Duration in milliseconds
+  - `fieldsPopulated` (number) - Number of fields successfully populated
+  - `error` (string) - Error message if failed
+  - `errorCode` (string) - Error code for categorization
+  - `sourceUrl` (string) - Wikipedia URL that was scraped
+  - `initiatedBy` (string) - How enrichment was triggered ('user-visit', 'manual', etc.)
+  - `createdAt` (number) - Log creation timestamp
+  - Indexed by: `by_city_id`, `by_city_and_created`, `by_created_at`
+
+**Testing City Enrichment**:
+1. Set up Firecrawl API key in Convex environment
+2. Visit any city page (e.g., `/c/tokyo`)
+3. Check browser console or Convex dashboard logs for enrichment activity
+4. Refresh page after enrichment completes to see enriched content
+5. Monitor enrichment stats via `getEnrichmentStats` query
+
+**Important Notes**:
+- Enrichment runs asynchronously - city pages display immediately without waiting
+- Users see a message indicating enrichment is in progress
+- No automatic refresh when enrichment completes - users must manually refresh
+- Intelligent merge preserves existing data when source hasn't changed
+- Firecrawl may take 10-30 seconds per city depending on Wikipedia page complexity
+- Rate limiting handled by Firecrawl service
+- Errors are logged but don't break the city page display
+
 ### Subscriptions & Payments (Autumn + Stripe)
 
 This app uses **Autumn** (a Stripe integration layer) for subscription management and payments.
@@ -797,6 +910,18 @@ See `convex/schema.ts` for complete schema. Key tables:
 - `eventId` (Id<'events'>), `userId` (Id<'users'>)
 - Indexed by: `by_event`, `by_user`, `by_event_and_user`
 
+**cityEnrichmentContent**:
+- `cityId` (Id<'cities'>), `description`, `history`, `geography`, `climate`, `transportation`
+- `tourism` (object with overview, landmarks, museums, attractions)
+- `imageUrl`, `images` (array), `sourceUrl`, `scrapedAt`
+- Indexed by: `by_city_id`
+
+**enrichmentLogs**:
+- `cityId` (Id<'cities'>), `success` (boolean), `status` ('completed' | 'failed')
+- `startedAt`, `completedAt`, `duration`, `fieldsPopulated`
+- `error`, `errorCode`, `sourceUrl`, `initiatedBy`, `createdAt`
+- Indexed by: `by_city_id`, `by_city_and_created`, `by_created_at`
+
 ## File Structure
 
 ```
@@ -806,11 +931,15 @@ convex/
   ├── auth.ts           # Better-Auth instance with Google OAuth
   ├── convex.config.ts  # App-level Convex config
   ├── http.ts           # HTTP router for auth endpoints
-  ├── schema.ts         # Database schema (users, cities, visits, events, eventParticipants)
+  ├── schema.ts         # Database schema (users, cities, visits, events, enrichment)
   ├── cities.ts         # City queries and mutations
   ├── users.ts          # User profile queries and mutations
   ├── visits.ts         # Visit tracking queries and mutations
-  └── events.ts         # Event management queries and mutations
+  ├── events.ts         # Event management queries and mutations
+  ├── enrichment.ts     # City enrichment queries and mutations
+  ├── enrichmentActions.ts  # Firecrawl integration actions ("use node")
+  ├── subscriptions.ts  # Autumn subscription management
+  └── autumn.ts         # Autumn client initialization
 
 src/
   ├── components/
@@ -856,7 +985,9 @@ specs/                             # Feature specifications
   ├── 001-travel-tracking/         # Travel tracking feature spec
   ├── 002-kirby-ui-refactor/       # UI refactor feature spec
   ├── 003-db-seed/                 # Database seeding feature spec
-  └── 004-city-events/             # City events & meetups feature spec
+  ├── 004-city-events/             # City events & meetups feature spec
+  ├── 005-autumn-payment-gates/    # Subscription & payments feature spec
+  └── 007-firecrawl-city-enrichment/  # AI-powered city enrichment feature spec
 
 public/                            # Static assets (favicons, etc.)
 ```
