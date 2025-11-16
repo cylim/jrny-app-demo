@@ -42,6 +42,9 @@ function SettingsPage() {
   const { data: currentUser } = useSuspenseQuery(
     convexQuery(api.users.getCurrentUser, {}),
   )
+  const { data: subscription } = useSuspenseQuery(
+    convexQuery(api.subscriptions.getMySubscription, {}),
+  )
 
   const updateProfile = useMutation(api.users.updateProfile)
   const updateSocialLinks = useMutation(api.users.updateSocialLinks)
@@ -150,7 +153,7 @@ function SettingsPage() {
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
           {/* Profile Information */}
-          <Card>
+          <Card className='bg-background/30'>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
@@ -208,7 +211,7 @@ function SettingsPage() {
           </Card>
 
           {/* Social Links */}
-          <Card>
+          <Card className='bg-background/30'>
             <CardHeader>
               <CardTitle>Social Links</CardTitle>
               <CardDescription>
@@ -277,7 +280,7 @@ function SettingsPage() {
 
         {/* Subscription Tab */}
         <TabsContent value="subscription" className="space-y-6">
-          <Card>
+          <Card className='bg-background/30'>
             <CardHeader>
               <CardTitle>Subscription</CardTitle>
               <CardDescription>
@@ -292,10 +295,12 @@ function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <UpgradeButton />
-                <CancelSubscription />
-              </div>
+              {subscription && (
+                <div className="flex gap-2">
+                  {subscription.canUpgrade && <UpgradeButton />}
+                  {subscription.canCancel && <CancelSubscription />}
+                </div>
+              )}
 
               {/* Billing History */}
               <div className="border-t pt-6">
@@ -307,7 +312,7 @@ function SettingsPage() {
 
         {/* Privacy Tab */}
         <TabsContent value="privacy" className="space-y-6">
-          <Card>
+          <Card className='bg-background/30'>
             <CardHeader>
               <CardTitle>Privacy Settings</CardTitle>
               <CardDescription>

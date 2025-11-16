@@ -26,9 +26,37 @@ export const autumn = new Autumn(components.autumn, {
 
     // Better-Auth provides subject field with user ID
     // This is the stable identifier for the user across sessions
-    return identity.subject
+    return {
+      customerId: identity.subject,
+      customerData: {
+        name: (identity.name as string) || '',
+        email: (identity.email as string) || '',
+      },
+    }
   },
 })
+
+/**
+ * Export Autumn API functions for use in other Convex functions
+ * These functions handle subscription management, checkout, and feature access
+ */
+export const {
+  track,
+  cancel,
+  query,
+  attach,
+  check,
+  checkout,
+  usage,
+  setupPayment,
+  createCustomer,
+  listProducts,
+  billingPortal,
+  createReferralCode,
+  redeemReferralCode,
+  createEntity,
+  getEntity,
+} = autumn.api()
 
 /**
  * Export config for use in other Convex functions

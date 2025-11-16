@@ -49,7 +49,7 @@ const eventParticipantListHide = feature({
 })
 
 // Products
-const freeTier = product({
+export const freeTier = product({
   id: 'free',
   name: 'Free',
   is_default: true,
@@ -67,7 +67,7 @@ const freeTier = product({
   ],
 })
 
-const proTier = product({
+export const proTier = product({
   id: 'pro',
   name: 'Pro',
   items: [
@@ -104,7 +104,7 @@ const proTier = product({
 })
 
 export default {
-  products: { freeTier, proTier },
+  products: [freeTier, proTier],
   features: [
     profileVisitsHide,
     profileEventsHide,
