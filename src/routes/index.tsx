@@ -29,11 +29,12 @@ function Home() {
       {/* Hero Section with CTA */}
       <section className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-12 text-center sm:py-16">
         <h1 className="text-4xl font-bold sm:text-5xl">
-            {session?.user ? `Welcome back, ${session.user.name}!` : 'Welcome to JRNY'}
+          {session?.user
+            ? `Welcome back, ${session.user.name}!`
+            : 'Welcome to JRNY'}
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Track your travel journey and explore the world's most amazing
-            cities
+          Track your travel journey and explore the world's most amazing cities
         </p>
         <Button
           data-testid="cta-button"

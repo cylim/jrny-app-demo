@@ -71,78 +71,78 @@
 
 ### Lock Management (Foundational for US1)
 
-- [ ] T020 [US1] Implement acquireLock internal mutation in convex/enrichment.ts with stale lock detection (5-minute timeout)
-- [ ] T021 [US1] Implement releaseLock internal mutation in convex/enrichment.ts to clear enrichmentInProgress and lockAcquiredAt
+- [X] T020 [US1] Implement acquireLock internal mutation in convex/enrichment.ts with stale lock detection (5-minute timeout)
+- [X] T021 [US1] Implement releaseLock internal mutation in convex/enrichment.ts to clear enrichmentInProgress and lockAcquiredAt
 
 ### Enrichment Status Check (Foundational for US1)
 
-- [ ] T021 [US1] Implement checkEnrichmentStatus query in convex/enrichment.ts with args validator cityId and returns validator per contracts/enrichment.ts
-- [ ] T022 [US1] Add logic to checkEnrichmentStatus to detect 'never_enriched' (isEnriched is falsy)
-- [ ] T023 [US1] Add logic to checkEnrichmentStatus to detect 'in_progress' (enrichmentInProgress is true)
-- [ ] T024 [US1] Add logic to checkEnrichmentStatus to detect 'stale_data' (lastEnrichedAt > 1 week ago)
-- [ ] T025 [US1] Add logic to checkEnrichmentStatus to return 'up_to_date' as default case
-- [ ] T025a [P] [US1] Implement getCityEnrichmentContent query in convex/enrichment.ts with args: cityId, returns: cityEnrichmentContent | null
-- [ ] T025b [US1] Add query logic to getCityEnrichmentContent using ctx.db.query('cityEnrichmentContent').withIndex('by_city_id', q => q.eq('cityId', cityId)).unique() with null fallback
+- [X] T021 [US1] Implement checkEnrichmentStatus query in convex/enrichment.ts with args validator cityId and returns validator per contracts/enrichment.ts
+- [X] T022 [US1] Add logic to checkEnrichmentStatus to detect 'never_enriched' (isEnriched is falsy)
+- [X] T023 [US1] Add logic to checkEnrichmentStatus to detect 'in_progress' (enrichmentInProgress is true)
+- [X] T024 [US1] Add logic to checkEnrichmentStatus to detect 'stale_data' (lastEnrichedAt > 1 week ago)
+- [X] T025 [US1] Add logic to checkEnrichmentStatus to return 'up_to_date' as default case
+- [X] T025a [P] [US1] Implement getCityEnrichmentContent query in convex/enrichment.ts with args: cityId, returns: cityEnrichmentContent | null
+- [X] T025b [US1] Add query logic to getCityEnrichmentContent using ctx.db.query('cityEnrichmentContent').withIndex('by_city_id', q => q.eq('cityId', cityId)).unique() with null fallback
 
 ### Core Enrichment Action
 
-- [ ] T026 [US1] Implement enrichCity action skeleton in convex/enrichment.ts with args and returns validators per contracts/enrichment.ts
-- [ ] T027 [US1] Add lock acquisition logic to enrichCity action using ctx.runMutation(internal.enrichment.acquireLock)
-- [ ] T028 [US1] Add early return to enrichCity if lock acquisition fails with error 'Lock acquisition failed'
-- [ ] T029 [US1] Add city fetch logic to enrichCity using ctx.runQuery to get city data by cityId
-- [ ] T030 [US1] Add Wikipedia URL construction in enrichCity using constructWikipediaUrl(city.name, city.country)
-- [ ] T031 [US1] Add Firecrawl API call in enrichCity using FirecrawlApp.scrapeUrl with wikipediaUrl and formats: ['markdown', 'json']
-- [ ] T032 [US1] Add Firecrawl response success check in enrichCity; throw error if scrapeResult.success is false
-- [ ] T033 [US1] Add Zod validation of Firecrawl response using EnrichedCityDataSchema.safeParse in enrichCity
-- [ ] T034 [US1] Add validation failure handling in enrichCity; throw error with Zod error message
-- [ ] T035 [US1] Add updateCityData mutation call in enrichCity using ctx.runMutation(internal.enrichment.updateCityData) with validated data
-- [ ] T036 [US1] Add success logging in enrichCity using ctx.runMutation(internal.enrichment.logEnrichment) with success: true, duration, fieldsPopulated
-- [ ] T037 [US1] Add try/catch error handling in enrichCity with failure logging (success: false, error, errorCode)
-- [ ] T038 [US1] Add finally block to enrichCity to always release lock via ctx.runMutation(internal.enrichment.releaseLock)
+- [X] T026 [US1] Implement enrichCity action skeleton in convex/enrichment.ts with args and returns validators per contracts/enrichment.ts
+- [X] T027 [US1] Add lock acquisition logic to enrichCity action using ctx.runMutation(internal.enrichment.acquireLock)
+- [X] T028 [US1] Add early return to enrichCity if lock acquisition fails with error 'Lock acquisition failed'
+- [X] T029 [US1] Add city fetch logic to enrichCity using ctx.runQuery to get city data by cityId
+- [X] T030 [US1] Add Wikipedia URL construction in enrichCity using constructWikipediaUrl(city.name, city.country)
+- [X] T031 [US1] Add Firecrawl API call in enrichCity using FirecrawlApp.scrapeUrl with wikipediaUrl and formats: ['markdown', 'json']
+- [X] T032 [US1] Add Firecrawl response success check in enrichCity; throw error if scrapeResult.success is false
+- [X] T033 [US1] Add Zod validation of Firecrawl response using EnrichedCityDataSchema.safeParse in enrichCity
+- [X] T034 [US1] Add validation failure handling in enrichCity; throw error with Zod error message
+- [X] T035 [US1] Add updateCityData mutation call in enrichCity using ctx.runMutation(internal.enrichment.updateCityData) with validated data
+- [X] T036 [US1] Add success logging in enrichCity using ctx.runMutation(internal.enrichment.logEnrichment) with success: true, duration, fieldsPopulated
+- [X] T037 [US1] Add try/catch error handling in enrichCity with failure logging (success: false, error, errorCode)
+- [X] T038 [US1] Add finally block to enrichCity to always release lock via ctx.runMutation(internal.enrichment.releaseLock)
 
 ### Database Update Mutations
 
-- [ ] T039 [US1] Implement updateCityData internal mutation in convex/enrichment.ts with args: cityId, data (EnrichedCityData)
-- [ ] T040 [US1] Add upsert logic to updateCityData: check if cityEnrichmentContent exists for cityId using ctx.db.query('cityEnrichmentContent').withIndex('by_city_id', q => q.eq('cityId', cityId)).unique()
-- [ ] T040a [US1] Add ctx.db.insert('cityEnrichmentContent') if no existing content found, ctx.db.patch() if content exists, setting description, history, geography, climate, tourism, transportation, images, sourceUrl, scrapedAt
-- [ ] T041 [US1] Add metadata updates to cities table in updateCityData: ctx.db.patch(cityId, { isEnriched: true, lastEnrichedAt: Date.now() })
+- [X] T039 [US1] Implement updateCityData internal mutation in convex/enrichment.ts with args: cityId, data (EnrichedCityData)
+- [X] T040 [US1] Add upsert logic to updateCityData: check if cityEnrichmentContent exists for cityId using ctx.db.query('cityEnrichmentContent').withIndex('by_city_id', q => q.eq('cityId', cityId)).unique()
+- [X] T040a [US1] Add ctx.db.insert('cityEnrichmentContent') if no existing content found, ctx.db.patch() if content exists, setting description, history, geography, climate, tourism, transportation, images, sourceUrl, scrapedAt
+- [X] T041 [US1] Add metadata updates to cities table in updateCityData: ctx.db.patch(cityId, { isEnriched: true, lastEnrichedAt: Date.now() })
 
 ### Enrichment Logging
 
-- [ ] T042 [US1] Implement logEnrichment internal mutation in convex/enrichment.ts with args per LogEnrichmentArgsSchema (cityId, success, duration, error, errorCode, sourceUrl, fieldsPopulated)
-- [ ] T043 [US1] Add ctx.db.insert logic to logEnrichment to create enrichmentLogs entry with all fields including initiatedBy: 'user_visit'
-- [ ] T044 [US1] Add status field to logEnrichment: 'completed' if success is true, 'failed' if false
-- [ ] T045 [US1] Add calculated fields to logEnrichment: startedAt = Date.now() - duration, completedAt = Date.now(), createdAt = Date.now()
+- [X] T042 [US1] Implement logEnrichment internal mutation in convex/enrichment.ts with args per LogEnrichmentArgsSchema (cityId, success, duration, error, errorCode, sourceUrl, fieldsPopulated)
+- [X] T043 [US1] Add ctx.db.insert logic to logEnrichment to create enrichmentLogs entry with all fields including initiatedBy: 'user_visit'
+- [X] T044 [US1] Add status field to logEnrichment: 'completed' if success is true, 'failed' if false
+- [X] T045 [US1] Add calculated fields to logEnrichment: startedAt = Date.now() - duration, completedAt = Date.now(), createdAt = Date.now()
 
 ### City Page Enrichment Trigger
 
-- [ ] T046 [US1] Update src/routes/c/$shortSlug.tsx loader to fetch enrichment status using convexQuery(api.enrichment.checkEnrichmentStatus, { cityId })
-- [ ] T046a [US1] Add query in city page loader to fetch cityEnrichmentContent using convexQuery(api.enrichment.getCityEnrichmentContent, { cityId }) if city.isEnriched is true
-- [ ] T047 [US1] Add enrichment trigger logic to city page loader: if needsEnrichment && reason !== 'in_progress', call context.convexClient.action(api.enrichment.enrichCity) as fire-and-forget
-- [ ] T048 [US1] Add error catch handler to enrichment trigger to console.error without blocking page load
-- [ ] T049 [US1] Return enrichmentStatus and enrichmentContent from city page loader alongside city data
+- [X] T046 [US1] Update src/routes/c/$shortSlug.tsx loader to fetch enrichment status using convexQuery(api.enrichment.checkEnrichmentStatus, { cityId })
+- [X] T046a [US1] Add query in city page loader to fetch cityEnrichmentContent using convexQuery(api.enrichment.getCityEnrichmentContent, { cityId }) if city.isEnriched is true
+- [X] T047 [US1] Add enrichment trigger logic to city page loader: if needsEnrichment && reason !== 'in_progress', call context.convexClient.action(api.enrichment.enrichCity) as fire-and-forget
+- [X] T048 [US1] Add error catch handler to enrichment trigger to console.error without blocking page load
+- [X] T049 [US1] Return enrichmentStatus and enrichmentContent from city page loader alongside city data
 
 ### Enrichment Status UI Component
 
-- [ ] T050 [P] [US1] Create src/components/city/enrichment-status.tsx component file
-- [ ] T051 [US1] Implement EnrichmentStatus component in src/components/city/enrichment-status.tsx accepting enrichmentStatus prop
-- [ ] T052 [US1] Add conditional rendering to EnrichmentStatus: show message only if needsEnrichment is true
-- [ ] T053 [US1] Add enrichment in-progress message with blue background styling when reason is 'in_progress'
-- [ ] T054 [US1] Add stale data re-enrichment message when reason is 'stale_data' or 'never_enriched'
-- [ ] T055 [US1] Add "Refresh the page to see updates" instruction text to enrichment message
+- [X] T050 [P] [US1] Create src/components/city/enrichment-status.tsx component file
+- [X] T051 [US1] Implement EnrichmentStatus component in src/components/city/enrichment-status.tsx accepting enrichmentStatus prop
+- [X] T052 [US1] Add conditional rendering to EnrichmentStatus: show message only if needsEnrichment is true
+- [X] T053 [US1] Add enrichment in-progress message with blue background styling when reason is 'in_progress'
+- [X] T054 [US1] Add stale data re-enrichment message when reason is 'stale_data' or 'never_enriched'
+- [X] T055 [US1] Add "Refresh the page to see updates" instruction text to enrichment message
 
 ### City Page Enriched Content Display
 
-- [ ] T056 [US1] Add EnrichmentStatus component import to src/routes/c/$shortSlug.tsx
-- [ ] T057 [US1] Render EnrichmentStatus component in city page before main content with enrichmentStatus prop
-- [ ] T058 [US1] Add description section to city page component: render if enrichmentContent?.description is present
-- [ ] T059 [P] [US1] Add tourism landmarks section to city page component: render if enrichmentContent?.tourism?.landmarks is present
-- [ ] T060 [P] [US1] Add tourism museums section to city page component: render if enrichmentContent?.tourism?.museums is present
-- [ ] T061 [P] [US1] Add tourism attractions section to city page component: render if enrichmentContent?.tourism?.attractions is present
-- [ ] T062 [P] [US1] Add history section to city page component: render if enrichmentContent?.history is present
-- [ ] T063 [P] [US1] Add geography section to city page component: render if enrichmentContent?.geography is present
-- [ ] T064 [P] [US1] Add climate section to city page component: render if enrichmentContent?.climate is present
-- [ ] T065 [P] [US1] Add transportation section to city page component: render if enrichmentContent?.transportation is present
+- [X] T056 [US1] Add EnrichmentStatus component import to src/routes/c/$shortSlug.tsx
+- [X] T057 [US1] Render EnrichmentStatus component in city page before main content with enrichmentStatus prop
+- [X] T058 [US1] Add description section to city page component: render if enrichmentContent?.description is present
+- [X] T059 [P] [US1] Add tourism landmarks section to city page component: render if enrichmentContent?.tourism?.landmarks is present
+- [X] T060 [P] [US1] Add tourism museums section to city page component: render if enrichmentContent?.tourism?.museums is present
+- [X] T061 [P] [US1] Add tourism attractions section to city page component: render if enrichmentContent?.tourism?.attractions is present
+- [X] T062 [P] [US1] Add history section to city page component: render if enrichmentContent?.history is present
+- [X] T063 [P] [US1] Add geography section to city page component: render if enrichmentContent?.geography is present
+- [X] T064 [P] [US1] Add climate section to city page component: render if enrichmentContent?.climate is present
+- [X] T065 [P] [US1] Add transportation section to city page component: render if enrichmentContent?.transportation is present
 
 **Checkpoint**: User Story 1 complete - users can visit city pages, enrichment triggers automatically, enriched content displays after refresh
 
@@ -156,20 +156,20 @@
 
 ### Stale Data Detection (Already Implemented in US1)
 
-- [ ] T066 [US2] Verify checkEnrichmentStatus query correctly calculates stale data threshold (1 week = 7 * 24 * 60 * 60 * 1000 ms)
-- [ ] T067 [US2] Verify checkEnrichmentStatus returns 'stale_data' when Date.now() - lastEnrichedAt > ONE_WEEK_MS
+- [X] T066 [US2] Verify checkEnrichmentStatus query correctly calculates stale data threshold (1 week = 7 * 24 * 60 * 60 * 1000 ms)
+- [X] T067 [US2] Verify checkEnrichmentStatus returns 'stale_data' when Date.now() - lastEnrichedAt > ONE_WEEK_MS
 
 ### Intelligent Merge Logic
 
-- [ ] T068 [US2] Add intelligent merge helper function in convex/enrichment.ts: shouldUpdateField(existingValue, newValue, existingScrapedAt, newScrapedAt)
-- [ ] T069 [US2] Implement shouldUpdateField logic: update if existingValue is null/undefined OR (newValue !== null AND newScrapedAt > existingScrapedAt)
-- [ ] T070 [US2] Update updateCityData mutation to fetch existing cityEnrichmentContent record before upserting
-- [ ] T071 [US2] Add preservation logic to updateCityData: only update fields in cityEnrichmentContent where shouldUpdateField returns true, keeping existing scrapedAt value where appropriate
+- [X] T068 [US2] Add intelligent merge helper function in convex/enrichment.ts: shouldUpdateField(existingValue, newValue, existingScrapedAt, newScrapedAt)
+- [X] T069 [US2] Implement shouldUpdateField logic: update if existingValue is null/undefined OR (newValue !== null AND newScrapedAt > existingScrapedAt)
+- [X] T070 [US2] Update updateCityData mutation to fetch existing cityEnrichmentContent record before upserting
+- [X] T071 [US2] Add preservation logic to updateCityData: only update fields in cityEnrichmentContent where shouldUpdateField returns true, keeping existing scrapedAt value where appropriate
 
 ### Re-enrichment Logging
 
-- [ ] T072 [US2] Update logEnrichment to distinguish between initial enrichment and re-enrichment via initiatedBy field
-- [ ] T073 [US2] Add logic to enrichCity to set initiatedBy: 'stale_refresh' when re-enriching stale data (check if city.isEnriched is true before enrichment)
+- [X] T072 [US2] Update logEnrichment to distinguish between initial enrichment and re-enrichment via initiatedBy field
+- [X] T073 [US2] Add logic to enrichCity to set initiatedBy: 'stale_refresh' when re-enriching stale data (check if city.isEnriched is true before enrichment)
 
 **Checkpoint**: User Story 2 complete - stale city data automatically refreshes when users visit, preserving unchanged fields
 
@@ -183,11 +183,11 @@
 
 ### Firecrawl Error Handling
 
-- [ ] T074 [US3] Add try/catch around Firecrawl API call in enrichCity to catch network errors and timeouts
-- [ ] T075 [US3] Add error code mapping in enrichCity: map Firecrawl 404 errors to WIKIPEDIA_NOT_FOUND
-- [ ] T076 [US3] Add error code mapping in enrichCity: map Firecrawl 429 errors to FIRECRAWL_RATE_LIMITED
-- [ ] T077 [US3] Add error code mapping in enrichCity: map Firecrawl timeout errors to FIRECRAWL_TIMEOUT
-- [ ] T078 [US3] Add error code mapping in enrichCity: map Firecrawl auth errors to FIRECRAWL_AUTH_FAILED
+- [X] T074 [US3] Add try/catch around Firecrawl API call in enrichCity to catch network errors and timeouts
+- [X] T075 [US3] Add error code mapping in enrichCity: map Firecrawl 404 errors to WIKIPEDIA_NOT_FOUND
+- [X] T076 [US3] Add error code mapping in enrichCity: map Firecrawl 429 errors to FIRECRAWL_RATE_LIMITED
+- [X] T077 [US3] Add error code mapping in enrichCity: map Firecrawl timeout errors to FIRECRAWL_TIMEOUT
+- [X] T078 [US3] Add error code mapping in enrichCity: map Firecrawl auth errors to FIRECRAWL_AUTH_FAILED
 
 ### Validation Error Handling
 
@@ -198,31 +198,31 @@
 
 ### Database Error Handling
 
-- [ ] T083 [US3] Add try/catch around ctx.db.patch in updateCityData mutation to catch database write errors
-- [ ] T084 [US3] Add error code DATABASE_ERROR when ctx.db operations fail in updateCityData
-- [ ] T085 [US3] Add try/catch around ctx.db.insert in logEnrichment mutation with console.error fallback if logging fails
+- [X] T083 [US3] Add try/catch around ctx.db.patch in updateCityData mutation to catch database write errors
+- [X] T084 [US3] Add error code DATABASE_ERROR when ctx.db operations fail in updateCityData
+- [X] T085 [US3] Add try/catch around ctx.db.insert in logEnrichment mutation with console.error fallback if logging fails
 
 ### City Page Error Resilience
 
-- [ ] T086 [US3] Verify city page loader doesn't await enrichment trigger (fire-and-forget pattern already implemented in T047)
+- [X] T086 [US3] Verify city page loader doesn't await enrichment trigger (fire-and-forget pattern already implemented in T047)
 - [ ] T087 [US3] Add error boundary component import to src/routes/c/$shortSlug.tsx to catch rendering errors
-- [ ] T088 [US3] Verify city page displays basic city info (name, country, coordinates) even when enrichment fields are missing
+- [X] T088 [US3] Verify city page displays basic city info (name, country, coordinates) even when enrichment fields are missing
 
 ### Enrichment Monitoring Query
 
-- [ ] T089 [P] [US3] Implement getEnrichmentHistory query in convex/enrichment.ts with args: cityId, returns: array of enrichment logs
-- [ ] T090 [US3] Add query logic to getEnrichmentHistory using ctx.db.query('enrichmentLogs').withIndex('by_city_and_created', q => q.eq('cityId', cityId))
-- [ ] T091 [US3] Add .order('desc') and .take(10) to getEnrichmentHistory query to return latest 10 logs
-- [ ] T092 [P] [US3] Implement getEnrichmentStats query in convex/enrichment.ts with args: hours (number), returns: total, successful, failed, avgDuration
-- [ ] T093 [US3] Add aggregation logic to getEnrichmentStats to filter logs by createdAt > Date.now() - hours * 3600 * 1000
-- [ ] T094 [US3] Calculate success rate in getEnrichmentStats: successful.length / total.length
-- [ ] T095 [US3] Calculate average duration in getEnrichmentStats: sum(durationMs) / count
+- [X] T089 [P] [US3] Implement getEnrichmentHistory query in convex/enrichment.ts with args: cityId, returns: array of enrichment logs
+- [X] T090 [US3] Add query logic to getEnrichmentHistory using ctx.db.query('enrichmentLogs').withIndex('by_city_and_created', q => q.eq('cityId', cityId))
+- [X] T091 [US3] Add .order('desc') and .take(10) to getEnrichmentHistory query to return latest 10 logs
+- [X] T092 [P] [US3] Implement getEnrichmentStats query in convex/enrichment.ts with args: hours (number), returns: total, successful, failed, avgDuration
+- [X] T093 [US3] Add aggregation logic to getEnrichmentStats to filter logs by createdAt > Date.now() - hours * 3600 * 1000
+- [X] T094 [US3] Calculate success rate in getEnrichmentStats: successful.length / total.length
+- [X] T095 [US3] Calculate average duration in getEnrichmentStats: sum(durationMs) / count
 
 ### Error Logging Integration
 
-- [ ] T096 [US3] Add Sentry error capture to enrichCity action catch block with tags: feature='city-enrichment', cityId
-- [ ] T097 [US3] Add Sentry error context with sourceUrl, errorCode, and validationErrors when available
-- [ ] T098 [US3] Add console.error with formatted error message in enrichCity catch block for local debugging
+- [X] T096 [US3] Add Sentry error capture to enrichCity action catch block with tags: feature='city-enrichment', cityId
+- [X] T097 [US3] Add Sentry error context with sourceUrl, errorCode, and validationErrors when available
+- [X] T098 [US3] Add console.error with formatted error message in enrichCity catch block for local debugging
 
 **Checkpoint**: User Story 3 complete - enrichment handles errors gracefully, city pages remain functional, errors are logged for debugging
 

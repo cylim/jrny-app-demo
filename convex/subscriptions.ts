@@ -350,7 +350,6 @@ export const cancelSubscription = action({
 
     // Call Autumn cancel API with at-period-end mode
     // This will cancel the subscription in Stripe at the end of the current billing period
-    console.log('[cancelSubscription] Calling Autumn cancel API with at-period-end mode')
     // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK has incomplete types
     const cancelResult = await (autumn as any).cancel(ctx, {
       productId: 'pro',
@@ -382,15 +381,12 @@ export const cancelSubscription = action({
       const periodEnd = cancelResult.data.current_period_end
       // If it looks like seconds (< year 3000 in milliseconds), convert to milliseconds
       periodEndDate = periodEnd < 32503680000 ? periodEnd * 1000 : periodEnd
-      console.log(`[cancelSubscription] Using current_period_end: ${new Date(periodEndDate).toISOString()}`)
     } else if (user.subscription.periodEndDate) {
       // Fall back to existing subscription's period end date
       periodEndDate = user.subscription.periodEndDate
-      console.log(`[cancelSubscription] Falling back to existing periodEndDate: ${new Date(periodEndDate).toISOString()}`)
     } else {
       // Last resort: use current time (immediate cancellation)
       periodEndDate = Date.now()
-      console.warn('[cancelSubscription] No period end date available, using current time')
     }
 
     // Update local database state via internal mutation

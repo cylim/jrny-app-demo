@@ -46,32 +46,38 @@ export interface FirecrawlScrapeResponse {
  * Wikipedia Infobox data extracted via Firecrawl schema extraction
  * These are parsed from the Wikipedia settlement infobox template
  */
-export const WikipediaInfoboxSchema = z.object({
-  name: z.string().optional(),
-  nickname: z.string().optional(),
-  population: z.number().int().positive().optional(),
-  area_km2: z.number().positive().optional(),
-  elevation_m: z.number().optional(),
-  timezone: z.string().optional(),
-  coordinates: z.object({
-    lat: z.number().min(-90).max(90),
-    lon: z.number().min(-180).max(180),
-  }).optional(),
-  image_skyline: z.string().url().optional(),
-  established_date: z.string().optional(),
-}).strict()
+export const WikipediaInfoboxSchema = z
+  .object({
+    name: z.string().optional(),
+    nickname: z.string().optional(),
+    population: z.number().int().positive().optional(),
+    area_km2: z.number().positive().optional(),
+    elevation_m: z.number().optional(),
+    timezone: z.string().optional(),
+    coordinates: z
+      .object({
+        lat: z.number().min(-90).max(90),
+        lon: z.number().min(-180).max(180),
+      })
+      .optional(),
+    image_skyline: z.string().url().optional(),
+    established_date: z.string().optional(),
+  })
+  .strict()
 
 export type WikipediaInfobox = z.infer<typeof WikipediaInfoboxSchema>
 
 /**
  * Tourism and culture data extracted from Wikipedia sections
  */
-export const TourismDataSchema = z.object({
-  overview: z.string().max(1500).optional(), // Tourism summary paragraph
-  landmarks: z.array(z.string()).max(20).optional(), // Notable POIs
-  museums: z.array(z.string()).max(15).optional(), // Museums and galleries
-  attractions: z.array(z.string()).max(25).optional(), // General attractions
-}).strict()
+export const TourismDataSchema = z
+  .object({
+    overview: z.string().max(1500).optional(), // Tourism summary paragraph
+    landmarks: z.array(z.string()).max(20).optional(), // Notable POIs
+    museums: z.array(z.string()).max(15).optional(), // Museums and galleries
+    attractions: z.array(z.string()).max(25).optional(), // General attractions
+  })
+  .strict()
 
 export type TourismData = z.infer<typeof TourismDataSchema>
 
@@ -79,25 +85,27 @@ export type TourismData = z.infer<typeof TourismDataSchema>
  * Complete enriched city data from Wikipedia
  * Includes both structured infobox data and article content
  */
-export const EnrichedCityDataSchema = z.object({
-  // Structured infobox data
-  infobox: WikipediaInfoboxSchema.optional(),
+export const EnrichedCityDataSchema = z
+  .object({
+    // Structured infobox data
+    infobox: WikipediaInfoboxSchema.optional(),
 
-  // Article section content (prose)
-  description: z.string().max(5000).optional(), // Lead section overview
-  history: z.string().max(3000).optional(), // History section summary
-  geography: z.string().max(2000).optional(), // Geography section
-  climate: z.string().max(2000).optional(), // Climate section
-  tourism: TourismDataSchema.optional(), // Tourism data
-  transportation: z.string().max(2000).optional(), // Transportation section
+    // Article section content (prose)
+    description: z.string().max(5000).optional(), // Lead section overview
+    history: z.string().max(3000).optional(), // History section summary
+    geography: z.string().max(2000).optional(), // Geography section
+    climate: z.string().max(2000).optional(), // Climate section
+    tourism: TourismDataSchema.optional(), // Tourism data
+    transportation: z.string().max(2000).optional(), // Transportation section
 
-  // Images from Wikipedia
-  images: z.array(z.string().url()).max(10).optional(), // Hero images, landmarks, etc.
+    // Images from Wikipedia
+    images: z.array(z.string().url()).max(10).optional(), // Hero images, landmarks, etc.
 
-  // Source metadata
-  source_url: z.string().url(), // Wikipedia page URL (required)
-  scraped_at: z.number().int().positive(), // Unix timestamp when scraped (required)
-}).strict()
+    // Source metadata
+    source_url: z.string().url(), // Wikipedia page URL (required)
+    scraped_at: z.number().int().positive(), // Unix timestamp when scraped (required)
+  })
+  .strict()
 
 export type EnrichedCityData = z.infer<typeof EnrichedCityDataSchema>
 
@@ -115,7 +123,9 @@ export const CheckEnrichmentStatusArgsSchema = z.object({
   cityId: z.string(), // Id<'cities'> - represented as string in validators
 })
 
-export type CheckEnrichmentStatusArgs = z.infer<typeof CheckEnrichmentStatusArgsSchema>
+export type CheckEnrichmentStatusArgs = z.infer<
+  typeof CheckEnrichmentStatusArgsSchema
+>
 
 /**
  * Response from checkEnrichmentStatus query
@@ -357,8 +367,10 @@ export interface EnrichmentLog {
  * @returns Parsed data or validation error
  */
 export function validateEnrichedData(
-  data: unknown
-): { success: true; data: EnrichedCityData } | { success: false; error: z.ZodError } {
+  data: unknown,
+):
+  | { success: true; data: EnrichedCityData }
+  | { success: false; error: z.ZodError } {
   const result = EnrichedCityDataSchema.safeParse(data)
   if (result.success) {
     return { success: true, data: result.data }
@@ -444,14 +456,26 @@ export const EXAMPLE_ENRICHED_CITY_DATA: EnrichedCityData = {
   description: 'Paris is the capital and most populous city of France.',
   history: 'The area around Paris has been inhabited for thousands of years.',
   geography: 'Paris is located in the north-central part of France.',
-  climate: 'Paris has a temperate maritime climate with cool winters and warm summers.',
+  climate:
+    'Paris has a temperate maritime climate with cool winters and warm summers.',
   tourism: {
-    overview: 'Paris is one of the world\'s leading tourist destinations.',
-    landmarks: ['Eiffel Tower', 'Notre-Dame', 'Arc de Triomphe', 'Louvre Museum'],
-    museums: ['Louvre', 'Musée d\'Orsay', 'Musée Rodin'],
-    attractions: ['Latin Quarter', 'Champs-Élysées', 'Montmartre', 'Sacré-Cœur'],
+    overview: "Paris is one of the world's leading tourist destinations.",
+    landmarks: [
+      'Eiffel Tower',
+      'Notre-Dame',
+      'Arc de Triomphe',
+      'Louvre Museum',
+    ],
+    museums: ['Louvre', "Musée d'Orsay", 'Musée Rodin'],
+    attractions: [
+      'Latin Quarter',
+      'Champs-Élysées',
+      'Montmartre',
+      'Sacré-Cœur',
+    ],
   },
-  transportation: 'Paris has an extensive public transport system including metro, buses, and trains.',
+  transportation:
+    'Paris has an extensive public transport system including metro, buses, and trains.',
   images: [
     'https://upload.wikimedia.org/wikipedia/commons/8/85/Paris_2008.jpg',
   ],
@@ -459,7 +483,10 @@ export const EXAMPLE_ENRICHED_CITY_DATA: EnrichedCityData = {
   scraped_at: Date.now(),
 }
 
-export const EXAMPLE_ENRICHMENT_LOG: Omit<EnrichmentLog, '_id' | '_creationTime'> = {
+export const EXAMPLE_ENRICHMENT_LOG: Omit<
+  EnrichmentLog,
+  '_id' | '_creationTime'
+> = {
   cityId: 'city_12345',
   success: true,
   status: 'completed',

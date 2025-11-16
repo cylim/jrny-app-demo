@@ -81,12 +81,18 @@ export default defineSchema({
     visitCount: v.optional(v.number()),
     // Cached current visitor count for performance (updated by background job)
     currentVisitorCount: v.optional(v.number()),
+    // Enrichment metadata (T008)
+    isEnriched: v.optional(v.boolean()),
+    lastEnrichedAt: v.optional(v.number()),
+    enrichmentInProgress: v.optional(v.boolean()),
+    lockAcquiredAt: v.optional(v.number()),
   })
     .index('by_short_slug', ['shortSlug'])
     .index('by_slug', ['slug'])
     .index('by_country', ['country'])
     .index('by_region', ['region'])
-    .index('by_visit_count', ['visitCount']),
+    .index('by_visit_count', ['visitCount'])
+    .index('by_enrichment_status', ['isEnriched', 'lastEnrichedAt']), // T009
   visits: defineTable({
     // Foreign keys
     userId: v.id('users'),
@@ -137,4 +143,44 @@ export default defineSchema({
     .index('by_event', ['eventId'])
     .index('by_user', ['userId'])
     .index('by_event_and_user', ['eventId', 'userId']),
+  // T006: City enrichment content (separate table for performance)
+  cityEnrichmentContent: defineTable({
+    cityId: v.id('cities'),
+    // Enriched content fields
+    description: v.optional(v.string()),
+    history: v.optional(v.string()),
+    geography: v.optional(v.string()),
+    climate: v.optional(v.string()),
+    transportation: v.optional(v.string()),
+    tourism: v.optional(
+      v.object({
+        overview: v.optional(v.string()),
+        landmarks: v.optional(v.array(v.string())),
+        museums: v.optional(v.array(v.string())),
+        attractions: v.optional(v.array(v.string())),
+      }),
+    ),
+    images: v.optional(v.array(v.string())),
+    sourceUrl: v.optional(v.string()),
+    scrapedAt: v.optional(v.number()),
+  }).index('by_city_id', ['cityId']), // T007: 1:1 relationship index
+  // T010: Enrichment logs for monitoring and debugging
+  enrichmentLogs: defineTable({
+    cityId: v.id('cities'),
+    success: v.boolean(),
+    status: v.union(v.literal('completed'), v.literal('failed')),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    duration: v.number(),
+    fieldsPopulated: v.optional(v.number()),
+    error: v.optional(v.string()),
+    errorCode: v.optional(v.string()),
+    sourceUrl: v.optional(v.string()),
+    initiatedBy: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_city_id', ['cityId']) // T011
+    .index('by_status', ['status']) // T012
+    .index('by_created_at', ['createdAt']) // T013
+    .index('by_city_and_created', ['cityId', 'createdAt']), // T014
 })

@@ -12,6 +12,8 @@ import type * as auth from "../auth.js";
 import type * as autumn from "../autumn.js";
 import type * as cities from "../cities.js";
 import type * as crons from "../crons.js";
+import type * as enrichment from "../enrichment.js";
+import type * as enrichmentActions from "../enrichmentActions.js";
 import type * as events from "../events.js";
 import type * as http from "../http.js";
 import type * as migrations_001_add_privacy_settings from "../migrations/001_add_privacy_settings.js";
@@ -32,6 +34,8 @@ declare const fullApi: ApiFromModules<{
   autumn: typeof autumn;
   cities: typeof cities;
   crons: typeof crons;
+  enrichment: typeof enrichment;
+  enrichmentActions: typeof enrichmentActions;
   events: typeof events;
   http: typeof http;
   "migrations/001_add_privacy_settings": typeof migrations_001_add_privacy_settings;
