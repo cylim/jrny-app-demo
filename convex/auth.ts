@@ -31,6 +31,7 @@ export const createAuth = (
     trustedOrigins: [
       convexSiteUrl, // Convex site URL
       frontendUrl, // Your app URL (localhost:3000 in dev)
+      'http://localhost:3000', // Explicit localhost for dev
     ],
     // Advanced session configuration
     advanced: {

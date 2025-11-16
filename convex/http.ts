@@ -8,8 +8,9 @@ const http = httpRouter()
 const corsHandler = httpAction(async (_ctx, request) => {
   const origin = request.headers.get('origin') || ''
   const allowedOrigins = [
-    process.env.SITE_URL || 'http://localhost:3000',
+    process.env.SITE_URL,
     process.env.CONVEX_SITE_URL || '',
+    'http://localhost:3000',
   ]
 
   const corsHeaders: Record<string, string> = {

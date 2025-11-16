@@ -307,8 +307,7 @@ export const _updateCancellationStatus = internalMutation({
 /**
  * Cancel Pro subscription
  *
- * This action calls the Autumn cancel API first, then updates local database state.
- * This ensures consistency between Stripe and local state.
+ * This action calls the Autumn cancel API to cancel the subscription at period end.
  * Webhooks will handle the final state transition when the subscription period ends.
  */
 export const cancelSubscription = action({
@@ -348,13 +347,16 @@ export const cancelSubscription = action({
       throw new Error('Subscription already cancelled')
     }
 
-    // Call Autumn cancel API with at-period-end mode
-    // This will cancel the subscription in Stripe at the end of the current billing period
-    // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK has incomplete types
-    const cancelResult = await (autumn as any).cancel(ctx, {
-      productId: 'pro',
-      mode: 'at_period_end',
-    })
+    // Call Autumn cancel action (not a method, but an exported action from autumn.api())
+    // The cancel action is defined in convex/autumn.ts and exported from autumn.api()
+    const cancelResult = await ctx.runAction(
+      // biome-ignore lint/suspicious/noExplicitAny: Autumn cancel action types are incomplete
+      (internal as any).autumn.cancel,
+      {
+        productId: 'pro',
+        cancelImmediately: false, // Cancel at period end
+      },
+    )
 
     if (cancelResult.error) {
       console.error(
@@ -371,22 +373,13 @@ export const cancelSubscription = action({
       cancelResult.data,
     )
 
-    // Get the period end date from the cancel result
-    // The subscription will remain active until this date
-    // Autumn should return current_period_end in seconds (Unix timestamp), convert to milliseconds
+    // Get period end date - subscription will remain active until this date
     let periodEndDate: number
-
-    if (cancelResult.data?.current_period_end) {
-      // Validate and convert to milliseconds
-      const periodEnd = cancelResult.data.current_period_end
-      // If it looks like seconds (< year 3000 in milliseconds), convert to milliseconds
-      periodEndDate = periodEnd < 32503680000 ? periodEnd * 1000 : periodEnd
-    } else if (user.subscription.periodEndDate) {
-      // Fall back to existing subscription's period end date
+    if (user.subscription.periodEndDate) {
       periodEndDate = user.subscription.periodEndDate
     } else {
-      // Last resort: use current time (immediate cancellation)
-      periodEndDate = Date.now()
+      // Fallback to 30 days from now if no period end date
+      periodEndDate = Date.now() + 30 * 24 * 60 * 60 * 1000
     }
 
     // Update local database state via internal mutation
