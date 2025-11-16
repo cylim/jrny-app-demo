@@ -30,6 +30,7 @@ export function getFirecrawlClient(): FirecrawlApp {
   // T111: Configure timeout (Firecrawl SDK accepts timeout in constructor)
   return new FirecrawlApp({
     apiKey,
+    timeoutMs: ENRICHMENT_CONSTANTS.FIRECRAWL_TIMEOUT_MS,
     // Note: Firecrawl SDK may not expose timeout config directly
     // This is a best-effort implementation
   })

@@ -9,6 +9,19 @@ import { internal } from './_generated/api'
 import { action } from './_generated/server'
 
 /**
+ * Custom error class for enrichment errors with typed error codes
+ */
+class EnrichmentError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+  ) {
+    super(message)
+    this.name = 'EnrichmentError'
+  }
+}
+
+/**
  * T074-T078: Map Firecrawl errors to specific error codes
  */
 function getFirecrawlErrorCode(error: unknown): string {
@@ -62,19 +75,19 @@ function getFirecrawlErrorCode(error: unknown): string {
  * @param args.cityId - The ID of the city to enrich
  * @returns Object with success status, duration, and optional error message
  *
- * @throws Error if lock acquisition fails (enrichment already in progress)
- * @throws Error if Firecrawl API call fails (network, auth, rate limit, etc.)
- * @throws Error if validation fails (missing required fields, no content extracted)
+ * @throws EnrichmentError with typed error codes for all failure modes
+ * All errors are caught, logged, and returned with consistent shape { success: false, duration, error }
  *
  * Error codes:
+ * - CITY_NOT_FOUND: City doesn't exist in database
+ * - LOCK_ACQUISITION_FAILED: Enrichment already in progress for this city
  * - WIKIPEDIA_NOT_FOUND: Wikipedia page doesn't exist
  * - FIRECRAWL_RATE_LIMITED: API rate limit exceeded
  * - FIRECRAWL_TIMEOUT: API request timed out
  * - FIRECRAWL_AUTH_FAILED: Invalid API key or permissions
  * - NETWORK_ERROR: Network connection issues
  * - VALIDATION_ERROR: No content extracted from Wikipedia
- * - MISSING_REQUIRED_FIELDS: Required fields missing
- * - DATABASE_ERROR: Database operation failed
+ * - ENRICHMENT_ERROR: Generic enrichment error (fallback)
  *
  * @example
  * const result = await ctx.runAction(api.enrichmentActions.enrichCity, {
@@ -93,19 +106,37 @@ export const enrichCity = action({
   }),
   handler: async (ctx, args) => {
     const startTime = Date.now()
-
-    // Get city data early to determine enrichment type
-    const city = await ctx.runQuery(internal.enrichment.getCityById, {
-      cityId: args.cityId,
-    })
-
-    if (!city) {
-      throw new Error(`City ${args.cityId} not found`)
-    }
-
-    const isReenrichment = city.isEnriched === true
+    let isReenrichment = false
 
     try {
+      // Get city data early to determine enrichment type
+      const city = await ctx.runQuery(internal.enrichment.getCityById, {
+        cityId: args.cityId,
+      })
+
+      if (!city) {
+        const duration = Date.now() - startTime
+        const errorMessage = `City ${args.cityId} not found`
+
+        // Log the city not found error
+        await ctx.runMutation(internal.enrichment.logEnrichment, {
+          cityId: args.cityId,
+          success: false,
+          duration,
+          error: errorMessage,
+          errorCode: 'CITY_NOT_FOUND',
+          initiatedBy: 'user_visit',
+        })
+
+        return {
+          success: false,
+          duration,
+          error: errorMessage,
+        }
+      }
+
+      isReenrichment = city.isEnriched === true
+
       // Acquire lock
       const lockAcquired = await ctx.runMutation(
         internal.enrichment.acquireLock,
@@ -115,8 +146,9 @@ export const enrichCity = action({
       )
 
       if (!lockAcquired) {
-        throw new Error(
+        throw new EnrichmentError(
           'Lock acquisition failed - enrichment already in progress',
+          'LOCK_ACQUISITION_FAILED',
         )
       }
 
@@ -147,8 +179,13 @@ export const enrichCity = action({
           })
         } catch (firecrawlError) {
           const errorCode = getFirecrawlErrorCode(firecrawlError)
-          throw new Error(
-            `Firecrawl API error (${errorCode}): ${firecrawlError instanceof Error ? firecrawlError.message : String(firecrawlError)}`,
+          const errorMessage =
+            firecrawlError instanceof Error
+              ? firecrawlError.message
+              : String(firecrawlError)
+          throw new EnrichmentError(
+            `Firecrawl API error: ${errorMessage}`,
+            errorCode,
           )
         }
 
@@ -160,8 +197,9 @@ export const enrichCity = action({
         if (!result || !result.success || result.error) {
           const errorMessage = result?.error || 'Unknown error'
           const errorCode = getFirecrawlErrorCode(new Error(errorMessage))
-          throw new Error(
-            `Firecrawl extract failed (${errorCode}): ${errorMessage}`,
+          throw new EnrichmentError(
+            `Firecrawl extract failed: ${errorMessage}`,
+            errorCode,
           )
         }
 
@@ -172,12 +210,10 @@ export const enrichCity = action({
         const scrapedAt = Date.now()
 
         // Check for required fields (name and description are required by schema)
-        if (!wikipediaUrl) {
-          throw new Error('(MISSING_REQUIRED_FIELDS): sourceUrl is missing')
-        }
         if (!extractedData || !extractedData.description) {
-          throw new Error(
-            '(VALIDATION_ERROR): No description extracted from Wikipedia page',
+          throw new EnrichmentError(
+            'No description extracted from Wikipedia page',
+            'VALIDATION_ERROR',
           )
         }
 
@@ -204,8 +240,9 @@ export const enrichCity = action({
         // Validate that we got at least some content
         const fieldsPopulated = countPopulatedFields(enrichedData)
         if (fieldsPopulated === 0) {
-          throw new Error(
-            '(VALIDATION_ERROR): No content extracted from Wikipedia page',
+          throw new EnrichmentError(
+            'No content extracted from Wikipedia page',
+            'VALIDATION_ERROR',
           )
         }
 
@@ -243,11 +280,10 @@ export const enrichCity = action({
       const errorMessage =
         error instanceof Error ? error.message : String(error)
 
-      // Extract error code
-      let errorCode = 'ENRICHMENT_ERROR'
-      const errorCodeMatch = errorMessage.match(/\(([A-Z_]+)\)/)
-      if (errorCodeMatch) {
-        errorCode = errorCodeMatch[1]
+      // Extract error code - use EnrichmentError.code if available, otherwise infer
+      let errorCode: string
+      if (error instanceof EnrichmentError) {
+        errorCode = error.code
       } else {
         errorCode = getFirecrawlErrorCode(error)
       }

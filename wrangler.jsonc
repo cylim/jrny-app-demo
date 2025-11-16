@@ -4,6 +4,9 @@
   "compatibility_date": "2025-11-09",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true
+  },
 
   // Public environment variables (non-sensitive, accessible in browser)
   // These are baked into the client bundle during build

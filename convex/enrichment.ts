@@ -12,8 +12,31 @@ const FIVE_MINUTES_MS = 5 * 60 * 1000
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 /**
+ * Helper to check if a value is considered "empty" (missing data)
+ * Empty means: null, undefined, empty string, empty array, or empty object
+ * This prevents data loss when re-enrichment scrapes fail to extract certain fields.
+ */
+function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined) return true
+  if (typeof value === 'string') return value.trim() === ''
+  if (Array.isArray(value)) return value.length === 0
+  if (typeof value === 'object') {
+    return Object.keys(value as object).length === 0
+  }
+  return false
+}
+
+/**
  * T068-T069: Intelligent merge helper for re-enrichment
  * Determines if a field should be updated during re-enrichment
+ * Only updates if:
+ * 1. Existing value is empty (null/undefined/empty string/empty array/empty object)
+ * 2. New value is NOT empty AND newer than existing
+ *
+ * This prevents data loss when a re-enrichment scrape fails to extract certain fields.
+ * Empty strings, empty arrays, and empty objects are treated as missing data and will
+ * NOT overwrite existing populated content.
+ *
  * @param existingValue - Current value in database
  * @param newValue - New value from scraping
  * @param existingScrapedAt - When existing value was scraped (optional)
@@ -26,13 +49,13 @@ function shouldUpdateField(
   existingScrapedAt: number | undefined,
   newScrapedAt: number,
 ): boolean {
-  // T069: Update if existing value is null/undefined
-  if (existingValue === null || existingValue === undefined) {
+  // Update if existing value is empty (missing data)
+  if (isEmpty(existingValue)) {
     return true
   }
 
-  // T069: Update if new value is not null AND newer than existing
-  if (newValue !== null && newValue !== undefined) {
+  // Only update if new value is NOT empty AND newer than existing
+  if (!isEmpty(newValue)) {
     // If we don't have existingScrapedAt, assume new data is better
     if (!existingScrapedAt) {
       return true
@@ -41,7 +64,7 @@ function shouldUpdateField(
     return newScrapedAt > existingScrapedAt
   }
 
-  // Keep existing value if new value is null/undefined
+  // Keep existing value if new value is empty (prevents data loss)
   return false
 }
 
