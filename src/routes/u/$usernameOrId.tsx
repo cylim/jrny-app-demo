@@ -36,12 +36,7 @@ function UserEventsSection({
   }
 
   return (
-    <div
-      role="tabpanel"
-      id="events-panel"
-      aria-labelledby="events-tab"
-      className="space-y-8"
-    >
+    <div className="space-y-8">
       {/* Upcoming Events */}
       <div>
         <h2 className="mb-4 text-2xl font-semibold">

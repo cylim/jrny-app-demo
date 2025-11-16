@@ -74,7 +74,7 @@ export function PrivacyToggle({
         id={setting}
         checked={value}
         onCheckedChange={handleChange}
-        disabled={isLoading || (!canModify && !value)}
+        disabled={isLoading || (!canModify && value)}
         aria-label={label}
       />
     </div>

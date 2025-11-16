@@ -382,7 +382,7 @@ export const getVisitsByUser = query({
 
 /**
  * Get users currently visiting a city (for "Who's Here" section)
- * Filters out private visits and users with globalPrivacy enabled
+ * Filters out private visits and users with globalVisitPrivacy enabled
  *
  * @param cityId - The ID of the city
  * @returns Array of current visitors with user and visit information
@@ -440,7 +440,7 @@ export const getCurrentVisitors = query({
       }
     }
 
-    // Join with user data and filter out users with globalPrivacy
+    // Join with user data and filter out users with globalVisitPrivacy
     const results: Array<{
       user: {
         _id: Id<'users'>
@@ -459,11 +459,11 @@ export const getCurrentVisitors = query({
       const user = userMap.get(visit.userId)
       if (!user) continue
 
-      // Filter out users who have globalPrivacy enabled
+      // Filter out users who have globalVisitPrivacy enabled
       const typedUser = user as Doc<'users'> & {
-        settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+        settings?: { globalVisitPrivacy: boolean; hideVisitHistory: boolean }
       }
-      if (typedUser.settings?.globalPrivacy === true) {
+      if (typedUser.settings?.globalVisitPrivacy === true) {
         continue
       }
 
@@ -514,16 +514,16 @@ export const getCurrentVisitorCount = query({
       uniqueUserIds.add(visit.userId)
     }
 
-    // Filter out users with globalPrivacy enabled
+    // Filter out users with globalVisitPrivacy enabled
     let count = 0
     for (const userId of uniqueUserIds) {
       const user = await ctx.db.get(userId)
       if (!user) continue
 
       const typedUser = user as Doc<'users'> & {
-        settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+        settings?: { globalVisitPrivacy: boolean; hideVisitHistory: boolean }
       }
-      if (typedUser.settings?.globalPrivacy !== true) {
+      if (typedUser.settings?.globalVisitPrivacy !== true) {
         count++
       }
     }
@@ -645,7 +645,7 @@ export const getOverlappingVisitors = query({
     const uniqueOverlappingVisits = Array.from(uniqueVisitsByUser.values())
     uniqueOverlappingVisits.sort((a, b) => b.overlapDays - a.overlapDays)
 
-    // Join with user data and filter out users with globalPrivacy enabled
+    // Join with user data and filter out users with globalVisitPrivacy enabled
     const results = await Promise.all(
       uniqueOverlappingVisits.map(
         async ({ visit: overlappingVisit, overlapDays }) => {
@@ -654,11 +654,14 @@ export const getOverlappingVisitors = query({
             throw new Error(`User not found for visit ${overlappingVisit._id}`)
           }
 
-          // Filter out users who have globalPrivacy enabled
+          // Filter out users who have globalVisitPrivacy enabled
           const typedUser = user as Doc<'users'> & {
-            settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+            settings?: {
+              globalVisitPrivacy: boolean
+              hideVisitHistory: boolean
+            }
           }
-          if (typedUser.settings?.globalPrivacy === true) {
+          if (typedUser.settings?.globalVisitPrivacy === true) {
             return null
           }
 
@@ -680,7 +683,7 @@ export const getOverlappingVisitors = query({
       ),
     )
 
-    // Filter out null values (users with globalPrivacy enabled)
+    // Filter out null values (users with globalVisitPrivacy enabled)
     return results.filter((r): r is NonNullable<typeof r> => r !== null)
   },
 })
@@ -713,16 +716,16 @@ async function calculateCurrentVisitorCount(
     uniqueUserIds.add(visit.userId)
   }
 
-  // Filter out users with globalPrivacy enabled
+  // Filter out users with globalVisitPrivacy enabled
   let count = 0
   for (const userId of uniqueUserIds) {
     const user = await ctx.db.get(userId)
     if (!user) continue
 
     const typedUser = user as Doc<'users'> & {
-      settings?: { globalPrivacy: boolean; hideVisitHistory: boolean }
+      settings?: { globalVisitPrivacy: boolean; hideVisitHistory: boolean }
     }
-    if (typedUser.settings?.globalPrivacy !== true) {
+    if (typedUser.settings?.globalVisitPrivacy !== true) {
       count++
     }
   }

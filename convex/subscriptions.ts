@@ -5,8 +5,14 @@
  */
 
 import { v } from 'convex/values'
-import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { autumn } from './autumn'
 
 /**
@@ -135,23 +141,27 @@ export const syncSubscriptionStatus = action({
     }
 
     // Get user from database via query
-    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
-      authUserId: identity.subject,
-    })
+    const user = await ctx.runQuery(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions.getUserForSync,
+      {
+        authUserId: identity.subject,
+      },
+    )
 
     if (!user) {
       throw new Error('User not found')
     }
 
     const oldTier = user.subscription?.tier ?? 'free'
+    const oldStatus = user.subscription?.status ?? 'active'
 
     // Get customer data from Autumn API
-    console.log('[syncSubscriptionStatus] Fetching customer data for user:', identity.subject)
     const customerResult = await autumn.customers.get(ctx)
-
     if (customerResult.error) {
-      console.error('[syncSubscriptionStatus] Failed to get customer:', customerResult.error)
-      throw new Error(`Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`)
+      throw new Error(
+        `Failed to sync subscription: ${customerResult.error.message || 'Unknown error'}`,
+      )
     }
 
     const customer = customerResult.data
@@ -160,10 +170,10 @@ export const syncSubscriptionStatus = action({
       throw new Error('Failed to sync subscription: No customer data')
     }
 
-    console.log('[syncSubscriptionStatus] Customer products:', customer.products)
-
     // Find the 'pro' product in the customer's products
-    const proProduct = customer.products?.find((product) => product.id === 'pro')
+    const proProduct = customer.products?.find(
+      (product) => product.id === 'pro',
+    )
     const hasPro = proProduct && proProduct.status === 'active'
 
     const tier: 'free' | 'pro' = hasPro ? 'pro' : 'free'
@@ -187,8 +197,6 @@ export const syncSubscriptionStatus = action({
       periodEndDate = proProduct.current_period_end ?? undefined
     }
 
-    console.log(`[syncSubscriptionStatus] Setting tier to ${tier}, status to ${status}`)
-
     // Update database via internal mutation
     await ctx.runMutation(internal.subscriptions.updateSubscriptionData, {
       userId: user._id,
@@ -203,7 +211,7 @@ export const syncSubscriptionStatus = action({
       tier,
       status,
       lastSyncedAt: Date.now(),
-      changed: oldTier !== tier,
+      changed: oldTier !== tier || oldStatus !== status,
     }
   },
 })
@@ -253,16 +261,57 @@ export const getUserForSync = internalQuery({
 })
 
 /**
+ * Internal mutation to update subscription cancellation status
+ */
+export const _updateCancellationStatus = internalMutation({
+  args: {
+    userId: v.id('users'),
+    periodEndDate: v.number(),
+  },
+  returns: v.object({
+    tier: v.literal('pro'),
+    status: v.literal('pending_cancellation'),
+    periodEndDate: v.number(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    if (!user.subscription) {
+      throw new Error('No subscription found')
+    }
+
+    // Update user document with pending_cancellation status
+    await ctx.db.patch(args.userId, {
+      subscription: {
+        ...user.subscription,
+        status: 'pending_cancellation',
+        periodEndDate: args.periodEndDate,
+      },
+    })
+
+    const periodEndDateStr = new Date(args.periodEndDate).toLocaleDateString()
+
+    return {
+      tier: 'pro' as const,
+      status: 'pending_cancellation' as const,
+      periodEndDate: args.periodEndDate,
+      message: `Your Pro access will continue until ${periodEndDateStr}`,
+    }
+  },
+})
+
+/**
  * Cancel Pro subscription
  *
- * Note: This function only updates the local database state.
- * Actual subscription cancellation must be handled via:
- * 1. Client-side: Import `cancel` from `convex/autumn` and call via useAction
- * 2. Webhooks: Autumn/Stripe webhooks will sync the final cancellation status
- *
- * For now, this is a placeholder that marks the subscription as pending cancellation.
+ * This action calls the Autumn cancel API first, then updates local database state.
+ * This ensures consistency between Stripe and local state.
+ * Webhooks will handle the final state transition when the subscription period ends.
  */
-export const cancelSubscription = mutation({
+export const cancelSubscription = action({
   args: {},
   returns: v.object({
     tier: v.literal('pro'),
@@ -276,10 +325,14 @@ export const cancelSubscription = mutation({
       throw new Error('Not authenticated')
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
+    // Get user to verify eligibility
+    const user = await ctx.runQuery(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions.getUserForSync,
+      {
+        authUserId: identity.subject,
+      },
+    )
 
     if (!user) {
       throw new Error('User not found')
@@ -295,28 +348,60 @@ export const cancelSubscription = mutation({
       throw new Error('Subscription already cancelled')
     }
 
-    // Calculate period end date - 30 days from now (assuming monthly subscription)
-    // In production, this should come from Stripe's subscription.current_period_end via webhook
-    const periodEndDate = Date.now() + 30 * 24 * 60 * 60 * 1000
-
-    // Update user document with pending_cancellation status
-    // TODO: Call Autumn cancel API from client-side or via webhook
-    await ctx.db.patch(user._id, {
-      subscription: {
-        ...user.subscription,
-        status: 'pending_cancellation',
-        periodEndDate,
-      },
+    // Call Autumn cancel API with at-period-end mode
+    // This will cancel the subscription in Stripe at the end of the current billing period
+    console.log('[cancelSubscription] Calling Autumn cancel API with at-period-end mode')
+    // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK has incomplete types
+    const cancelResult = await (autumn as any).cancel(ctx, {
+      productId: 'pro',
+      mode: 'at_period_end',
     })
 
-    const periodEndDateStr = new Date(periodEndDate).toLocaleDateString()
-
-    return {
-      tier: 'pro' as const,
-      status: 'pending_cancellation' as const,
-      periodEndDate,
-      message: `Your Pro access will continue until ${periodEndDateStr}`,
+    if (cancelResult.error) {
+      console.error(
+        '[cancelSubscription] Autumn cancel failed:',
+        cancelResult.error,
+      )
+      throw new Error(
+        `Failed to cancel subscription: ${cancelResult.error.message || 'Unknown error'}`,
+      )
     }
+
+    console.log(
+      '[cancelSubscription] Autumn cancel succeeded:',
+      cancelResult.data,
+    )
+
+    // Get the period end date from the cancel result
+    // The subscription will remain active until this date
+    // Autumn should return current_period_end in seconds (Unix timestamp), convert to milliseconds
+    let periodEndDate: number
+
+    if (cancelResult.data?.current_period_end) {
+      // Validate and convert to milliseconds
+      const periodEnd = cancelResult.data.current_period_end
+      // If it looks like seconds (< year 3000 in milliseconds), convert to milliseconds
+      periodEndDate = periodEnd < 32503680000 ? periodEnd * 1000 : periodEnd
+      console.log(`[cancelSubscription] Using current_period_end: ${new Date(periodEndDate).toISOString()}`)
+    } else if (user.subscription.periodEndDate) {
+      // Fall back to existing subscription's period end date
+      periodEndDate = user.subscription.periodEndDate
+      console.log(`[cancelSubscription] Falling back to existing periodEndDate: ${new Date(periodEndDate).toISOString()}`)
+    } else {
+      // Last resort: use current time (immediate cancellation)
+      periodEndDate = Date.now()
+      console.warn('[cancelSubscription] No period end date available, using current time')
+    }
+
+    // Update local database state via internal mutation
+    return await ctx.runMutation(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions._updateCancellationStatus,
+      {
+        userId: user._id,
+        periodEndDate,
+      },
+    )
   },
 })
 
@@ -490,9 +575,13 @@ export const checkFeatureAccess = action({
     }
 
     // Get user to determine tier
-    const user = await ctx.runQuery((internal as any).subscriptions.getUserForSync, {
-      authUserId: identity.subject,
-    })
+    const user = await ctx.runQuery(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).subscriptions.getUserForSync,
+      {
+        authUserId: identity.subject,
+      },
+    )
 
     if (!user) {
       throw new Error('User not found')

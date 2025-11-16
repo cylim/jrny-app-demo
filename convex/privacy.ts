@@ -6,9 +6,15 @@
  */
 
 import { v } from 'convex/values'
-import type { Id } from './_generated/dataModel'
-import { action, internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
+import type { Id } from './_generated/dataModel'
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { autumn } from './autumn'
 
 /**
@@ -286,7 +292,9 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Check Pro tier access via Autumn API
-    const featureCheck = await autumn.check(ctx, { featureId: 'global_visit_privacy' })
+    const featureCheck = await autumn.check(ctx, {
+      featureId: 'global_visit_privacy',
+    })
     const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
@@ -294,6 +302,7 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Get user
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const user = await ctx.runQuery((internal as any).privacy._getUser, {
       authUserId: identity.subject,
     })
@@ -303,10 +312,14 @@ export const updateGlobalVisitPrivacy = action({
     }
 
     // Update database via internal mutation
-    return await ctx.runMutation((internal as any).privacy._updateGlobalVisitPrivacySetting, {
-      userId: user._id,
-      enabled: args.enabled,
-    })
+    return await ctx.runMutation(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).privacy._updateGlobalVisitPrivacySetting,
+      {
+        userId: user._id,
+        enabled: args.enabled,
+      },
+    )
   },
 })
 
@@ -360,7 +373,9 @@ export const updateVisitPrivacy = action({
     }
 
     // Check Pro tier access via Autumn API
-    const featureCheck = await autumn.check(ctx, { featureId: 'individual_visit_privacy' })
+    const featureCheck = await autumn.check(ctx, {
+      featureId: 'individual_visit_privacy',
+    })
     const hasAccess = featureCheck.data?.allowed || false
 
     if (!hasAccess) {
@@ -368,6 +383,7 @@ export const updateVisitPrivacy = action({
     }
 
     // Get user
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const user = await ctx.runQuery((internal as any).privacy._getUser, {
       authUserId: identity.subject,
     })
@@ -377,6 +393,7 @@ export const updateVisitPrivacy = action({
     }
 
     // Get visit and verify ownership
+    // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
     const visit = await ctx.runQuery((internal as any).privacy._getVisit, {
       visitId: args.visitId,
     })
@@ -390,10 +407,14 @@ export const updateVisitPrivacy = action({
     }
 
     // Update database via internal mutation
-    return await ctx.runMutation((internal as any).privacy._updateVisitPrivacyFlag, {
-      visitId: args.visitId,
-      isPrivate: args.isPrivate,
-    })
+    return await ctx.runMutation(
+      // biome-ignore lint/suspicious/noExplicitAny: Only way to reference internal api
+      (internal as any).privacy._updateVisitPrivacyFlag,
+      {
+        visitId: args.visitId,
+        isPrivate: args.isPrivate,
+      },
+    )
   },
 })
 
@@ -407,7 +428,6 @@ export const updateVisitPrivacy = action({
 export const getUserProfileVisits = query({
   args: {
     username: v.string(),
-    viewerId: v.optional(v.id('users')),
   },
   returns: v.union(
     v.array(
@@ -445,8 +465,22 @@ export const getUserProfileVisits = query({
       globalVisitPrivacy: false,
     }
 
+    // Get authenticated viewer identity from ctx.auth (server-side, cannot be spoofed)
+    const viewerIdentity = await ctx.auth.getUserIdentity()
+    let viewerId: string | null = null
+
+    if (viewerIdentity) {
+      const viewerUser = await ctx.db
+        .query('users')
+        .withIndex('by_auth_user_id', (q) =>
+          q.eq('authUserId', viewerIdentity.subject),
+        )
+        .unique()
+      viewerId = viewerUser?._id || null
+    }
+
     // Determine if viewer is the profile owner
-    const isOwner = args.viewerId === profileOwner._id
+    const isOwner = viewerId === profileOwner._id
 
     // If hideProfileVisits is enabled and viewer is not owner, hide visits
     if (settings.hideProfileVisits && !isOwner) {
@@ -499,95 +533,5 @@ export const getUserProfileVisits = query({
     }
 
     return visitsWithCities.filter((v): v is VisitWithCity => v !== null)
-  },
-})
-
-/**
- * Get privacy-filtered events for a user profile
- *
- * Returns list of events for a user's profile page, filtered by privacy settings.
- * If profile owner has hideProfileEvents enabled and viewer is not the owner,
- * returns hidden status.
- */
-export const getUserProfileEvents = query({
-  args: {
-    username: v.string(),
-    viewerId: v.optional(v.id('users')),
-  },
-  returns: v.union(
-    v.array(
-      v.object({
-        eventId: v.id('events'),
-        title: v.string(),
-        cityId: v.id('cities'),
-        cityName: v.string(),
-        startTime: v.number(),
-        endTime: v.optional(v.number()),
-        isOrganizer: v.boolean(),
-      }),
-    ),
-    v.object({
-      hidden: v.literal(true),
-      message: v.string(),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    // Find the profile owner
-    const profileOwner = await ctx.db
-      .query('users')
-      .withIndex('by_username', (q) => q.eq('username', args.username))
-      .unique()
-
-    if (!profileOwner) {
-      throw new Error('User not found')
-    }
-
-    // Check privacy settings from settings object
-    const settings = profileOwner.settings ?? {
-      hideProfileVisits: false,
-      hideProfileEvents: false,
-      globalVisitPrivacy: false,
-    }
-
-    // Determine if viewer is the profile owner
-    const isOwner = args.viewerId === profileOwner._id
-
-    // If hideProfileEvents is enabled and viewer is not owner, hide events
-    if (settings.hideProfileEvents && !isOwner) {
-      return {
-        hidden: true as const,
-        message: "This user's event participation is private",
-      }
-    }
-
-    // Get all event participations for this user
-    const participations = await ctx.db
-      .query('eventParticipants')
-      .withIndex('by_user', (q) => q.eq('userId', profileOwner._id))
-      .collect()
-
-    // Get event and city information for each participation
-    const eventsWithDetails = await Promise.all(
-      participations.map(async (participation) => {
-        const event = await ctx.db.get(participation.eventId)
-        if (!event || event.isCancelled) return null // Skip cancelled events
-
-        const city = await ctx.db.get(event.cityId)
-        if (!city) return null
-
-        return {
-          eventId: event._id,
-          title: event.title,
-          cityId: event.cityId,
-          cityName: city.name,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          isOrganizer: event.ownerId === profileOwner._id,
-        }
-      }),
-    )
-
-    // Filter out null entries (deleted/cancelled events)
-    return eventsWithDetails.filter((e) => e !== null)
   },
 })

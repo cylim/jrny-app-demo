@@ -28,6 +28,7 @@ interface FilterBarProps {
   regions: string[]
   countries: string[]
   resultsCount: number
+  totalCount?: number
   onClearFilters: () => void
 }
 
@@ -61,6 +62,7 @@ export function FilterBar({
   regions,
   countries,
   resultsCount,
+  totalCount,
   onClearFilters,
 }: FilterBarProps) {
   const hasActiveFilters =
@@ -156,8 +158,14 @@ export function FilterBar({
         {/* Results count and active filters */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>
-            Showing <strong>{resultsCount.toLocaleString()}</strong>{' '}
-            {resultsCount === 1 ? 'city' : 'cities'}
+            Showing <strong>{resultsCount.toLocaleString()}</strong>
+            {totalCount !== undefined && totalCount !== resultsCount && (
+              <>
+                {' '}
+                of <strong>{totalCount.toLocaleString()}</strong>
+              </>
+            )}{' '}
+            {(totalCount ?? resultsCount) === 1 ? 'city' : 'cities'}
           </span>
           {activeFilterCount > 0 && (
             <>

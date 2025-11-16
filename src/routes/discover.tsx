@@ -1,23 +1,32 @@
 import { convexQuery } from '@convex-dev/react-query'
 import * as Sentry from '@sentry/tanstackstart-react'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CityCard } from '~/components/city-card'
 import { FilterBar, type SortOption } from '~/components/discover/filter-bar'
 import { ErrorState } from '~/components/ui/error-state'
+import { LoadingDots } from '~/components/ui/loading-dots'
 import { LoadingState } from '~/components/ui/loading-state'
 import type { CityListItem } from '~/types/city'
 import { api } from '~@/convex/_generated/api'
+import type { Id } from '~@/convex/_generated/dataModel'
+
+type CityPaginationOpts = {
+  numItems: number
+  cursor: string | null
+  id: Id<'cities'> | null
+}
 
 export const Route = createFileRoute('/discover')({
   component: Discover,
 })
 
+const CITIES_PER_PAGE = 24
+
 /**
  * Discover page - Browse and filter all cities
- * Features search, region, country, and sort filters
- * Client-side filtering for instant results
+ * Features server-side filtering, pagination with infinite scroll
  */
 function Discover() {
   // Filter state
@@ -26,84 +35,84 @@ function Discover() {
   const [selectedCountry, setSelectedCountry] = useState<string>('all')
   const [sortOption, setSortOption] = useState<SortOption>('most-visited')
 
-  // Fetch all cities with explicit error and loading handling
+  // Fetch regions for filter dropdown
+  const { data: regions = [] } = useQuery(
+    convexQuery(api.cities.getRegions, {}),
+  )
+
+  // Fetch countries based on selected region
+  const { data: countries = [] } = useQuery(
+    convexQuery(api.cities.getCountries, {
+      region: selectedRegion !== 'all' ? selectedRegion : undefined,
+    }),
+  )
+
+  // Get convex client from router context
+  const { convexClient } = Route.useRouteContext()
+
+  // Infinite query for paginated cities using Convex .paginate()
   const {
-    data: allCities,
+    data,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
-  } = useQuery(convexQuery(api.cities.getAllCities, {}))
+  } = useInfiniteQuery({
+    queryKey: [
+      'cities',
+      'paginated',
+      selectedRegion,
+      selectedCountry,
+      searchQuery,
+      sortOption,
+    ],
+    queryFn: async ({ pageParam }) => {
+      return await convexClient.query(api.cities.getCitiesPaginated, {
+        region: selectedRegion !== 'all' ? selectedRegion : undefined,
+        country: selectedCountry !== 'all' ? selectedCountry : undefined,
+        searchQuery: searchQuery.trim() !== '' ? searchQuery : undefined,
+        sortBy: sortOption,
+        limit: CITIES_PER_PAGE,
+        paginationOpts: pageParam,
+      })
+    },
+    initialPageParam: undefined as CityPaginationOpts | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.isDone
+        ? undefined
+        : ({
+            numItems: CITIES_PER_PAGE,
+            cursor: lastPage.continueCursor,
+            id: null,
+          } as CityPaginationOpts),
+  })
 
-  // Extract unique regions from all cities
-  // NOTE: All hooks must be called before any early returns (Rules of Hooks)
-  const regions = useMemo(() => {
-    if (!allCities) return []
-    const uniqueRegions = new Set(
-      allCities.map((city: CityListItem) => city.region),
+  // Flatten all pages into single array
+  const allCities = useMemo(() => {
+    if (!data?.pages) return []
+    return data.pages.flatMap((page) => page.cities)
+  }, [data])
+
+  // Intersection observer for infinite scroll
+  const observerTarget = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0.1 },
     )
-    return Array.from(uniqueRegions).sort()
-  }, [allCities])
 
-  // Extract unique countries based on selected region
-  const countries = useMemo(() => {
-    if (!allCities) return []
-    const citiesToFilter =
-      selectedRegion === 'all'
-        ? allCities
-        : allCities.filter(
-            (city: CityListItem) => city.region === selectedRegion,
-          )
-
-    const uniqueCountries = new Set(
-      citiesToFilter.map((city: CityListItem) => city.country),
-    )
-    return Array.from(uniqueCountries).sort()
-  }, [allCities, selectedRegion])
-
-  // Filter and sort cities
-  const filteredCities = useMemo(() => {
-    if (!allCities) return []
-    let result = [...allCities]
-
-    // Apply search filter
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase()
-      result = result.filter((city: CityListItem) =>
-        city.name.toLowerCase().includes(query),
-      )
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current)
     }
 
-    // Apply region filter
-    if (selectedRegion !== 'all') {
-      result = result.filter(
-        (city: CityListItem) => city.region === selectedRegion,
-      )
-    }
-
-    // Apply country filter
-    if (selectedCountry !== 'all') {
-      result = result.filter(
-        (city: CityListItem) => city.country === selectedCountry,
-      )
-    }
-
-    // Apply sorting
-    result.sort((a: CityListItem, b: CityListItem) => {
-      switch (sortOption) {
-        case 'most-visited':
-          return (b.visitCount ?? 0) - (a.visitCount ?? 0)
-        case 'least-visited':
-          return (a.visitCount ?? 0) - (b.visitCount ?? 0)
-        case 'alphabetical-asc':
-          return a.name.localeCompare(b.name)
-        case 'alphabetical-desc':
-          return b.name.localeCompare(a.name)
-        default:
-          return 0
-      }
-    })
-
-    return result
-  }, [allCities, searchQuery, selectedRegion, selectedCountry, sortOption])
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   // Report errors to Sentry
   useEffect(() => {
@@ -119,26 +128,6 @@ function Discover() {
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region)
     setSelectedCountry('all')
-  }
-
-  // Show loading state
-  if (isLoading) {
-    return <LoadingState message="Loading cities..." />
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <ErrorState
-        title="Failed to load cities"
-        message="We couldn't load the cities. Please try again later."
-      />
-    )
-  }
-
-  // Ensure we have data before proceeding
-  if (!allCities) {
-    return null
   }
 
   // Clear all filters
@@ -158,7 +147,7 @@ function Discover() {
         </p>
       </div>
 
-      {/* Filter bar */}
+      {/* Filter bar - always visible */}
       <div className="mx-auto w-full max-w-7xl">
         <FilterBar
           searchQuery={searchQuery}
@@ -171,26 +160,52 @@ function Discover() {
           onSortChange={setSortOption}
           regions={regions}
           countries={countries}
-          resultsCount={filteredCities.length}
+          resultsCount={allCities.length}
           onClearFilters={handleClearFilters}
         />
       </div>
 
-      {/* City grid */}
+      {/* City grid with loading/error states */}
       <div className="mx-auto w-full max-w-7xl">
-        {filteredCities.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filteredCities.map((city: CityListItem) => (
-              <Link
-                key={city._id}
-                to="/c/$shortSlug"
-                params={{ shortSlug: city.shortSlug }}
-                className="focus:outline-none"
-              >
-                <CityCard city={city} onClick={() => {}} />
-              </Link>
-            ))}
-          </div>
+        {isLoading ? (
+          <LoadingState message="Loading cities..." />
+        ) : error ? (
+          <ErrorState
+            title="Failed to load cities"
+            message="We couldn't load the cities. Please try again later."
+          />
+        ) : allCities.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {allCities.map((city: CityListItem) => (
+                <Link
+                  key={city._id}
+                  to="/c/$shortSlug"
+                  params={{ shortSlug: city.shortSlug }}
+                  className="focus:outline-none"
+                >
+                  <CityCard city={city} onClick={() => {}} />
+                </Link>
+              ))}
+            </div>
+
+            {/* Infinite scroll trigger */}
+            <div ref={observerTarget} className="mt-8 flex justify-center">
+              {isFetchingNextPage && (
+                <div className="flex flex-col items-center gap-2">
+                  <LoadingDots />
+                  <p className="text-sm text-muted-foreground">
+                    Loading more cities...
+                  </p>
+                </div>
+              )}
+              {!hasNextPage && allCities.length > CITIES_PER_PAGE && (
+                <p className="text-sm text-muted-foreground">
+                  You've reached the end! {allCities.length} cities shown.
+                </p>
+              )}
+            </div>
+          </>
         ) : (
           <div className="kirby-rounded flex min-h-[400px] flex-col items-center justify-center gap-4 bg-gradient-to-br from-pink-100 to-purple-100 p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-800">
