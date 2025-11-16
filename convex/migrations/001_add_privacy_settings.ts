@@ -37,6 +37,7 @@ export const backfillPrivacyAndSubscription = internalMutation({
       if (needsUpdate) {
         await ctx.db.patch(user._id, {
           settings: {
+            ...(user.settings ?? {}),
             // Preserve existing values if they exist, otherwise use defaults
             hideProfileVisits: user.settings?.hideProfileVisits ?? false,
             hideProfileEvents: user.settings?.hideProfileEvents ?? false,

@@ -6,8 +6,10 @@
  */
 
 import { v } from 'convex/values'
+import type { Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import { autumn } from './autumn'
+import { hasFeatureAccess } from './autumn-types'
 
 /**
  * Get current user's privacy settings
@@ -164,15 +166,9 @@ export const updateGlobalVisitPrivacy = mutation({
       throw new Error('Not authenticated')
     }
 
-    // Check Pro tier access via Autumn
-    const result = await autumn.check(ctx, {
-      featureId: 'global_visit_privacy',
-    })
-
-    const hasAccess = result?.data
-      ? // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK CheckResult type not exported
-        ((result.data as any).has_access ?? false)
-      : false
+    // Check Pro tier access via Autumn customer.features
+    const result = await autumn.customers.get(ctx)
+    const hasAccess = hasFeatureAccess(result.data, 'global_visit_privacy')
 
     if (!hasAccess) {
       throw new Error('Pro subscription required for global visit privacy')
@@ -236,15 +232,9 @@ export const updateVisitPrivacy = mutation({
       throw new Error('Not authenticated')
     }
 
-    // Check Pro tier access via Autumn
-    const result = await autumn.check(ctx, {
-      featureId: 'individual_visit_privacy',
-    })
-
-    const hasAccess = result?.data
-      ? // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK CheckResult type not exported
-        ((result.data as any).has_access ?? false)
-      : false
+    // Check Pro tier access via Autumn customer.features
+    const result = await autumn.customers.get(ctx)
+    const hasAccess = hasFeatureAccess(result.data, 'individual_visit_privacy')
 
     if (!hasAccess) {
       throw new Error('Pro subscription required for individual visit privacy')
@@ -297,7 +287,7 @@ export const getUserProfileVisits = query({
         cityName: v.string(),
         citySlug: v.string(),
         startDate: v.number(),
-        endDate: v.number(),
+        endDate: v.optional(v.number()),
         notes: v.optional(v.string()),
         isPrivate: v.boolean(),
       }),
@@ -345,6 +335,11 @@ export const getUserProfileVisits = query({
     // Get city information for each visit
     const visitsWithCities = await Promise.all(
       visits.map(async (visit) => {
+        // Filter out private visits for non-owners
+        if (visit.isPrivate && !isOwner) {
+          return null
+        }
+
         const city = await ctx.db.get(visit.cityId)
         if (!city) return null
 
@@ -354,15 +349,26 @@ export const getUserProfileVisits = query({
           cityName: city.name,
           citySlug: city.shortSlug,
           startDate: visit.startDate,
-          endDate: visit.endDate,
+          endDate: visit.endDate !== undefined ? visit.endDate : undefined,
           notes: visit.notes,
           isPrivate: visit.isPrivate,
-        }
+        } as const
       }),
     )
 
-    // Filter out null entries (deleted cities)
-    return visitsWithCities.filter((v) => v !== null)
+    // Filter out null entries (deleted cities and private visits) with type guard
+    type VisitWithCity = {
+      visitId: Id<'visits'>
+      cityId: Id<'cities'>
+      cityName: string
+      citySlug: string
+      startDate: number
+      endDate: number | undefined
+      notes: string | undefined
+      isPrivate: boolean
+    }
+
+    return visitsWithCities.filter((v): v is VisitWithCity => v !== null)
   },
 })
 

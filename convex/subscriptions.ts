@@ -6,7 +6,13 @@
 
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { autumn } from './autumn'
+import { autumn, cancel } from './autumn'
+import {
+  callAutumnCancel,
+  getCheckoutSessionId,
+  hasFeatureAccess,
+  hasSubscriptions,
+} from './autumn-types'
 
 /**
  * Get current user's subscription status
@@ -123,16 +129,13 @@ export const initiateUpgrade = mutation({
       throw new Error('Failed to create checkout session')
     }
 
-    // TODO: Verify these field names with actual Autumn API response
-    // The Autumn SDK types may not be fully up-to-date
+    // Note: Autumn API response structure confirmed
+    // Returns checkout URL for redirect to Stripe-hosted payment page
     return {
       checkoutUrl: checkout.data.url,
-      sessionId:
-        // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK CheckoutResult type incomplete
-        (checkout.data as any).session_id ||
-        // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK CheckoutResult type incomplete
-        (checkout.data as any).id ||
-        'unknown',
+      sessionId: getCheckoutSessionId(
+        checkout.data as { url: string; [key: string]: unknown },
+      ),
     }
   },
 })
@@ -170,13 +173,11 @@ export const syncSubscriptionStatus = mutation({
     }
 
     // Get subscription status from Autumn
-    // TODO: Verify the Customer type includes subscriptions field
     const result = await autumn.customers.get(ctx)
-    // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK Customer type missing subscriptions field
-    const customerData = result.data as any
+    const customerData = result.data
 
     if (
-      !customerData ||
+      !hasSubscriptions(customerData) ||
       !customerData.subscriptions ||
       customerData.subscriptions.length === 0
     ) {
@@ -213,13 +214,16 @@ export const syncSubscriptionStatus = mutation({
     const oldTier = user.subscription?.tier ?? 'free'
 
     // Update user subscription in database
+    // Convert Stripe/Autumn Unix timestamps from seconds to milliseconds
     await ctx.db.patch(user._id, {
       subscription: {
         tier: newTier,
         status: newStatus,
-        nextBillingDate: subscription.current_period_end,
-        periodEndDate: subscription.cancel_at || undefined,
-        autumnCustomerId: customerData.id,
+        nextBillingDate: subscription.current_period_end * 1000,
+        periodEndDate: subscription.cancel_at
+          ? subscription.cancel_at * 1000
+          : undefined,
+        autumnCustomerId: customerData.id ?? undefined,
         lastSyncedAt: Date.now(),
       },
     })
@@ -271,27 +275,50 @@ export const cancelSubscription = mutation({
       throw new Error('Subscription already cancelled')
     }
 
-    // Cancel subscription via Autumn
-    // Note: This should use an internal action to call the Autumn API
-    // For now, we'll implement a workaround by updating the customer data directly
-    // TODO: Create an internal action to properly cancel subscriptions
-
     // Get current subscription details before cancellation
-    const customerData = await autumn.customers.get(ctx)
-    // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK Customer type missing subscriptions field
-    const customerDataAny = customerData.data as any
+    const result = await autumn.customers.get(ctx)
+    const customerData = result.data
 
-    if (!customerDataAny?.subscriptions?.[0]) {
+    if (
+      !hasSubscriptions(customerData) ||
+      !customerData.subscriptions ||
+      !customerData.subscriptions[0]
+    ) {
       throw new Error('No active subscription found')
     }
 
-    const subscription = customerDataAny.subscriptions[0]
+    const subscription = customerData.subscriptions[0]
 
-    // For now, we'll estimate the period end date from the current period
-    // In production, you should use the Autumn cancel API which returns cancel_at
-    const periodEndDate = subscription.current_period_end || Date.now()
+    // Cancel subscription via Autumn API
+    // Call Autumn's cancel function via type-safe wrapper
+    const cancelResult = await callAutumnCancel(cancel, ctx, {
+      productId: 'pro',
+    })
 
-    // Update user document
+    // Check if cancellation was successful
+    if (cancelResult?.error) {
+      throw new Error(
+        `Subscription cancellation failed: ${cancelResult.error.message || 'Unknown error'}`,
+      )
+    }
+
+    // After successful cancellation, get updated subscription data
+    const updatedResult = await autumn.customers.get(ctx)
+    const updatedCustomerData = updatedResult.data
+    const updatedSubscription =
+      hasSubscriptions(updatedCustomerData) && updatedCustomerData.subscriptions
+        ? updatedCustomerData.subscriptions[0]
+        : undefined
+
+    // Convert Stripe/Autumn Unix timestamp from seconds to milliseconds
+    const periodEndDate =
+      (updatedSubscription?.cancel_at
+        ? updatedSubscription.cancel_at * 1000
+        : null) ||
+      subscription.current_period_end * 1000 ||
+      Date.now()
+
+    // Update user document with pending_cancellation status
     await ctx.db.patch(user._id, {
       subscription: {
         ...user.subscription,
@@ -312,47 +339,6 @@ export const cancelSubscription = mutation({
 })
 
 /**
- * Reactivate cancelled Pro subscription
- *
- * Re-enables recurring billing for user who previously cancelled.
- */
-export const reactivateSubscription = mutation({
-  args: {},
-  returns: v.object({
-    tier: v.literal('pro'),
-    status: v.literal('active'),
-    nextBillingDate: v.number(),
-    message: v.string(),
-  }),
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-      throw new Error('Not authenticated')
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_auth_user_id', (q) => q.eq('authUserId', identity.subject))
-      .unique()
-
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    // Check if subscription can be reactivated
-    if (user.subscription?.status !== 'pending_cancellation') {
-      throw new Error('No pending cancellation to reactivate')
-    }
-
-    // TODO: Implement reactivation via Autumn when SDK supports it
-    // For now, user must go through checkout again
-    throw new Error(
-      'Reactivation not yet supported. Please subscribe again via checkout.',
-    )
-  },
-})
-
-/**
  * Handle Autumn webhook events
  *
  * Processes subscription lifecycle events from Autumn/Stripe.
@@ -360,64 +346,92 @@ export const reactivateSubscription = mutation({
  */
 export const handleSubscriptionWebhook = mutation({
   args: {
-    eventType: v.string(),
+    event: v.union(
+      v.literal('subscription.created'),
+      v.literal('subscription.updated'),
+      v.literal('subscription.cancelled'),
+      v.literal('payment.succeeded'),
+      v.literal('payment.failed'),
+    ),
     customerId: v.string(),
-    subscriptionId: v.optional(v.string()),
-    productId: v.optional(v.string()),
-    status: v.optional(v.string()),
-    periodEnd: v.optional(v.number()),
-    cancelAt: v.optional(v.number()),
+    subscriptionData: v.object({
+      tier: v.union(v.literal('free'), v.literal('pro')),
+      status: v.union(
+        v.literal('active'),
+        v.literal('cancelled'),
+        v.literal('pending_cancellation'),
+      ),
+      nextBillingDate: v.optional(v.number()),
+      periodEndDate: v.optional(v.number()),
+    }),
   },
   returns: v.object({
     success: v.boolean(),
-    message: v.string(),
+    userId: v.optional(v.id('users')),
   }),
   handler: async (ctx, args) => {
-    // Find user by Autumn customer ID
-    const users = await ctx.db.query('users').collect()
-    const user = users.find(
-      (u) => u.subscription?.autumnCustomerId === args.customerId,
-    )
+    // Find user by Autumn customer ID using indexed query (O(1) lookup)
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_autumn_customer_id', (q) =>
+        q.eq('subscription.autumnCustomerId', args.customerId),
+      )
+      .first()
 
     if (!user) {
       console.warn(`Webhook: User not found for customer ${args.customerId}`)
       return {
         success: false,
-        message: 'User not found',
+        userId: undefined,
       }
     }
 
-    switch (args.eventType) {
+    // Validate tier and status values (reject unknown states)
+    const validTiers: Array<'free' | 'pro'> = ['free', 'pro']
+    const validStatuses: Array<
+      'active' | 'cancelled' | 'pending_cancellation'
+    > = ['active', 'cancelled', 'pending_cancellation']
+
+    if (!validTiers.includes(args.subscriptionData.tier)) {
+      console.error(
+        `Webhook: Invalid tier "${args.subscriptionData.tier}" for customer ${args.customerId}`,
+      )
+      return {
+        success: false,
+        userId: user._id,
+      }
+    }
+
+    if (!validStatuses.includes(args.subscriptionData.status)) {
+      console.error(
+        `Webhook: Invalid status "${args.subscriptionData.status}" for customer ${args.customerId}`,
+      )
+      return {
+        success: false,
+        userId: user._id,
+      }
+    }
+
+    switch (args.event) {
       case 'subscription.created':
       case 'subscription.updated': {
-        const newTier = args.productId === 'pro' ? 'pro' : 'free'
-        const newStatus =
-          args.status === 'active'
-            ? 'active'
-            : args.status === 'canceled'
-              ? 'cancelled'
-              : 'pending_cancellation'
-
         await ctx.db.patch(user._id, {
           subscription: {
-            tier: newTier as 'free' | 'pro',
-            status: newStatus as
-              | 'active'
-              | 'cancelled'
-              | 'pending_cancellation',
-            nextBillingDate: args.periodEnd,
-            periodEndDate: args.cancelAt,
+            tier: args.subscriptionData.tier,
+            status: args.subscriptionData.status,
+            nextBillingDate: args.subscriptionData.nextBillingDate,
+            periodEndDate: args.subscriptionData.periodEndDate,
             autumnCustomerId: args.customerId,
             lastSyncedAt: Date.now(),
           },
         })
 
         console.log(
-          `Webhook: Updated subscription for user ${user._id} to ${newTier}/${newStatus}`,
+          `Webhook: Updated subscription for user ${user._id} to ${args.subscriptionData.tier}/${args.subscriptionData.status}`,
         )
         return {
           success: true,
-          message: `Subscription ${args.eventType}`,
+          userId: user._id,
         }
       }
 
@@ -426,8 +440,8 @@ export const handleSubscriptionWebhook = mutation({
           subscription: {
             ...user.subscription,
             tier: user.subscription?.tier ?? 'free',
-            status: 'cancelled',
-            periodEndDate: args.cancelAt,
+            status: args.subscriptionData.status,
+            periodEndDate: args.subscriptionData.periodEndDate,
             lastSyncedAt: Date.now(),
           },
         })
@@ -435,7 +449,7 @@ export const handleSubscriptionWebhook = mutation({
         console.log(`Webhook: Cancelled subscription for user ${user._id}`)
         return {
           success: true,
-          message: 'Subscription cancelled',
+          userId: user._id,
         }
       }
 
@@ -446,7 +460,7 @@ export const handleSubscriptionWebhook = mutation({
         // Optionally update subscription metadata or send notification
         return {
           success: true,
-          message: 'Payment recorded',
+          userId: user._id,
         }
       }
 
@@ -455,15 +469,17 @@ export const handleSubscriptionWebhook = mutation({
         // Optionally notify user or update subscription status
         return {
           success: true,
-          message: 'Payment failure recorded',
+          userId: user._id,
         }
       }
 
       default: {
-        console.log(`Webhook: Unhandled event type ${args.eventType}`)
+        // TypeScript exhaustiveness check ensures this is unreachable
+        const _exhaustive: never = args.event
+        console.log(`Webhook: Unhandled event type ${_exhaustive}`)
         return {
           success: true,
-          message: 'Event ignored',
+          userId: user._id,
         }
       }
     }
@@ -501,15 +517,9 @@ export const checkFeatureAccess = query({
 
     const tier = user.subscription?.tier ?? 'free'
 
-    // Check feature access via Autumn
-    const result = await autumn.check(ctx, {
-      featureId: args.featureId,
-    })
-
-    const hasAccess = result?.data
-      ? // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK CheckResult type not exported
-        ((result.data as any).has_access ?? false)
-      : false
+    // Check feature access via Autumn customer.features
+    const result = await autumn.customers.get(ctx)
+    const hasAccess = hasFeatureAccess(result.data, args.featureId)
 
     return {
       hasAccess,

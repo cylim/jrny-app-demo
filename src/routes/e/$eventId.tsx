@@ -39,6 +39,11 @@ function EventDetailPage() {
     convexQuery(api.events.getEvent, { eventId: eventId as Id<'events'> }),
   )
 
+  // Fetch current user for accessibility features
+  const { data: currentUser } = useSuspenseQuery(
+    convexQuery(api.users.getCurrentUser, {}),
+  )
+
   // Event not found
   if (!event) {
     throw new Error('Event not found')
@@ -86,8 +91,8 @@ function EventDetailPage() {
     return `https://calendar.google.com/calendar/render?${params.toString()}`
   }
 
-  // Check authentication status (placeholder - will integrate with auth later)
-  const isAuthenticated = true // TODO: Get from auth context
+  // Check authentication status from current user
+  const isAuthenticated = !!currentUser
 
   // Generate user profile link
   const ownerProfileLink = event.owner.username
@@ -444,6 +449,7 @@ function EventDetailPage() {
           isParticipantListHidden={event.isParticipantListHidden}
           isParticipant={event.isParticipant}
           maxCapacity={event.maxCapacity}
+          currentUserId={currentUser?._id}
         />
       </motion.div>
     </motion.div>

@@ -48,6 +48,9 @@ function SettingsPage() {
 
   const updateProfile = useMutation(api.users.updateProfile)
   const updateSocialLinks = useMutation(api.users.updateSocialLinks)
+  const syncSubscriptionStatus = useMutation(
+    api.subscriptions.syncSubscriptionStatus,
+  )
 
   // Type the current user
   const typedUser = currentUser as User | null
@@ -76,6 +79,18 @@ function SettingsPage() {
       navigate({ to: '/' })
     }
   }, [currentUser, navigate])
+
+  // Sync subscription status on mount to ensure fresh data
+  useEffect(() => {
+    const sync = async () => {
+      try {
+        await syncSubscriptionStatus()
+      } catch (error) {
+        console.error('Failed to sync subscription on settings load:', error)
+      }
+    }
+    sync()
+  }, [syncSubscriptionStatus])
 
   if (!currentUser) {
     return null
@@ -153,7 +168,7 @@ function SettingsPage() {
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
           {/* Profile Information */}
-          <Card className='bg-background/30'>
+          <Card className="bg-background/30">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
@@ -211,7 +226,7 @@ function SettingsPage() {
           </Card>
 
           {/* Social Links */}
-          <Card className='bg-background/30'>
+          <Card className="bg-background/30">
             <CardHeader>
               <CardTitle>Social Links</CardTitle>
               <CardDescription>
@@ -280,7 +295,7 @@ function SettingsPage() {
 
         {/* Subscription Tab */}
         <TabsContent value="subscription" className="space-y-6">
-          <Card className='bg-background/30'>
+          <Card className="bg-background/30">
             <CardHeader>
               <CardTitle>Subscription</CardTitle>
               <CardDescription>
@@ -312,7 +327,7 @@ function SettingsPage() {
 
         {/* Privacy Tab */}
         <TabsContent value="privacy" className="space-y-6">
-          <Card className='bg-background/30'>
+          <Card className="bg-background/30">
             <CardHeader>
               <CardTitle>Privacy Settings</CardTitle>
               <CardDescription>

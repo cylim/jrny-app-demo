@@ -61,7 +61,8 @@ export default defineSchema({
   })
     .index('by_auth_user_id', ['authUserId'])
     .index('by_username', ['username'])
-    .index('by_subscription_tier', ['subscription.tier']),
+    .index('by_subscription_tier', ['subscription.tier'])
+    .index('by_autumn_customer_id', ['subscription.autumnCustomerId']),
   cities: defineTable({
     // Basic city information
     name: v.string(),

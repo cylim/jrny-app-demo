@@ -2,10 +2,11 @@
  * Cancel Subscription Component
  *
  * Allows Pro users to cancel their subscription with confirmation.
- * TEMPORARILY DISABLED - Waiting for Autumn API integration
  */
 
+import { useMutation } from 'convex/react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,20 +19,22 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { api } from '~@/convex/_generated/api'
 
 export function CancelSubscription() {
   const [isLoading, setIsLoading] = useState(false)
-  // const cancelSubscription = useMutation(api.subscriptions.cancelSubscription)
+  const cancelSubscription = useMutation(api.subscriptions.cancelSubscription)
 
   const handleCancel = async () => {
     setIsLoading(true)
     try {
-      // TODO: Re-enable when cancelSubscription is implemented
-      // const result = await cancelSubscription()
-      // console.log(result.message)
-      alert('Subscription cancellation is temporarily disabled')
+      const result = await cancelSubscription()
+      toast.success(result.message)
     } catch (error) {
       console.error('Failed to cancel subscription:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to cancel subscription'
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -54,8 +57,8 @@ export function CancelSubscription() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Keep Pro</AlertDialogCancel>
-          <AlertDialogAction onClick={handleCancel}>
-            Cancel Subscription
+          <AlertDialogAction onClick={handleCancel} disabled={isLoading}>
+            {isLoading ? 'Cancelling...' : 'Cancel Subscription'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

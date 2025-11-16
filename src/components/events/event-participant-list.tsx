@@ -35,6 +35,8 @@ interface EventParticipantListProps {
   isParticipant: boolean
   /** Maximum capacity (optional) */
   maxCapacity?: number
+  /** Current user's ID (for identifying "You" in the list) */
+  currentUserId?: Id<'users'>
 }
 
 export function EventParticipantList({
@@ -44,6 +46,7 @@ export function EventParticipantList({
   isParticipantListHidden,
   isParticipant,
   maxCapacity,
+  currentUserId,
 }: EventParticipantListProps) {
   // Determine what message to show based on privacy settings
   const showHiddenMessage =
@@ -92,14 +95,19 @@ export function EventParticipantList({
               const userLink = participant.username
                 ? `/u/${participant.username}`
                 : `/u/${participant.userId}`
+              const isCurrentUser = currentUserId === participant.userId
+              const linkLabel = isCurrentUser
+                ? `${participant.userName} (You)`
+                : participant.userName
 
               return (
                 <Link
                   key={participant._id}
                   to={userLink}
                   className="group relative"
-                  title={`${participant.userName} (You)`}
+                  title={linkLabel}
                 >
+                  <span className="sr-only">{linkLabel}</span>
                   <Avatar className="h-12 w-12 transition-transform hover:scale-110">
                     <AvatarImage
                       src={participant.userImage}
@@ -131,14 +139,19 @@ export function EventParticipantList({
               const userLink = participant.username
                 ? `/u/${participant.username}`
                 : `/u/${participant.userId}`
+              const isCurrentUser = currentUserId === participant.userId
+              const linkLabel = isCurrentUser
+                ? `${participant.userName} (You)`
+                : participant.userName
 
               return (
                 <Link
                   key={participant._id}
                   to={userLink}
                   className="group relative"
-                  title={participant.userName}
+                  title={linkLabel}
                 >
+                  <span className="sr-only">{linkLabel}</span>
                   <Avatar className="h-12 w-12 transition-transform hover:scale-110">
                     <AvatarImage
                       src={participant.userImage}

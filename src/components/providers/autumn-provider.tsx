@@ -20,11 +20,7 @@ export function AutumnProvider({ children }: AutumnProviderProps) {
   const convex = useConvex()
 
   return (
-    <AutumnProviderBase
-      convex={convex}
-      // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK types require any for convexApi
-      convexApi={(api as any).autumn}
-    >
+    <AutumnProviderBase convex={convex} convexApi={api.autumn}>
       {children}
     </AutumnProviderBase>
   )

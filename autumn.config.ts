@@ -72,7 +72,7 @@ export const proTier = product({
   name: 'Pro',
   items: [
     priceItem({
-      price: 0.99, // $0.99 per month (in cents)
+      price: 0.99, // $0.99 per month
       interval: 'month',
     }),
     featureItem({

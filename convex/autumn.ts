@@ -19,13 +19,28 @@ import type { MutationCtx, QueryCtx } from './_generated/server'
  * - Better-Auth user identification
  */
 export const autumn = new Autumn(components.autumn, {
-  secretKey: process.env.AUTUMN_SECRET_KEY!,
+  secretKey: (() => {
+    const key = process.env.AUTUMN_SECRET_KEY
+    if (!key) {
+      throw new Error(
+        'AUTUMN_SECRET_KEY environment variable is not set.\nRun: npx convex env set AUTUMN_SECRET_KEY "am_sk_test_..."',
+      )
+    }
+    return key
+  })(),
   identify: async (ctx: QueryCtx | MutationCtx) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) return null
 
     // Better-Auth provides subject field with user ID
     // This is the stable identifier for the user across sessions
+    // Validate subject exists before using it as customerId
+    if (!identity.subject) {
+      throw new Error(
+        'Identity subject is missing - cannot create customer without stable user ID',
+      )
+    }
+
     return {
       customerId: identity.subject,
       customerData: {

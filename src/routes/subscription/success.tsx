@@ -3,28 +3,28 @@
  *
  * Displayed after successful payment completion.
  * Syncs subscription status and redirects to settings.
- * TEMPORARILY DISABLED - Waiting for Autumn API integration
  */
 
 'use client'
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useMutation } from 'convex/react'
 import { useEffect } from 'react'
 import { LoadingDots } from '@/components/ui/loading-dots'
+import { api } from '~@/convex/_generated/api'
 
 export const Route = createFileRoute('/subscription/success')({
   component: SubscriptionSuccess,
 })
 
 function SubscriptionSuccess() {
-  // const syncSubscription = useMutation(api.subscriptions.syncSubscriptionStatus)
+  const syncSubscription = useMutation(api.subscriptions.syncSubscriptionStatus)
   const navigate = useNavigate()
 
   useEffect(() => {
     const sync = async () => {
       try {
-        // TODO: Re-enable when syncSubscriptionStatus is implemented
-        // await syncSubscription()
+        await syncSubscription()
         // Redirect to settings after 2 seconds
         setTimeout(() => {
           navigate({ to: '/settings' })
@@ -39,7 +39,7 @@ function SubscriptionSuccess() {
     }
 
     sync()
-  }, [navigate])
+  }, [navigate, syncSubscription])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">

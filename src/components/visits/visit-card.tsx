@@ -3,7 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { Calendar, Lock, Users } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { UpgradePrompt } from '@/components/privacy/upgrade-prompt'
 import { formatDateRange } from '@/lib/date-utils'
@@ -53,15 +53,20 @@ export function VisitCard({ visit, isOwnVisit = false }: VisitCardProps) {
   )
 
   // Sync optimistic state when server state changes
-  if (optimisticIsPrivate !== visit.isPrivate) {
+  useEffect(() => {
     setOptimisticIsPrivate(visit.isPrivate)
-  }
+  }, [visit.isPrivate])
 
   const handlePrivacyToggle = async () => {
-    const newPrivateState = !visit.isPrivate
-
-    // Optimistic update - change UI immediately
-    setOptimisticIsPrivate(newPrivateState)
+    // Use functional update to flip optimistic state immediately
+    // This ensures we always read the current optimistic state, not stale props
+    const newPrivateState = await new Promise<boolean>((resolve) => {
+      setOptimisticIsPrivate((prev) => {
+        const next = !prev
+        resolve(next)
+        return next
+      })
+    })
 
     try {
       await updateVisitPrivacy({
@@ -76,7 +81,6 @@ export function VisitCard({ visit, isOwnVisit = false }: VisitCardProps) {
           : 'Visit is now visible to others',
       )
     } catch (error) {
-      // Rollback optimistic update on error
       setOptimisticIsPrivate(visit.isPrivate)
 
       if (

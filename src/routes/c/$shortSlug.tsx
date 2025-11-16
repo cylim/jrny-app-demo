@@ -182,7 +182,7 @@ function CityPage() {
   return (
     <div className="pb-8">
       {/* City Header with Image */}
-      {city.image && (
+      {city.image ? (
         <div className="relative w-full mb-8">
           <img
             src={city.image}
@@ -216,6 +216,37 @@ function CityPage() {
                   <p className="text-white/70 text-xs mb-1">Region</p>
                   <p className="font-medium text-white">{city.region}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Text-only header for cities without images */
+        <div className="w-full mb-8 bg-gradient-to-b from-muted/50 to-background p-6">
+          <div className="max-w-4xl mx-auto w-full">
+            <h1 className="text-4xl md:text-5xl font-bold mb-2">{city.name}</h1>
+            <p className="text-xl text-muted-foreground mb-4">
+              {city.country} • {city.region}
+            </p>
+            {/* Geographic Information Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div className="bg-card border rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">Latitude</p>
+                <p className="font-medium">{city.latitude}</p>
+              </div>
+              <div className="bg-card border rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">Longitude</p>
+                <p className="font-medium">{city.longitude}</p>
+              </div>
+              <div className="bg-card border rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">
+                  Country Code
+                </p>
+                <p className="font-medium">{city.countryCode}</p>
+              </div>
+              <div className="bg-card border rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">Region</p>
+                <p className="font-medium">{city.region}</p>
               </div>
             </div>
           </div>
