@@ -263,7 +263,10 @@ export const getCitiesPaginated = query({
       }
 
       // Manual pagination
-      const startIndex = args.paginationOpts?.numItems ?? 0
+      // Parse cursor to get the offset (startIndex)
+      const startIndex = args.paginationOpts?.cursor
+        ? Number.parseInt(args.paginationOpts.cursor, 10)
+        : 0
       const paginatedCities = cities.slice(startIndex, startIndex + args.limit)
       const isDone = startIndex + args.limit >= cities.length
 

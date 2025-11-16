@@ -348,11 +348,13 @@ export const cancelSubscription = action({
       throw new Error('Subscription already cancelled')
     }
 
-    // Call Autumn cancel API - this will cancel the subscription in Stripe
-    console.log('[cancelSubscription] Calling Autumn cancel API')
+    // Call Autumn cancel API with at-period-end mode
+    // This will cancel the subscription in Stripe at the end of the current billing period
+    console.log('[cancelSubscription] Calling Autumn cancel API with at-period-end mode')
     // biome-ignore lint/suspicious/noExplicitAny: Autumn SDK has incomplete types
     const cancelResult = await (autumn as any).cancel(ctx, {
       productId: 'pro',
+      mode: 'at_period_end',
     })
 
     if (cancelResult.error) {
@@ -372,9 +374,24 @@ export const cancelSubscription = action({
 
     // Get the period end date from the cancel result
     // The subscription will remain active until this date
-    const periodEndDate =
-      cancelResult.data?.current_period_end ||
-      Date.now() + 30 * 24 * 60 * 60 * 1000
+    // Autumn should return current_period_end in seconds (Unix timestamp), convert to milliseconds
+    let periodEndDate: number
+
+    if (cancelResult.data?.current_period_end) {
+      // Validate and convert to milliseconds
+      const periodEnd = cancelResult.data.current_period_end
+      // If it looks like seconds (< year 3000 in milliseconds), convert to milliseconds
+      periodEndDate = periodEnd < 32503680000 ? periodEnd * 1000 : periodEnd
+      console.log(`[cancelSubscription] Using current_period_end: ${new Date(periodEndDate).toISOString()}`)
+    } else if (user.subscription.periodEndDate) {
+      // Fall back to existing subscription's period end date
+      periodEndDate = user.subscription.periodEndDate
+      console.log(`[cancelSubscription] Falling back to existing periodEndDate: ${new Date(periodEndDate).toISOString()}`)
+    } else {
+      // Last resort: use current time (immediate cancellation)
+      periodEndDate = Date.now()
+      console.warn('[cancelSubscription] No period end date available, using current time')
+    }
 
     // Update local database state via internal mutation
     return await ctx.runMutation(
