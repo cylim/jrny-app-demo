@@ -9,6 +9,8 @@ import { VisitCard } from './visit-card'
 
 interface UserVisitsListProps {
   userId: Id<'users'>
+  /** Whether the viewer is viewing their own profile */
+  isOwnProfile?: boolean
 }
 
 /**
@@ -16,9 +18,13 @@ interface UserVisitsListProps {
  * Provides an expand button to view all older travel records.
  *
  * @param userId - The ID of the user whose visits should be fetched and displayed.
+ * @param isOwnProfile - Whether the viewer is viewing their own profile (enables privacy controls)
  * @returns A React element that shows a centered "No visits recorded yet." message when the user has no visits, or a vertical list of VisitCard components for each visit.
  */
-export function UserVisitsList({ userId }: UserVisitsListProps) {
+export function UserVisitsList({
+  userId,
+  isOwnProfile = false,
+}: UserVisitsListProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: visits } = useSuspenseQuery(
     convexQuery(api.visits.getVisitsByUser, { userId }),
@@ -42,7 +48,7 @@ export function UserVisitsList({ userId }: UserVisitsListProps) {
   return (
     <div className="space-y-4">
       {visibleVisits.map((visit) => (
-        <VisitCard key={visit._id} visit={visit} />
+        <VisitCard key={visit._id} visit={visit} isOwnVisit={isOwnProfile} />
       ))}
 
       {shouldShowExpandButton && (

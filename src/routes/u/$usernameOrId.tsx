@@ -281,7 +281,7 @@ function UserProfilePage() {
             <h2 className="text-2xl font-semibold mb-6">
               {isOwnProfile ? 'My Travels' : 'Travels'}
             </h2>
-            <UserVisitsList userId={user._id} />
+            <UserVisitsList userId={user._id} isOwnProfile={isOwnProfile} />
           </div>
         ) : (
           <div
