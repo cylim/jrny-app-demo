@@ -21,9 +21,6 @@
   // Sensitive environment variables should be set as secrets using wrangler CLI:
   // wrangler secret put CONVEX_DEPLOYMENT
   // wrangler secret put CONVEX_SITE_URL
-  // wrangler secret put GOOGLE_CLIENT_ID
-  // wrangler secret put GOOGLE_CLIENT_SECRET
-  // wrangler secret put AUTUMN_SECRET_KEY
   //
   // For local development, create a .dev.vars file with these secrets
   //
@@ -31,6 +28,7 @@
   // npx convex env set GOOGLE_CLIENT_ID "your-client-id"
   // npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"
   // npx convex env set AUTUMN_SECRET_KEY "your-secret-key"
+  // npx convex env set FIRECRAWL_APi_KEY "your-secret-key"
   //
   // Google OAuth callback URL must be set in Google Cloud Console:
   // https://your-deployment.convex.site/api/auth/callback/google
