@@ -131,19 +131,10 @@ function UpcomingEventsSection({
 
       {/* Events List */}
       {events.length === 0 ? (
-        <div className="rounded-3xl border-2 border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-800">
+        <div className="rounded-3xl p-8 text-center ">
           <p className="mb-4 text-zinc-600 dark:text-zinc-400">
             No upcoming events in this city yet.
           </p>
-          {isAuthenticated && !showCreateForm && (
-            <Button
-              onClick={() => setShowCreateForm(true)}
-              className="rounded-full"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create the First Event
-            </Button>
-          )}
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

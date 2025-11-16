@@ -8,13 +8,13 @@
  * @module
  */
 
-import type * as addPrivacySettings from "../addPrivacySettings.js";
 import type * as auth from "../auth.js";
 import type * as autumn from "../autumn.js";
 import type * as cities from "../cities.js";
 import type * as crons from "../crons.js";
 import type * as events from "../events.js";
 import type * as http from "../http.js";
+import type * as migrations_001_add_privacy_settings from "../migrations/001_add_privacy_settings.js";
 import type * as privacy from "../privacy.js";
 import type * as seed from "../seed.js";
 import type * as subscriptions from "../subscriptions.js";
@@ -28,13 +28,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  addPrivacySettings: typeof addPrivacySettings;
   auth: typeof auth;
   autumn: typeof autumn;
   cities: typeof cities;
   crons: typeof crons;
   events: typeof events;
   http: typeof http;
+  "migrations/001_add_privacy_settings": typeof migrations_001_add_privacy_settings;
   privacy: typeof privacy;
   seed: typeof seed;
   subscriptions: typeof subscriptions;

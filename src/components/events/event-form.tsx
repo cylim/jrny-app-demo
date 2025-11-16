@@ -1,5 +1,9 @@
+import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { api } from 'convex/_generated/api'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { UpgradeButton } from '../subscription/upgrade-button'
 import { Badge } from '../ui/badge'
 
 /**
@@ -51,6 +55,13 @@ export function EventForm({
   onSubmit,
   isLoading = false,
 }: EventFormProps) {
+  // Check feature access for hiding participant list
+  const { data: featureAccess } = useSuspenseQuery(
+    convexQuery(api.subscriptions.checkFeatureAccess, {
+      featureId: 'event_participant_list_hide',
+    }),
+  )
+
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [description, setDescription] = useState(
     initialValues?.description ?? '',
@@ -395,16 +406,20 @@ export function EventForm({
             id="isParticipantListHidden"
             type="checkbox"
             checked={isParticipantListHidden}
-            onChange={(e) => setIsParticipantListHidden(e.target.checked)}
+            onChange={(e) => {
+              if (featureAccess?.hasAccess) {
+                setIsParticipantListHidden(e.target.checked)
+              }
+            }}
             className="h-4 w-4 rounded border-zinc-300 text-pink-600 focus:ring-2 focus:ring-pink-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-pink-900/30"
-            disabled={isLoading}
+            disabled={isLoading || !featureAccess?.hasAccess}
           />
           <label
             htmlFor="isParticipantListHidden"
             className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
           >
             Hide participant list
-            <Badge variant="default" className="text-xs ml-1">
+            <Badge variant="default" className="ml-1 text-xs">
               Pro
             </Badge>
           </label>
@@ -413,6 +428,16 @@ export function EventForm({
           When enabled, only you (the organizer) can see the full list of
           participants. Participants will only see themselves.
         </p>
+        {!featureAccess?.hasAccess && (
+          <div className="mt-2">
+            <UpgradeButton
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              featureName="Hide Participant List"
+            />
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}

@@ -1,24 +1,31 @@
 /**
  * Privacy Toggle Component
  *
- * Reusable component for privacy setting toggles with tier-based access control.
+ * Reusable toggle switch for privacy settings with upgrade prompts for Pro features.
  */
 
-import { api } from 'convex/_generated/api'
-import { useMutation } from 'convex/react'
-import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 
-type PrivacyToggleProps = {
-  setting: 'hideProfileVisits' | 'hideProfileEvents' | 'globalVisitPrivacy'
+interface PrivacyToggleProps {
+  /** Setting key (e.g., 'hideProfileVisits') */
+  setting: string
+  /** Display label */
   label: string
+  /** Description text */
   description: string
+  /** Current value */
   value: boolean
+  /** Can the user modify this setting? */
   canModify: boolean
-  proOnly?: boolean
+  /** Callback when toggle is changed */
+  onChange: (checked: boolean) => void
+  /** Callback when user tries to enable a Pro feature they don't have access to */
   onUpgradeRequired?: () => void
+  /** Is this a Pro-only feature? */
+  isProFeature?: boolean
+  /** Loading state */
+  isLoading?: boolean
 }
 
 export function PrivacyToggle({
@@ -27,52 +34,48 @@ export function PrivacyToggle({
   description,
   value,
   canModify,
-  proOnly = false,
+  onChange,
   onUpgradeRequired,
+  isProFeature = false,
+  isLoading = false,
 }: PrivacyToggleProps) {
-  const [loading, setLoading] = useState(false)
-
-  const updateProfile = useMutation(api.privacy.updateProfilePrivacy)
-  const updateGlobal = useMutation(api.privacy.updateGlobalVisitPrivacy)
-
-  const handleToggle = async (checked: boolean) => {
-    if (!canModify) {
-      onUpgradeRequired?.()
+  const handleChange = (checked: boolean) => {
+    if (!canModify && checked && onUpgradeRequired) {
+      onUpgradeRequired()
       return
     }
-
-    setLoading(true)
-    try {
-      if (setting === 'globalVisitPrivacy') {
-        await updateGlobal({ enabled: checked })
-      } else {
-        await updateProfile({ setting, enabled: checked })
-      }
-    } catch (err) {
-      console.error('Failed to update privacy setting:', err)
-    } finally {
-      setLoading(false)
-    }
+    onChange(checked)
   }
 
   return (
-    <div className="flex items-center justify-between space-x-2">
-      <div className="space-y-0.5 flex-1">
-        <div className="flex items-center gap-2">
-          <Label htmlFor={setting}>{label}</Label>
-          {proOnly && (
-            <Badge variant="default" className="text-xs">
+    <div className="flex items-start justify-between gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <label
+            htmlFor={setting}
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+          >
+            {label}
+          </label>
+          {isProFeature && (
+            <Badge
+              variant="default"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-xs text-white"
+            >
               Pro
             </Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          {description}
+        </p>
       </div>
       <Switch
         id={setting}
         checked={value}
-        onCheckedChange={handleToggle}
-        disabled={!canModify || loading}
+        onCheckedChange={handleChange}
+        disabled={isLoading || (!canModify && !value)}
+        aria-label={label}
       />
     </div>
   )
