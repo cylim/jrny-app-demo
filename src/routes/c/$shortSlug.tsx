@@ -1,10 +1,14 @@
 import { convexQuery } from '@convex-dev/react-query'
+import * as Sentry from '@sentry/tanstackstart-react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus, X } from 'lucide-react'
 import { Suspense, useState } from 'react'
+import { EnrichmentContent } from '@/components/city/enrichment-content'
+import { EnrichmentStatus } from '@/components/city/enrichment-status'
+import { TourismCombinedSection } from '@/components/city/tourism-combined-section'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/ui/loading-dots'
 import {
@@ -19,6 +23,83 @@ import type { Id } from '~@/convex/_generated/dataModel'
 
 export const Route = createFileRoute('/c/$shortSlug')({
   component: CityPage,
+  loader: async ({ params, context }) => {
+    // T046-T049: Enrichment integration
+    const { shortSlug } = params
+
+    // Get city first to extract cityId
+    const cityData = await context.queryClient.ensureQueryData(
+      convexQuery(api.cities.getCityByShortSlug, { shortSlug }),
+    )
+
+    if (!cityData) return { enrichmentStatus: null, enrichmentContent: null }
+
+    // T046: Fetch enrichment status
+    const enrichmentStatus = await context.queryClient.ensureQueryData(
+      convexQuery(api.enrichment.checkEnrichmentStatus, {
+        cityId: cityData._id,
+      }),
+    )
+
+    // T046a: Fetch enrichment content if city is enriched
+    let enrichmentContent = null
+    if (cityData.isEnriched) {
+      enrichmentContent = await context.queryClient.ensureQueryData(
+        convexQuery(api.enrichment.getCityEnrichmentContent, {
+          cityId: cityData._id,
+        }),
+      )
+    }
+
+    // T047-T048 + T096-T097: Trigger enrichment in background (fire-and-forget)
+    if (
+      enrichmentStatus.needsEnrichment &&
+      enrichmentStatus.reason !== 'in_progress'
+    ) {
+      try {
+        // Fire and forget - don't await
+        context.convexClient
+          .action(api.enrichmentActions.enrichCity, { cityId: cityData._id })
+          .catch((error) => {
+            console.error('Background enrichment failed:', error)
+
+            // T096-T097: Capture enrichment errors in Sentry with context
+            Sentry.captureException(error, {
+              tags: {
+                feature: 'city-enrichment',
+                cityId: cityData._id,
+                cityName: cityData.name,
+                enrichmentReason: enrichmentStatus.reason,
+              },
+              contexts: {
+                enrichment: {
+                  cityId: cityData._id,
+                  cityName: cityData.name,
+                  cityCountry: cityData.country,
+                  enrichmentReason: enrichmentStatus.reason,
+                  needsEnrichment: enrichmentStatus.needsEnrichment,
+                },
+              },
+            })
+          })
+      } catch (error) {
+        // T048: Don't block page load on enrichment errors
+        console.error('Failed to trigger enrichment:', error)
+
+        // T096-T097: Capture sync enrichment trigger errors
+        Sentry.captureException(error, {
+          tags: {
+            feature: 'city-enrichment',
+            phase: 'trigger',
+            cityId: cityData._id,
+          },
+        })
+      }
+    }
+
+    // T049: Return enrichmentStatus and enrichmentContent
+    return { enrichmentStatus, enrichmentContent }
+  },
 })
 
 /**
@@ -157,6 +238,7 @@ function UpcomingEventsSection({
 function CityPage() {
   const { shortSlug } = Route.useParams()
   const { data: session } = authClient.useSession()
+  const loaderData = Route.useLoaderData()
 
   // Fetch city data
   const { data: city } = useSuspenseQuery(
@@ -254,46 +336,156 @@ function CityPage() {
       )}
 
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Who's Here Now Section - Only for logged-in users */}
-          {session?.user ? (
-            <div className="bg-card/30 border rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
-              <Suspense fallback={<CurrentVisitorsListSkeleton />}>
-                <CurrentVisitorsSection
+        {/* T056-T057: Enrichment Status */}
+        <div className="max-w-6xl mx-auto mb-6">
+          <EnrichmentStatus enrichmentStatus={loaderData.enrichmentStatus} />
+        </div>
+
+        {/* Two-column layout when enrichment data exists */}
+        {loaderData.enrichmentContent ? (
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Enrichment Content (2/3 width) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* T058: Description */}
+              {loaderData.enrichmentContent.description && (
+                <EnrichmentContent
+                  title={`About ${city.name}`}
+                  content={loaderData.enrichmentContent.description}
+                  defaultExpanded={true}
+                />
+              )}
+
+              {/* T062: History */}
+              {loaderData.enrichmentContent.history && (
+                <EnrichmentContent
+                  title="History"
+                  content={loaderData.enrichmentContent.history}
+                  defaultExpanded={false}
+                />
+              )}
+
+              {/* T063: Geography */}
+              {loaderData.enrichmentContent.geography && (
+                <EnrichmentContent
+                  title="Geography"
+                  content={loaderData.enrichmentContent.geography}
+                  defaultExpanded={false}
+                />
+              )}
+
+              {/* T064: Climate */}
+              {loaderData.enrichmentContent.climate && (
+                <EnrichmentContent
+                  title="Climate"
+                  content={loaderData.enrichmentContent.climate}
+                  defaultExpanded={false}
+                />
+              )}
+
+              {/* T065: Transportation */}
+              {loaderData.enrichmentContent.transportation && (
+                <EnrichmentContent
+                  title="Transportation"
+                  content={loaderData.enrichmentContent.transportation}
+                  defaultExpanded={false}
+                />
+              )}
+
+              {/* T059-T061: Tourism section with overview and collapsible subsections */}
+              {loaderData.enrichmentContent.tourism && (
+                <TourismCombinedSection
+                  tourism={loaderData.enrichmentContent.tourism}
+                />
+              )}
+            </div>
+
+            {/* Right Sidebar: Events and Visitors (1/3 width) */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Who's Here Now Section - Only for logged-in users */}
+              {session?.user ? (
+                <div className="bg-card/30 border rounded-lg p-6">
+                  <h2 className="text-2xl font-semibold mb-4">
+                    Who's Here Now
+                  </h2>
+                  <Suspense fallback={<CurrentVisitorsListSkeleton />}>
+                    <CurrentVisitorsSection
+                      cityId={city._id}
+                      cityName={city.name}
+                    />
+                  </Suspense>
+                </div>
+              ) : (
+                <div className="bg-muted/30 rounded-lg p-6 text-center">
+                  <h2 className="text-xl font-semibold mb-2">
+                    See Who's Traveling Here
+                  </h2>
+                  <p className="text-muted-foreground mb-4">
+                    Log in to discover other travelers in {city.name} and
+                    connect with people visiting this destination.
+                  </p>
+                </div>
+              )}
+
+              {/* Upcoming Events Section */}
+              <div>
+                <Suspense
+                  fallback={
+                    <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+                      <LoadingDots />
+                    </div>
+                  }
+                >
+                  <UpcomingEventsSection
+                    cityId={city._id}
+                    isAuthenticated={!!session?.user}
+                  />
+                </Suspense>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Single column layout when no enrichment data */
+          <div className="max-w-4xl mx-auto">
+            {/* Who's Here Now Section - Only for logged-in users */}
+            {session?.user ? (
+              <div className="bg-card/30 border rounded-lg p-6 mb-8">
+                <h2 className="text-2xl font-semibold mb-4">Who's Here Now</h2>
+                <Suspense fallback={<CurrentVisitorsListSkeleton />}>
+                  <CurrentVisitorsSection
+                    cityId={city._id}
+                    cityName={city.name}
+                  />
+                </Suspense>
+              </div>
+            ) : (
+              <div className="bg-muted/30 rounded-lg p-6 text-center mb-8">
+                <h2 className="text-xl font-semibold mb-2">
+                  See Who's Traveling Here
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  Log in to discover other travelers in {city.name} and connect
+                  with people visiting this destination.
+                </p>
+              </div>
+            )}
+
+            {/* Upcoming Events Section */}
+            <div className="mb-8">
+              <Suspense
+                fallback={
+                  <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+                    <LoadingDots />
+                  </div>
+                }
+              >
+                <UpcomingEventsSection
                   cityId={city._id}
-                  cityName={city.name}
+                  isAuthenticated={!!session?.user}
                 />
               </Suspense>
             </div>
-          ) : (
-            <div className="bg-muted/30 rounded-lg p-6 text-center mb-8">
-              <h2 className="text-xl font-semibold mb-2">
-                See Who's Traveling Here
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Log in to discover other travelers in {city.name} and connect
-                with people visiting this destination.
-              </p>
-            </div>
-          )}
-
-          {/* Upcoming Events Section */}
-          <div className="mb-8">
-            <Suspense
-              fallback={
-                <div className="rounded-3xl border-2 border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-                  <LoadingDots />
-                </div>
-              }
-            >
-              <UpcomingEventsSection
-                cityId={city._id}
-                isAuthenticated={!!session?.user}
-              />
-            </Suspense>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

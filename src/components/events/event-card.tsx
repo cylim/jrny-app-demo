@@ -68,6 +68,7 @@ export function EventCard({
       animate="animate"
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="min-w-[280px]"
     >
       <Link
         to="/e/$eventId"
@@ -75,11 +76,11 @@ export function EventCard({
         className="block rounded-3xl border-2 border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
       >
         {/* Header with badges */}
-        <div className="mb-3 flex items-start justify-between gap-2">
-          <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 min-w-0 flex-1">
             {event.title}
           </h3>
-          <div className="flex flex-shrink-0 flex-wrap gap-2 justify-end">
+          <div className="flex flex-shrink-0 flex-wrap gap-2 sm:justify-end">
             {showOrganizerBadge && (
               <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                 Organizer

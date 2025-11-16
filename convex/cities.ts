@@ -77,6 +77,8 @@ export const getCityByShortSlug = query({
       longitude: v.string(),
       image: v.union(v.string(), v.null()),
       visitCount: v.union(v.number(), v.null()),
+      isEnriched: v.optional(v.boolean()),
+      lastEnrichedAt: v.optional(v.number()),
     }),
     v.null(),
   ),
@@ -103,6 +105,8 @@ export const getCityByShortSlug = query({
       longitude: city.longitude,
       image: city.image ?? null,
       visitCount: city.visitCount ?? null,
+      isEnriched: city.isEnriched,
+      lastEnrichedAt: city.lastEnrichedAt,
     }
   },
 })
