@@ -1,11 +1,10 @@
 /**
- * Collapsible enrichment content display with markdown rendering
+ * Collapsible enrichment content display
+ * Renders plain text content from Firecrawl JSON extraction
  */
 
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 
 interface EnrichmentContentProps {
   title: string
@@ -20,8 +19,11 @@ export function EnrichmentContent({
 }: EnrichmentContentProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
+  // Split content into paragraphs for better readability
+  const paragraphs = content.split('\n\n').filter((p) => p.trim().length > 0)
+
   return (
-    <div className="rounded-3xl border-2 border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-3xl border-2 border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-900/60">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
@@ -37,8 +39,12 @@ export function EnrichmentContent({
 
       {isExpanded && (
         <div className="border-t-2 border-zinc-200 px-6 pb-6 pt-4 dark:border-zinc-800">
-          <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:font-semibold prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          <div className="space-y-4 text-zinc-700 dark:text-zinc-300">
+            {paragraphs.map((paragraph, idx) => (
+              <p key={idx} className="leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
           </div>
         </div>
       )}

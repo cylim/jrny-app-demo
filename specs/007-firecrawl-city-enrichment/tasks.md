@@ -191,10 +191,10 @@
 
 ### Validation Error Handling
 
-- [ ] T079 [US3] Update Zod validation failure handling in enrichCity to extract specific validation errors from result.error
-- [ ] T080 [US3] Add errorContext.validationErrors field to logEnrichment call when Zod validation fails
-- [ ] T081 [US3] Add error code VALIDATION_ERROR to logEnrichment when safeParse returns success: false
-- [ ] T082 [US3] Add MISSING_REQUIRED_FIELDS error code when source_url or scraped_at are missing from validated data
+- [X] T079 [US3] Update Zod validation failure handling in enrichCity to extract specific validation errors from result.error
+- [X] T080 [US3] Add errorContext.validationErrors field to logEnrichment call when Zod validation fails
+- [X] T081 [US3] Add error code VALIDATION_ERROR to logEnrichment when safeParse returns success: false
+- [X] T082 [US3] Add MISSING_REQUIRED_FIELDS error code when source_url or scraped_at are missing from validated data
 
 ### Database Error Handling
 
@@ -205,7 +205,7 @@
 ### City Page Error Resilience
 
 - [X] T086 [US3] Verify city page loader doesn't await enrichment trigger (fire-and-forget pattern already implemented in T047)
-- [ ] T087 [US3] Add error boundary component import to src/routes/c/$shortSlug.tsx to catch rendering errors
+- [X] T087 [US3] Add error boundary component import to src/routes/c/$shortSlug.tsx to catch rendering errors (verified: RootErrorComponent already handles all routes)
 - [X] T088 [US3] Verify city page displays basic city info (name, country, coordinates) even when enrichment fields are missing
 
 ### Enrichment Monitoring Query
@@ -242,12 +242,12 @@
 
 ### Stale Lock Cleanup Cron
 
-- [ ] T104 [P] Create convex/crons.ts file with cronJobs import from 'convex/server'
-- [ ] T105 Implement cleanStaleLocks internal mutation in convex/enrichment.ts to query cities with stale locks
-- [ ] T106 Add logic to cleanStaleLocks to find cities where enrichmentInProgress is true AND lockAcquiredAt < Date.now() - 5 minutes
-- [ ] T107 Add bulk update logic to cleanStaleLocks to clear enrichmentInProgress and lockAcquiredAt for stale locks
-- [ ] T108 Register cleanStaleLocks cron in convex/crons.ts to run every hour: `crons.interval('clean-stale-locks', { hours: 1 }, internal.enrichment.cleanStaleLocks)`
-- [ ] T109 Export crons as default export from convex/crons.ts
+- [X] T104 [P] Create convex/crons.ts file with cronJobs import from 'convex/server'
+- [X] T105 Implement cleanStaleLocks internal mutation in convex/enrichment.ts to query cities with stale locks
+- [X] T106 Add logic to cleanStaleLocks to find cities where enrichmentInProgress is true AND lockAcquiredAt < Date.now() - 5 minutes
+- [X] T107 Add bulk update logic to cleanStaleLocks to clear enrichmentInProgress and lockAcquiredAt for stale locks
+- [X] T108 Register cleanStaleLocks cron in convex/crons.ts to run every hour: `crons.interval('clean-stale-locks', { hours: 1 }, internal.enrichment.cleanStaleLocks)`
+- [X] T109 Export crons as default export from convex/crons.ts
 
 ### Performance Optimization
 
@@ -266,18 +266,18 @@
 
 ### Documentation
 
-- [ ] T119 [P] Add JSDoc comments to all exported functions in convex/enrichment.ts with parameter descriptions and return types
-- [ ] T120 [P] Add JSDoc comments to all helper functions in src/lib/firecrawl.ts
+- [X] T119 [P] Add JSDoc comments to all exported functions in convex/enrichment.ts with parameter descriptions and return types
+- [X] T120 [P] Add JSDoc comments to all helper functions in src/lib/firecrawl.ts
 - [ ] T121 [P] Update quickstart.md with final implementation notes and troubleshooting section
-- [ ] T122 Add inline code comments in enrichCity action explaining enrichment flow steps (lock → fetch → scrape → validate → update → log → release)
+- [X] T122 Add inline code comments in enrichCity action explaining enrichment flow steps (lock → fetch → scrape → validate → update → log → release)
 
 ### Code Cleanup
 
-- [ ] T123 Remove example/placeholder code from convex/enrichment.ts if any remains
-- [ ] T124 Verify all Convex functions have explicit args and returns validators per constitution
-- [ ] T125 Run npm run lint to check for code quality issues
-- [ ] T126 Run npm run format to ensure consistent code formatting
-- [ ] T127 Remove unused imports from convex/enrichment.ts and src/lib/firecrawl.ts
+- [X] T123 Remove example/placeholder code from convex/enrichment.ts if any remains (verified: no placeholder code)
+- [X] T124 Verify all Convex functions have explicit args and returns validators per constitution (verified)
+- [X] T125 Run npm run lint to check for code quality issues
+- [X] T126 Run npm run format to ensure consistent code formatting
+- [X] T127 Remove unused imports from convex/enrichment.ts and src/lib/firecrawl.ts
 
 ### Validation & Testing
 

@@ -155,11 +155,33 @@ export default defineSchema({
     tourism: v.optional(
       v.object({
         overview: v.optional(v.string()),
-        landmarks: v.optional(v.array(v.string())),
-        museums: v.optional(v.array(v.string())),
-        attractions: v.optional(v.array(v.string())),
+        landmarks: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              description: v.string(),
+            }),
+          ),
+        ),
+        museums: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              description: v.string(),
+            }),
+          ),
+        ),
+        attractions: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              description: v.string(),
+            }),
+          ),
+        ),
       }),
     ),
+    imageUrl: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     sourceUrl: v.optional(v.string()),
     scrapedAt: v.optional(v.number()),

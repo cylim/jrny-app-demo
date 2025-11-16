@@ -8,6 +8,7 @@ import { Plus, X } from 'lucide-react'
 import { Suspense, useState } from 'react'
 import { EnrichmentContent } from '@/components/city/enrichment-content'
 import { EnrichmentStatus } from '@/components/city/enrichment-status'
+import { TourismCombinedSection } from '@/components/city/tourism-combined-section'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/ui/loading-dots'
 import {
@@ -390,59 +391,11 @@ function CityPage() {
                 />
               )}
 
-              {/* T059-T061: Tourism sections */}
+              {/* T059-T061: Tourism section with overview and collapsible subsections */}
               {loaderData.enrichmentContent.tourism && (
-                <>
-                  {loaderData.enrichmentContent.tourism.landmarks &&
-                    loaderData.enrichmentContent.tourism.landmarks.length >
-                      0 && (
-                      <div className="rounded-3xl border-2 border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                        <h2 className="mb-4 text-2xl font-semibold">
-                          Landmarks
-                        </h2>
-                        <ul className="list-inside list-disc space-y-2 text-zinc-700 dark:text-zinc-300">
-                          {loaderData.enrichmentContent.tourism.landmarks.map(
-                            (landmark, idx) => (
-                              <li key={idx}>{landmark}</li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                    )}
-
-                  {loaderData.enrichmentContent.tourism.museums &&
-                    loaderData.enrichmentContent.tourism.museums.length > 0 && (
-                      <div className="rounded-3xl border-2 border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                        <h2 className="mb-4 text-2xl font-semibold">
-                          Museums & Galleries
-                        </h2>
-                        <ul className="list-inside list-disc space-y-2 text-zinc-700 dark:text-zinc-300">
-                          {loaderData.enrichmentContent.tourism.museums.map(
-                            (museum, idx) => (
-                              <li key={idx}>{museum}</li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                    )}
-
-                  {loaderData.enrichmentContent.tourism.attractions &&
-                    loaderData.enrichmentContent.tourism.attractions.length >
-                      0 && (
-                      <div className="rounded-3xl border-2 border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                        <h2 className="mb-4 text-2xl font-semibold">
-                          Attractions
-                        </h2>
-                        <ul className="list-inside list-disc space-y-2 text-zinc-700 dark:text-zinc-300">
-                          {loaderData.enrichmentContent.tourism.attractions.map(
-                            (attraction, idx) => (
-                              <li key={idx}>{attraction}</li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                </>
+                <TourismCombinedSection
+                  tourism={loaderData.enrichmentContent.tourism}
+                />
               )}
             </div>
 

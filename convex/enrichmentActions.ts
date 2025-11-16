@@ -41,8 +41,48 @@ function getFirecrawlErrorCode(error: unknown): string {
 }
 
 /**
- * T026-T038: Core enrichment action
- * Fetches city data from Wikipedia via Firecrawl and updates database
+ * Core enrichment action - Fetches structured city data from Wikipedia via Firecrawl
+ *
+ * This action implements the complete enrichment flow using Firecrawl's extract API:
+ * 1. Acquires lock to prevent concurrent enrichment
+ * 2. Fetches Wikipedia content via Firecrawl extract API with JSON schema
+ * 3. Extracts structured data including tourism landmarks, museums, and attractions
+ * 4. Validates extracted data quality and completeness
+ * 5. Updates city enrichment content in database with structured tourism data
+ * 6. Logs enrichment attempt with success/failure details
+ * 7. Releases lock (always, via finally block)
+ *
+ * The extract API uses AI to parse Wikipedia pages into structured JSON matching our schema,
+ * providing richer data than markdown parsing, including:
+ * - Detailed tourism information with landmarks (name + description)
+ * - Museums and cultural institutions as structured objects
+ * - Attractions with descriptions
+ * - Wikipedia image URLs
+ *
+ * @param args.cityId - The ID of the city to enrich
+ * @returns Object with success status, duration, and optional error message
+ *
+ * @throws Error if lock acquisition fails (enrichment already in progress)
+ * @throws Error if Firecrawl API call fails (network, auth, rate limit, etc.)
+ * @throws Error if validation fails (missing required fields, no content extracted)
+ *
+ * Error codes:
+ * - WIKIPEDIA_NOT_FOUND: Wikipedia page doesn't exist
+ * - FIRECRAWL_RATE_LIMITED: API rate limit exceeded
+ * - FIRECRAWL_TIMEOUT: API request timed out
+ * - FIRECRAWL_AUTH_FAILED: Invalid API key or permissions
+ * - NETWORK_ERROR: Network connection issues
+ * - VALIDATION_ERROR: No content extracted from Wikipedia
+ * - MISSING_REQUIRED_FIELDS: Required fields missing
+ * - DATABASE_ERROR: Database operation failed
+ *
+ * @example
+ * const result = await ctx.runAction(api.enrichmentActions.enrichCity, {
+ *   cityId: "j97h8f3k2n9d7s5t" as Id<"cities">
+ * });
+ * if (result.success) {
+ *   console.log(`Enriched in ${result.duration}ms`);
+ * }
  */
 export const enrichCity = action({
   args: { cityId: v.id('cities') },
@@ -81,23 +121,28 @@ export const enrichCity = action({
       }
 
       try {
-        // Import Firecrawl helpers (Node.js modules)
+        // Import Firecrawl helpers and schema (Node.js modules)
         const {
           constructWikipediaUrl,
           getFirecrawlClient,
           countPopulatedFields,
-          cleanWikipediaMarkdown,
-          parseWikipediaSections,
         } = await import('../src/lib/firecrawl.js')
+        const { cityEnrichmentSchema } = await import(
+          '../src/lib/firecrawl-schema.js'
+        )
         const wikipediaUrl = constructWikipediaUrl(city.name, city.country)
 
-        // Call Firecrawl API with error handling
-        let scrapeResult: unknown
+        // Call Firecrawl API with extract method for structured JSON data
+        let extractResult: unknown
         try {
           const firecrawl = getFirecrawlClient()
-          // Note: Firecrawl SDK v1.x uses `scrape` method instead of `scrapeUrl`
-          scrapeResult = await firecrawl.scrape(wikipediaUrl, {
-            formats: ['markdown'],
+          // Use extract() method with JSON schema for structured data
+          extractResult = await firecrawl.extract({
+            urls: [wikipediaUrl],
+            schema: cityEnrichmentSchema,
+            // Optionally add system prompt to guide extraction
+            prompt:
+              'Extract comprehensive city information from this Wikipedia page. Focus on providing detailed, accurate information for all sections.',
           })
         } catch (firecrawlError) {
           const errorCode = getFirecrawlErrorCode(firecrawlError)
@@ -106,39 +151,62 @@ export const enrichCity = action({
           )
         }
 
-        // Check result - Firecrawl v1.x returns { data: {...} } or { error: {...} }
+        // Check result - Firecrawl extract returns { success, data } or { success: false, error }
         // Type assertion needed since SDK types may be incomplete
         // biome-ignore lint/suspicious/noExplicitAny: Firecrawl SDK has incomplete types
-        const result = scrapeResult as any
+        const result = extractResult as any
 
-        if (!result || result.error) {
+        if (!result || !result.success || result.error) {
           const errorMessage = result?.error || 'Unknown error'
           const errorCode = getFirecrawlErrorCode(new Error(errorMessage))
           throw new Error(
-            `Firecrawl scrape failed (${errorCode}): ${errorMessage}`,
+            `Firecrawl extract failed (${errorCode}): ${errorMessage}`,
           )
         }
 
-        // Parse response - access markdown from data object
-        const rawMarkdown = result.data?.markdown || result.markdown || ''
+        // Access extracted data directly from result
+        const extractedData = result.data
 
-        // Clean the Wikipedia markdown to remove banners, navigation, and metadata
-        const cleanedMarkdown = cleanWikipediaMarkdown(rawMarkdown)
+        // T079-T082: Validate extracted data
+        const scrapedAt = Date.now()
 
-        // Parse sections from cleaned markdown
-        const sections = parseWikipediaSections(cleanedMarkdown)
-
-        const enrichedData = {
-          description: sections.description,
-          history: sections.history,
-          geography: sections.geography,
-          climate: sections.climate,
-          transportation: sections.transportation,
-          sourceUrl: wikipediaUrl,
-          scrapedAt: Date.now(),
+        // Check for required fields (name and description are required by schema)
+        if (!wikipediaUrl) {
+          throw new Error('(MISSING_REQUIRED_FIELDS): sourceUrl is missing')
+        }
+        if (!extractedData || !extractedData.description) {
+          throw new Error(
+            '(VALIDATION_ERROR): No description extracted from Wikipedia page',
+          )
         }
 
+        // Build enriched data object matching database schema
+        const enrichedData = {
+          description: extractedData.description,
+          history: extractedData.history,
+          geography: extractedData.geography,
+          climate: extractedData.climate,
+          transportation: extractedData.transportation,
+          tourism: extractedData.tourism
+            ? {
+                overview: extractedData.tourism.overview,
+                landmarks: extractedData.tourism.landmarks || [],
+                museums: extractedData.tourism.museums || [],
+                attractions: extractedData.tourism.attractions || [],
+              }
+            : undefined,
+          imageUrl: extractedData.image_url,
+          sourceUrl: wikipediaUrl,
+          scrapedAt,
+        }
+
+        // Validate that we got at least some content
         const fieldsPopulated = countPopulatedFields(enrichedData)
+        if (fieldsPopulated === 0) {
+          throw new Error(
+            '(VALIDATION_ERROR): No content extracted from Wikipedia page',
+          )
+        }
 
         // Update city data
         await ctx.runMutation(internal.enrichment.updateCityData, {

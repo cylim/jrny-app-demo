@@ -18,7 +18,14 @@ export const ENRICHMENT_CONSTANTS = {
 }
 
 /**
- * T016 + T111: Initialize Firecrawl client with API key and timeout
+ * Initialize Firecrawl client with API key from environment variables
+ *
+ * @returns Configured FirecrawlApp instance
+ * @throws Error if FIRECRAWL_API_KEY environment variable is not set
+ *
+ * @example
+ * const firecrawl = getFirecrawlClient();
+ * const result = await firecrawl.scrape('https://example.com', { formats: ['markdown'] });
  */
 export function getFirecrawlClient(): FirecrawlApp {
   const apiKey = process.env.FIRECRAWL_API_KEY
@@ -34,10 +41,24 @@ export function getFirecrawlClient(): FirecrawlApp {
 }
 
 /**
- * T017: Construct Wikipedia URL for city enrichment
- * @param cityName - City name (e.g., "Tokyo", "New York")
- * @param country - Country name (e.g., "Japan", "United States")
- * @returns Wikipedia URL for the city
+ * Construct Wikipedia URL for city enrichment
+ *
+ * Generates a properly formatted Wikipedia URL for a city, handling:
+ * - Space-to-underscore conversion
+ * - URL encoding for special characters
+ * - Disambiguation with country name for common city names
+ *
+ * @param cityName - City name (e.g., "Tokyo", "New York", "São Paulo")
+ * @param country - Country name (e.g., "Japan", "United States", "Brazil")
+ * @returns Fully qualified Wikipedia URL
+ *
+ * @example
+ * constructWikipediaUrl("New York", "United States")
+ * // Returns: "https://en.wikipedia.org/wiki/New_York,_United_States"
+ *
+ * @example
+ * constructWikipediaUrl("São Paulo", "Brazil")
+ * // Returns: "https://en.wikipedia.org/wiki/S%C3%A3o_Paulo,_Brazil"
  */
 export function constructWikipediaUrl(
   cityName: string,
@@ -103,199 +124,4 @@ export function truncateText(
 
   // Truncate and add ellipsis
   return `${text.substring(0, maxLength - 3)}...`
-}
-
-/**
- * Clean Wikipedia markdown by removing navigation, banners, and metadata
- * @param markdown - Raw Wikipedia markdown from Firecrawl
- * @returns Cleaned article text
- */
-export function cleanWikipediaMarkdown(markdown: string): string {
-  if (!markdown) return ''
-
-  let cleaned = markdown
-
-  // Remove common Wikipedia page elements
-  // 1. Remove everything before "From Wikipedia, the free encyclopedia"
-  const fromWikipediaMatch = cleaned.indexOf(
-    'From Wikipedia, the free encyclopedia',
-  )
-  if (fromWikipediaMatch !== -1) {
-    cleaned = cleaned.substring(
-      fromWikipediaMatch + 'From Wikipedia, the free encyclopedia'.length,
-    )
-  }
-
-  // 2. Remove banner messages (e.g., Asian Month, donation banners)
-  cleaned = cleaned.replace(/\[Jump to content\][\s\S]*?\(#bodyContent\)/g, '')
-  cleaned = cleaned.replace(
-    /\[!\[Banner logo\][\s\S]*?\[Hide\]\([\s\S]*?\)/g,
-    '',
-  )
-
-  // 3. Remove coordinates line
-  cleaned = cleaned.replace(
-    /\[Coordinates\][\s\S]*?Geographic coordinate system[\s\S]*?\n/g,
-    '',
-  )
-
-  // 4. Remove redirect notices
-  cleaned = cleaned.replace(/\(Redirected from \[.*?\]\(.*?\)\)/g, '')
-
-  // 5. Remove "This article is about..." disambiguation
-  cleaned = cleaned.replace(
-    /This article is about.*?For .*?, see \[.*?\]\(.*?\)\.?\n*/g,
-    '',
-  )
-
-  // 6. Remove quotation redirects (e.g., "Moslawi" redirects here)
-  cleaned = cleaned.replace(/".*?" redirects here\..*?\n/g, '')
-
-  // 7. Remove infobox tables (they're usually not useful as plain text)
-  cleaned = cleaned.replace(/\|[\s\S]*?\|\s*\n/g, '')
-
-  // 8. Remove image/file references
-  cleaned = cleaned.replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)/g, '')
-  cleaned = cleaned.replace(/!\[.*?\]\(.*?\)/g, '')
-
-  // 9. Remove excessive newlines
-  cleaned = cleaned.replace(/\n{3,}/g, '\n\n')
-
-  // 10. Trim whitespace
-  cleaned = cleaned.trim()
-
-  return cleaned
-}
-
-/**
- * Extract specific sections from Wikipedia markdown
- * @param markdown - Cleaned Wikipedia markdown
- * @returns Object with extracted sections (description, history, geography, climate, transportation)
- */
-export function parseWikipediaSections(markdown: string): {
-  description?: string
-  history?: string
-  geography?: string
-  climate?: string
-  transportation?: string
-} {
-  if (!markdown) return {}
-
-  const sections: {
-    description?: string
-    history?: string
-    geography?: string
-    climate?: string
-    transportation?: string
-  } = {}
-
-  // Split by headings (## or #)
-  const lines = markdown.split('\n')
-  let currentSection = 'description' // Everything before first heading is description
-  let currentContent: string[] = []
-
-  for (const line of lines) {
-    // Check for section headings (## or #)
-    const headingMatch = line.match(/^#{1,3}\s+(.+)/)
-
-    if (headingMatch) {
-      // Save previous section
-      if (currentContent.length > 0) {
-        const content = currentContent.join('\n').trim()
-        if (content.length > 0) {
-          if (currentSection === 'description') {
-            sections.description = truncateText(
-              content,
-              ENRICHMENT_CONSTANTS.MAX_DESCRIPTION_LENGTH,
-            )
-          } else if (currentSection === 'history') {
-            sections.history = truncateText(
-              content,
-              ENRICHMENT_CONSTANTS.MAX_HISTORY_LENGTH,
-            )
-          } else if (currentSection === 'geography') {
-            sections.geography = truncateText(
-              content,
-              ENRICHMENT_CONSTANTS.MAX_GEOGRAPHY_LENGTH,
-            )
-          } else if (currentSection === 'climate') {
-            sections.climate = truncateText(
-              content,
-              ENRICHMENT_CONSTANTS.MAX_CLIMATE_LENGTH,
-            )
-          } else if (currentSection === 'transportation') {
-            sections.transportation = truncateText(
-              content,
-              ENRICHMENT_CONSTANTS.MAX_TRANSPORT_LENGTH,
-            )
-          }
-        }
-      }
-
-      // Determine new section based on heading
-      const heading = headingMatch[1].toLowerCase().trim()
-      if (heading.includes('history') || heading.includes('historical')) {
-        currentSection = 'history'
-        currentContent = []
-      } else if (
-        heading.includes('geography') ||
-        heading.includes('topography')
-      ) {
-        currentSection = 'geography'
-        currentContent = []
-      } else if (heading.includes('climate') || heading.includes('weather')) {
-        currentSection = 'climate'
-        currentContent = []
-      } else if (
-        heading.includes('transport') ||
-        heading.includes('infrastructure') ||
-        heading.includes('transit')
-      ) {
-        currentSection = 'transportation'
-        currentContent = []
-      } else {
-        // Skip sections we don't care about
-        currentSection = 'skip'
-        currentContent = []
-      }
-    } else if (currentSection !== 'skip') {
-      // Add line to current section
-      currentContent.push(line)
-    }
-  }
-
-  // Save final section
-  if (currentSection !== 'skip' && currentContent.length > 0) {
-    const content = currentContent.join('\n').trim()
-    if (content.length > 0) {
-      if (currentSection === 'description') {
-        sections.description = truncateText(
-          content,
-          ENRICHMENT_CONSTANTS.MAX_DESCRIPTION_LENGTH,
-        )
-      } else if (currentSection === 'history') {
-        sections.history = truncateText(
-          content,
-          ENRICHMENT_CONSTANTS.MAX_HISTORY_LENGTH,
-        )
-      } else if (currentSection === 'geography') {
-        sections.geography = truncateText(
-          content,
-          ENRICHMENT_CONSTANTS.MAX_GEOGRAPHY_LENGTH,
-        )
-      } else if (currentSection === 'climate') {
-        sections.climate = truncateText(
-          content,
-          ENRICHMENT_CONSTANTS.MAX_CLIMATE_LENGTH,
-        )
-      } else if (currentSection === 'transportation') {
-        sections.transportation = truncateText(
-          content,
-          ENRICHMENT_CONSTANTS.MAX_TRANSPORT_LENGTH,
-        )
-      }
-    }
-  }
-
-  return sections
 }
