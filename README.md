@@ -44,6 +44,14 @@ JRNY is a location-based social application designed for travelers, digital noma
 - Public city pages for non-logged-in users (without user data)
 - Account deletion removes all user data from visitor lists and events
 
+### 💳 Subscription & Payments (Pro Tier)
+- **Stripe Integration**: Powered by Autumn for seamless payment handling
+- **Pro Tier**: $0.99/month subscription with enhanced privacy features
+- **Free Tier Features**: Track visits, join events, basic profile privacy
+- **Pro Features**: Global visit privacy, individual visit privacy, hide event participant lists
+- **Subscription Management**: Upgrade, cancel, and reactivate subscriptions
+- **Secure Checkout**: Stripe-hosted payment pages with test mode support
+
 ### 🎨 Kirby-Style UI Design
 - Playful, welcoming interface with soft pastel colors (pinks, blues, purples)
 - Pronounced rounded corners (16-24px) and bubble-like elements
@@ -66,6 +74,7 @@ JRNY is a location-based social application designed for travelers, digital noma
 ### Backend
 - **Backend**: [Convex](https://convex.dev) - Real-time backend-as-a-service
 - **Authentication**: [Better-Auth](https://better-auth.com) with Google OAuth - Modern authentication solution
+- **Payments**: [Autumn](https://useautumn.com) - Stripe-based subscription management
 - **Database**: Convex built-in transactional database with real-time sync
 
 ### Infrastructure
@@ -122,6 +131,9 @@ JRNY is a location-based social application designed for travelers, digital noma
    # Sentry (optional for development)
    VITE_SENTRY_DSN=your-sentry-dsn
    SENTRY_DSN=your-sentry-dsn
+
+   # Autumn Payments (optional - for subscription features)
+   AUTUMN_SECRET_KEY=am_sk_test_your_key
    ```
 
    **Google OAuth Setup**:
@@ -137,6 +149,21 @@ JRNY is a location-based social application designed for travelers, digital noma
       npx convex env set GOOGLE_CLIENT_ID "your-client-id"
       npx convex env set GOOGLE_CLIENT_SECRET "your-client-secret"
       ```
+
+   **Autumn Payments Setup** (Optional):
+   1. Sign up at [Autumn](https://useautumn.com)
+   2. Get your `AUTUMN_SECRET_KEY` from the dashboard
+   3. Deploy to Convex:
+      ```bash
+      npx convex env set AUTUMN_SECRET_KEY "am_sk_test_your_key"
+      ```
+   4. Configure products using the config file:
+      ```bash
+      npx atmn init  # Creates autumn.config.ts
+      npx atmn push  # Syncs config to Autumn
+      ```
+   5. Connect your Stripe account in the Autumn dashboard
+   6. See [Testing Stripe Payments](#testing-stripe-payments) below for testing instructions
 
 4. **Initialize Convex**:
    ```bash
@@ -178,6 +205,55 @@ node scripts/seed-database.mjs --users 500 --visits-per-user 10
 - **Realistic**: Generated using [@faker-js/faker](https://fakerjs.dev)
 
 See [Database Seeding Guide](specs/003-db-seed/quickstart.md) for more details.
+
+### Testing Stripe Payments
+
+To test the Pro subscription upgrade flow in development:
+
+1. **Ensure Autumn is configured**:
+   - `AUTUMN_SECRET_KEY` set in Convex environment
+   - `autumn.config.ts` pushed to Autumn dashboard
+   - Stripe account connected in Autumn dashboard
+
+2. **Navigate to Settings**:
+   - Sign in with Google OAuth
+   - Go to Settings page (`/settings`)
+   - Find the "Subscription" section
+
+3. **Test Upgrade Flow**:
+   - Click "Upgrade to Pro - $0.99/month" button
+   - You'll be redirected to Stripe Checkout
+   - Use Stripe test card numbers:
+     - **Success**: `4242 4242 4242 4242`
+     - **Decline**: `4000 0000 0000 0002`
+     - **3D Secure**: `4000 0025 0000 3155`
+   - Any future expiry date (e.g., `12/25`)
+   - Any 3-digit CVC (e.g., `123`)
+   - Any billing ZIP code
+
+4. **Verify Subscription**:
+   - After successful payment, you'll be redirected to `/subscription/success`
+   - Your subscription will sync automatically
+   - Pro badge appears next to your avatar in the header
+   - Subscription status updates in Settings page
+   - Pro-only privacy features become available
+
+5. **Test Subscription Management**:
+   - **Cancel**: Click "Cancel Subscription" in Settings
+   - **Pro access continues** until end of billing period
+   - **Reactivate**: (Feature coming soon)
+
+**Important Notes**:
+- Test mode uses Stripe test keys - no real charges
+- Webhooks are handled automatically via Autumn
+- Subscription status syncs in real-time
+- All test data can be viewed in your Stripe Dashboard's test mode
+
+**Troubleshooting**:
+- If checkout fails, check Convex logs for Autumn API errors
+- Verify `AUTUMN_SECRET_KEY` is correctly set
+- Ensure `autumn.config.ts` was pushed successfully
+- Check Stripe is connected in Autumn dashboard
 
 ## Development
 

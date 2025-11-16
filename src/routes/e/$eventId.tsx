@@ -206,10 +206,7 @@ function EventDetailPage() {
         {/* Description */}
         <div className="mb-6">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500">
-              <span className="text-lg">✨</span>
-            </span>
-            About this event
+            ✨ About this event
           </h2>
           <p className="whitespace-pre-wrap leading-relaxed text-zinc-700 dark:text-zinc-300">
             {event.description}
@@ -219,25 +216,6 @@ function EventDetailPage() {
         {/* Event Details - Combined Section */}
         <div className="mb-6 rounded-2xl border border-white/30 bg-white/50 p-6 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Date/Time */}
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500">
-                <Calendar className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Date & Time
-                </p>
-                <p className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
-                  {formattedDate}
-                </p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {formattedStartTime}
-                  {formattedEndTime && ` - ${formattedEndTime}`}
-                </p>
-              </div>
-            </div>
-
             {/* Location */}
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500">
@@ -257,6 +235,25 @@ function EventDetailPage() {
                 >
                   {event.city.name}, {event.city.country}
                 </Link>
+              </div>
+            </div>
+
+            {/* Date/Time */}
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Date & Time
+                </p>
+                <p className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
+                  {formattedDate}
+                </p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {formattedStartTime}
+                  {formattedEndTime && ` - ${formattedEndTime}`}
+                </p>
               </div>
             </div>
           </div>
@@ -291,7 +288,7 @@ function EventDetailPage() {
                   }
                 }}
                 disabled={event.isFull}
-                className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+                className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg transition-all hover:scale-105 hover:shadow-xl text-white"
               >
                 {event.isFull ? 'Event Full' : 'Join Event'}
               </Button>
