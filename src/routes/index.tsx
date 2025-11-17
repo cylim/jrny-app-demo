@@ -1,5 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { CityShowcase } from '~/components/city-showcase'
+import { FeaturesSection } from '~/components/features-section'
+import { TechStack } from '~/components/tech-stack'
 import { Button } from '~/components/ui/button'
 import { authClient } from '~/lib/auth-client'
 
@@ -57,6 +59,12 @@ function Home() {
         </div>
         <CityShowcase count={8} />
       </section>
+
+      {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Tech Stack Section */}
+      <TechStack />
     </main>
   )
 }

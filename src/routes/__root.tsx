@@ -272,7 +272,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <RouteLoadingBar />
-          <AnimatedBackground variant="bubbles" intensity="moderate" />
+          {/* <AnimatedBackground variant="bubbles" intensity="moderate" /> */}
           <AnimatedBackground variant="particles" intensity="subtle" />
           <div className="relative z-10 flex min-h-screen flex-col">
             <Header />

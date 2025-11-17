@@ -99,7 +99,7 @@ export function AnimatedBackground({
           <motion.div
             key={el.id}
             data-testid={`bubble-${el.id}`}
-            className="absolute rounded-full bg-gradient-to-br from-pink-400 to-purple-500 blur-lg"
+            className="absolute rounded-full bg-gradient-to-br from-pink-400 dark:from-pink-400 to-purple-300 dark:to-indigo-800 blur-lg"
             initial={{
               x: `${el.x}vw`,
               y: `${el.y}vh`,
