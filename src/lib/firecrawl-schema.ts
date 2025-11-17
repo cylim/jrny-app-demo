@@ -96,7 +96,7 @@ export const cityEnrichmentSchema = {
           },
         },
       },
-    }
+    },
   },
   required: ['name', 'description'],
 }

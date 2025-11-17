@@ -173,16 +173,18 @@ export const enrichCity = action({
       })
 
       try {
-        // Call Firecrawl API with extract method for structured JSON data
-        let extractResult: unknown
+        // Call Firecrawl API with scrape method for structured JSON data
+        let scrapeResult: unknown
         try {
           const firecrawl = getFirecrawlClient()
-          // T111: Use extract() method with JSON schema and timeout configuration
-          extractResult = await firecrawl.extract({
-            urls: [wikipediaUrl],
-            schema: cityEnrichmentSchema,
-            prompt:
-              'Extract comprehensive city information from this Wikipedia page. Focus on providing detailed, accurate information for all sections.',
+          // Use scrape() with JSON format and schema (cheaper than extract())
+          scrapeResult = await firecrawl.scrape(wikipediaUrl, {
+            formats: [
+              {
+                type: 'json',
+                schema: cityEnrichmentSchema,
+              },
+            ],
             timeout: ENRICHMENT_CONSTANTS.FIRECRAWL_TIMEOUT_MS,
           })
         } catch (firecrawlError) {
@@ -197,22 +199,22 @@ export const enrichCity = action({
           )
         }
 
-        // Check result - Firecrawl extract returns { success, data } or { success: false, error }
+        // Check result - Firecrawl scrape returns { success, data } with data.json containing extracted data
         // Type assertion needed since SDK types may be incomplete
         // biome-ignore lint/suspicious/noExplicitAny: Firecrawl SDK has incomplete types
-        const result = extractResult as any
+        const result = scrapeResult as any
 
         if (!result || !result.success || result.error) {
           const errorMessage = result?.error || 'Unknown error'
           const errorCode = getFirecrawlErrorCode(new Error(errorMessage))
           throw new EnrichmentError(
-            `Firecrawl extract failed: ${errorMessage}`,
+            `Firecrawl scrape failed: ${errorMessage}`,
             errorCode,
           )
         }
 
-        // Access extracted data directly from result
-        const extractedData = result.data
+        // Access extracted data from result.data.json (scrape with JSON format)
+        const extractedData = result.data?.json || result.data
 
         // T079-T082: Validate extracted data
         const scrapedAt = Date.now()
