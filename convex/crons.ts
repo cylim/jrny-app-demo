@@ -11,12 +11,12 @@ const crons = cronJobs()
 
 crons.interval(
   'clean-stale-locks',
-  { hours: 1 }, // Run every hour
+  { minutes: 10 }, // Run every 10 minutes
   internal.enrichment.cleanStaleLocks,
 )
 crons.interval(
   'sync current visitor counts',
-  { minutes: 1440 },
+  { hours: 24 }, // Run every 24 hours
   internal.visits.syncAllCurrentVisitorCounts,
 )
 

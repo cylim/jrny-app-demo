@@ -1,5 +1,4 @@
 import { convexQuery } from '@convex-dev/react-query'
-import * as Sentry from '@sentry/tanstackstart-react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
@@ -8,6 +7,7 @@ import { Plus, X } from 'lucide-react'
 import { Suspense, useState } from 'react'
 import { EnrichmentContent } from '@/components/city/enrichment-content'
 import { EnrichmentStatus } from '@/components/city/enrichment-status'
+import { EnrichmentTrigger } from '@/components/city/enrichment-trigger'
 import { TourismCombinedSection } from '@/components/city/tourism-combined-section'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/ui/loading-dots'
@@ -51,53 +51,8 @@ export const Route = createFileRoute('/c/$shortSlug')({
       )
     }
 
-    // T047-T048 + T096-T097: Trigger enrichment in background (fire-and-forget)
-    if (
-      enrichmentStatus.needsEnrichment &&
-      enrichmentStatus.reason !== 'in_progress'
-    ) {
-      try {
-        // Fire and forget - don't await
-        context.convexClient
-          .action(api.enrichmentActions.enrichCity, { cityId: cityData._id })
-          .catch((error) => {
-            console.error('Background enrichment failed:', error)
-
-            // T096-T097: Capture enrichment errors in Sentry with context
-            Sentry.captureException(error, {
-              tags: {
-                feature: 'city-enrichment',
-                cityId: cityData._id,
-                cityName: cityData.name,
-                enrichmentReason: enrichmentStatus.reason,
-              },
-              contexts: {
-                enrichment: {
-                  cityId: cityData._id,
-                  cityName: cityData.name,
-                  cityCountry: cityData.country,
-                  enrichmentReason: enrichmentStatus.reason,
-                  needsEnrichment: enrichmentStatus.needsEnrichment,
-                },
-              },
-            })
-          })
-      } catch (error) {
-        // T048: Don't block page load on enrichment errors
-        console.error('Failed to trigger enrichment:', error)
-
-        // T096-T097: Capture sync enrichment trigger errors
-        Sentry.captureException(error, {
-          tags: {
-            feature: 'city-enrichment',
-            phase: 'trigger',
-            cityId: cityData._id,
-          },
-        })
-      }
-    }
-
     // T049: Return enrichmentStatus and enrichmentContent
+    // Note: Enrichment is now triggered client-side to prevent duplicate API calls
     return { enrichmentStatus, enrichmentContent }
   },
 })
@@ -263,6 +218,17 @@ function CityPage() {
 
   return (
     <div className="pb-8">
+      {/* Enrichment Trigger - fires once on mount if needed */}
+      {loaderData.enrichmentStatus && (
+        <EnrichmentTrigger
+          cityId={city._id}
+          cityName={city.name}
+          cityCountry={city.country}
+          needsEnrichment={loaderData.enrichmentStatus.needsEnrichment}
+          enrichmentReason={loaderData.enrichmentStatus.reason}
+        />
+      )}
+
       {/* City Header with Image */}
       {city.image ? (
         <div className="relative w-full mb-8">

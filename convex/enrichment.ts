@@ -10,6 +10,7 @@ import { internalMutation, internalQuery, query } from './_generated/server'
 // Constants
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
+const ONE_HOUR_MS = 60 * 60 * 1000 // Cooldown period for failed enrichments
 
 /**
  * Helper to check if a value is considered "empty" (missing data)
@@ -73,6 +74,9 @@ function shouldUpdateField(
 /**
  * T020: Acquire lock for enrichment with stale lock detection
  * Returns true if lock acquired, false if already locked
+ *
+ * IMPORTANT: This uses a read-then-write pattern which has a race condition window.
+ * To prevent duplicate enrichments, we also check enrichmentLogs for recent attempts.
  */
 export const acquireLock = internalMutation({
   args: { cityId: v.id('cities') },
@@ -81,6 +85,26 @@ export const acquireLock = internalMutation({
     const city = await ctx.db.get(args.cityId)
     if (!city) {
       throw new Error(`City ${args.cityId} not found`)
+    }
+
+    // CRITICAL: Check for recent enrichment attempts (last 30 seconds)
+    // This prevents race conditions when multiple users visit simultaneously
+    const recentLogs = await ctx.db
+      .query('enrichmentLogs')
+      .withIndex('by_city_and_created', (q) => q.eq('cityId', args.cityId))
+      .order('desc')
+      .take(1)
+
+    const lastLog = recentLogs[0]
+    if (lastLog) {
+      const timeSinceLastAttempt = Date.now() - lastLog.startedAt
+      // If enrichment started in last 30 seconds, don't acquire lock
+      if (timeSinceLastAttempt < 30 * 1000) {
+        console.log(
+          `[Lock] Recent enrichment attempt detected (${timeSinceLastAttempt}ms ago) for city ${args.cityId}, rejecting lock`,
+        )
+        return false
+      }
     }
 
     // Check if there's an existing lock
@@ -107,6 +131,65 @@ export const acquireLock = internalMutation({
       lockAcquiredAt: Date.now(),
     })
     return true
+  },
+})
+
+/**
+ * Start enrichment - creates a log entry immediately after lock acquisition
+ * This prevents race conditions by creating a database record that concurrent
+ * requests can detect
+ */
+export const startEnrichment = internalMutation({
+  args: {
+    cityId: v.id('cities'),
+    sourceUrl: v.string(),
+    initiatedBy: v.string(),
+  },
+  returns: v.id('enrichmentLogs'),
+  handler: async (ctx, args) => {
+    const now = Date.now()
+
+    // Create log entry with status 'in_progress'
+    const logId = await ctx.db.insert('enrichmentLogs', {
+      cityId: args.cityId,
+      success: false, // Will be updated on completion
+      status: 'failed', // Will be updated on completion
+      startedAt: now,
+      completedAt: now, // Will be updated on completion
+      duration: 0, // Will be updated on completion
+      sourceUrl: args.sourceUrl,
+      initiatedBy: args.initiatedBy,
+      createdAt: now,
+    })
+
+    return logId
+  },
+})
+
+/**
+ * Update enrichment log with final result
+ */
+export const updateEnrichmentLog = internalMutation({
+  args: {
+    logId: v.id('enrichmentLogs'),
+    success: v.boolean(),
+    duration: v.number(),
+    fieldsPopulated: v.optional(v.number()),
+    error: v.optional(v.string()),
+    errorCode: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.logId, {
+      success: args.success,
+      status: args.success ? 'completed' : 'failed',
+      completedAt: Date.now(),
+      duration: args.duration,
+      fieldsPopulated: args.fieldsPopulated,
+      error: args.error,
+      errorCode: args.errorCode,
+    })
+    return null
   },
 })
 
@@ -163,6 +246,7 @@ export const cleanStaleLocks = internalMutation({
 /**
  * T021-T025: Check enrichment status for a city
  * Returns whether enrichment is needed and the reason
+ * Includes cooldown logic to prevent excessive API usage
  */
 export const checkEnrichmentStatus = query({
   args: { cityId: v.id('cities') },
@@ -173,6 +257,7 @@ export const checkEnrichmentStatus = query({
       v.literal('stale_data'),
       v.literal('in_progress'),
       v.literal('up_to_date'),
+      v.literal('cooldown'), // New: waiting for cooldown after failure
     ),
   }),
   handler: async (ctx, args) => {
@@ -184,8 +269,28 @@ export const checkEnrichmentStatus = query({
     // T023: Check if enrichment is in progress
     if (city.enrichmentInProgress) {
       return {
-        needsEnrichment: true,
+        needsEnrichment: false, // Changed: don't trigger if already in progress
         reason: 'in_progress' as const,
+      }
+    }
+
+    // Check recent enrichment attempts for cooldown logic
+    const recentLogs = await ctx.db
+      .query('enrichmentLogs')
+      .withIndex('by_city_and_created', (q) => q.eq('cityId', args.cityId))
+      .order('desc')
+      .take(1)
+
+    const lastAttempt = recentLogs[0]
+
+    // If last attempt was recent and failed, apply cooldown
+    if (lastAttempt && !lastAttempt.success) {
+      const timeSinceLastAttempt = Date.now() - lastAttempt.createdAt
+      if (timeSinceLastAttempt < ONE_HOUR_MS) {
+        return {
+          needsEnrichment: false,
+          reason: 'cooldown' as const,
+        }
       }
     }
 

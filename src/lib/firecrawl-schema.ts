@@ -96,11 +96,7 @@ export const cityEnrichmentSchema = {
           },
         },
       },
-    },
-    image_url: {
-      type: 'string',
-      description: 'URL of a representative image of the city from Wikipedia',
-    },
+    }
   },
   required: ['name', 'description'],
 }

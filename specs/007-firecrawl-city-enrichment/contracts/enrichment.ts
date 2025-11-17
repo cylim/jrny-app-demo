@@ -238,7 +238,6 @@ export enum EnrichmentErrorCode {
   // Data validation errors
   VALIDATION_ERROR = 'VALIDATION_ERROR', // Zod schema validation failed
   MISSING_REQUIRED_FIELDS = 'MISSING_REQUIRED_FIELDS', // Critical fields missing
-  INVALID_IMAGE_URLS = 'INVALID_IMAGE_URLS', // Image URLs malformed
 
   // Data source errors
   WIKIPEDIA_NOT_FOUND = 'WIKIPEDIA_NOT_FOUND', // City page not found on Wikipedia

@@ -59,8 +59,8 @@ function CollapsibleSubsection({
       {isExpanded && (
         <div className="px-4 pb-4">
           <ul className="space-y-3">
-            {items.map((item, idx) => (
-              <li key={idx} className="text-zinc-700 dark:text-zinc-300">
+            {items.map((item) => (
+              <li key={item.name} className="text-zinc-700 dark:text-zinc-300">
                 <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
                   {item.name}
                 </strong>

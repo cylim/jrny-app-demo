@@ -152,19 +152,27 @@ export const enrichCity = action({
         )
       }
 
-      try {
-        // Import Firecrawl helpers and schema (Node.js modules)
-        const {
-          constructWikipediaUrl,
-          getFirecrawlClient,
-          countPopulatedFields,
-          ENRICHMENT_CONSTANTS,
-        } = await import('../src/lib/firecrawl.js')
-        const { cityEnrichmentSchema } = await import(
-          '../src/lib/firecrawl-schema.js'
-        )
-        const wikipediaUrl = constructWikipediaUrl(city.name, city.country)
+      // Import Firecrawl helpers and schema (Node.js modules)
+      const {
+        constructWikipediaUrl,
+        getFirecrawlClient,
+        countPopulatedFields,
+        ENRICHMENT_CONSTANTS,
+      } = await import('../src/lib/firecrawl.js')
+      const { cityEnrichmentSchema } = await import(
+        '../src/lib/firecrawl-schema.js'
+      )
+      const wikipediaUrl = constructWikipediaUrl(city.name, city.country)
 
+      // CRITICAL: Create enrichment log immediately after lock acquisition
+      // This prevents race conditions by creating a database record
+      const logId = await ctx.runMutation(internal.enrichment.startEnrichment, {
+        cityId: args.cityId,
+        sourceUrl: wikipediaUrl,
+        initiatedBy: isReenrichment ? 'stale_refresh' : 'user_visit',
+      })
+
+      try {
         // Call Firecrawl API with extract method for structured JSON data
         let extractResult: unknown
         try {
@@ -232,7 +240,6 @@ export const enrichCity = action({
                 attractions: extractedData.tourism.attractions || [],
               }
             : undefined,
-          imageUrl: extractedData.image_url,
           sourceUrl: wikipediaUrl,
           scrapedAt,
         }
@@ -254,20 +261,38 @@ export const enrichCity = action({
 
         const duration = Date.now() - startTime
 
-        // Log success
-        await ctx.runMutation(internal.enrichment.logEnrichment, {
-          cityId: args.cityId,
+        // Update log with success
+        await ctx.runMutation(internal.enrichment.updateEnrichmentLog, {
+          logId,
           success: true,
           duration,
-          sourceUrl: wikipediaUrl,
           fieldsPopulated,
-          initiatedBy: isReenrichment ? 'stale_refresh' : 'user_visit',
         })
 
         return {
           success: true,
           duration,
         }
+      } catch (innerError) {
+        // Update log with failure
+        const duration = Date.now() - startTime
+        const errorMessage =
+          innerError instanceof Error ? innerError.message : String(innerError)
+        const errorCode =
+          innerError instanceof EnrichmentError
+            ? innerError.code
+            : getFirecrawlErrorCode(innerError)
+
+        await ctx.runMutation(internal.enrichment.updateEnrichmentLog, {
+          logId,
+          success: false,
+          duration,
+          error: errorMessage,
+          errorCode,
+        })
+
+        // Re-throw to be caught by outer catch
+        throw innerError
       } finally {
         // Always release lock
         await ctx.runMutation(internal.enrichment.releaseLock, {
@@ -275,12 +300,12 @@ export const enrichCity = action({
         })
       }
     } catch (error) {
-      // Error handling with logging
+      // Error handling - logging already done in inner catch or via logEnrichment
       const duration = Date.now() - startTime
       const errorMessage =
         error instanceof Error ? error.message : String(error)
 
-      // Extract error code - use EnrichmentError.code if available, otherwise infer
+      // Extract error code
       let errorCode: string
       if (error instanceof EnrichmentError) {
         errorCode = error.code
@@ -295,14 +320,20 @@ export const enrichCity = action({
         initiatedBy: isReenrichment ? 'stale_refresh' : 'user_visit',
       })
 
-      await ctx.runMutation(internal.enrichment.logEnrichment, {
-        cityId: args.cityId,
-        success: false,
-        duration,
-        error: errorMessage,
-        errorCode,
-        initiatedBy: isReenrichment ? 'stale_refresh' : 'user_visit',
-      })
+      // Only log if this is a lock failure or early error (before startEnrichment was called)
+      if (
+        errorCode === 'LOCK_ACQUISITION_FAILED' ||
+        errorCode === 'CITY_NOT_FOUND'
+      ) {
+        await ctx.runMutation(internal.enrichment.logEnrichment, {
+          cityId: args.cityId,
+          success: false,
+          duration,
+          error: errorMessage,
+          errorCode,
+          initiatedBy: isReenrichment ? 'stale_refresh' : 'user_visit',
+        })
+      }
 
       return {
         success: false,

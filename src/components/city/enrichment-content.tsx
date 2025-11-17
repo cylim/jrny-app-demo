@@ -40,8 +40,8 @@ export function EnrichmentContent({
       {isExpanded && (
         <div className="border-t-2 border-zinc-200 px-6 pb-6 pt-4 dark:border-zinc-800">
           <div className="space-y-4 text-zinc-700 dark:text-zinc-300">
-            {paragraphs.map((paragraph, idx) => (
-              <p key={idx} className="leading-relaxed">
+            {paragraphs.map((paragraph) => (
+              <p key={paragraph.substring(0, 20)} className="leading-relaxed">
                 {paragraph}
               </p>
             ))}
