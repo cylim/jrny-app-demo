@@ -9,7 +9,7 @@ import FirecrawlApp from '@mendable/firecrawl-js'
  * T111: Enrichment constants for performance optimization
  */
 export const ENRICHMENT_CONSTANTS = {
-  FIRECRAWL_TIMEOUT_MS: 30 * 1000, // 30 seconds
+  FIRECRAWL_TIMEOUT_MS: 60 * 1000, // 60 seconds
 }
 
 /**
