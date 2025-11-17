@@ -157,7 +157,6 @@ export const enrichCity = action({
         constructWikipediaUrl,
         getFirecrawlClient,
         countPopulatedFields,
-        ENRICHMENT_CONSTANTS,
       } = await import('../src/lib/firecrawl.js')
       const { cityEnrichmentSchema } = await import(
         '../src/lib/firecrawl-schema.js'
@@ -173,19 +172,14 @@ export const enrichCity = action({
       })
 
       try {
-        // Call Firecrawl API with scrape method for structured JSON data
-        let scrapeResult: unknown
+        // Call Firecrawl API with extract method for AI-powered structured JSON data
+        let extractResult: unknown
         try {
           const firecrawl = getFirecrawlClient()
-          // Use scrape() with JSON format and schema (cheaper than extract())
-          scrapeResult = await firecrawl.scrape(wikipediaUrl, {
-            formats: [
-              {
-                type: 'json',
-                schema: cityEnrichmentSchema,
-              },
-            ],
-            timeout: ENRICHMENT_CONSTANTS.FIRECRAWL_TIMEOUT_MS,
+          // Use extract() with JSON schema for AI-powered data extraction
+          extractResult = await firecrawl.extract({
+            urls: [wikipediaUrl],
+            schema: cityEnrichmentSchema,
           })
         } catch (firecrawlError) {
           const errorCode = getFirecrawlErrorCode(firecrawlError)
@@ -199,22 +193,22 @@ export const enrichCity = action({
           )
         }
 
-        // Check result - Firecrawl scrape returns { success, data } with data.json containing extracted data
+        // Check result - Firecrawl extract returns { success, data } with data containing extracted data
         // Type assertion needed since SDK types may be incomplete
         // biome-ignore lint/suspicious/noExplicitAny: Firecrawl SDK has incomplete types
-        const result = scrapeResult as any
+        const result = extractResult as any
 
         if (!result || !result.success || result.error) {
           const errorMessage = result?.error || 'Unknown error'
           const errorCode = getFirecrawlErrorCode(new Error(errorMessage))
           throw new EnrichmentError(
-            `Firecrawl scrape failed: ${errorMessage}`,
+            `Firecrawl extract failed: ${errorMessage}`,
             errorCode,
           )
         }
 
-        // Access extracted data from result.data.json (scrape with JSON format)
-        const extractedData = result.data?.json || result.data
+        // Access extracted data directly from result.data (extract API)
+        const extractedData = result.data
 
         // T079-T082: Validate extracted data
         const scrapedAt = Date.now()

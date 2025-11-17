@@ -426,7 +426,7 @@ export const ENRICHMENT_CONSTANTS = {
 
   // API limits
   MAX_ERROR_MESSAGE_LENGTH: 1000,
-  FIRECRAWL_TIMEOUT_MS: 30 * 1000, // 30 seconds
+  FIRECRAWL_TIMEOUT_MS: 60 * 1000, // 60 seconds
 
   // Retry strategy
   MAX_RETRIES: 2,
