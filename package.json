@@ -49,7 +49,7 @@
     "@useautumn/convex": "^0.0.15",
     "atmn": "^0.0.28",
     "autumn-js": "^0.1.47",
-    "better-auth": "1.3.34",
+    "better-auth": "1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.29.1",
